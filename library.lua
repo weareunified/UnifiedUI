@@ -2087,13 +2087,17 @@ function UI:CreateDropdown(sectionBody, opt)
 		-- end) -- Disabled Auto Saving
 		pcall(cb, _StripRichText(value))
 	end
-	api.Refresh = function(newList)
+	api.Refresh = function(a, b)
+		local newList = b
+		if b == nil then
+			newList = a
+		end
 		if type(newList) == "table" then
 			list = newList
 		end
 		rebuild()
-		if opened then 
-			setOpen(true) 
+		if opened then
+			setOpen(true)
 		end
 	end
 	self._Controls[persistKey] = api
@@ -2297,8 +2301,12 @@ function UI:CreateConfigDropdown(parent, config)
 	end)
 
 	local api = {}
-	api.Refresh = function(newList)
-		list = newList or {}
+	api.Refresh = function(a, b)
+		local newList = b
+		if b == nil then
+			newList = a
+		end
+		list = (type(newList) == "table") and newList or {}
 		rebuild()
 	end
 	api.Set = function(v)
