@@ -94,7 +94,19 @@ local function AddStroke(inst, thickness, color, transparency)
 end
 
 local function AddShadow(inst, zindex)
-	return nil
+	local sh = Instance.new("ImageLabel")
+	sh.Name = "Shadow"
+	sh.BackgroundTransparency = 1
+	sh.Image = "rbxassetid://1316045217"
+	sh.ImageColor3 = THEME.Shadow
+	sh.ImageTransparency = 0.65
+	sh.ScaleType = Enum.ScaleType.Slice
+	sh.SliceCenter = Rect.new(10, 10, 118, 118)
+	sh.Size = UDim2.new(1, 34, 1, 34)
+	sh.Position = UDim2.fromOffset(-17, -17)
+	sh.ZIndex = zindex or (inst.ZIndex - 1)
+	sh.Parent = inst
+	return sh
 end
 
 local function AddGradient(inst, c1, c2, rot)
@@ -1156,6 +1168,192 @@ function UI:CreateSection(page, title)
 	SectionAPI.Frame = section
 	SectionAPI.Body = body
 	return SectionAPI
+end
+
+function UI:CreateLabel(sectionBody, opt)
+	opt = opt or {}
+	local text = opt.Text or opt.Name or "Label"
+
+	local row = Instance.new("Frame")
+	row.Name = "Label"
+	row.BackgroundTransparency = 1
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(24))
+	row.ZIndex = 25
+	row.Parent = sectionBody
+
+	local lbl = MakeText(row, tostring(text), 13, "semibold")
+	lbl.ZIndex = 26
+	lbl.Size = UDim2.new(1, -8, 1, 0)
+	lbl.Position = UDim2.fromOffset(8, 0)
+	lbl.TextColor3 = opt.Color or THEME.SubText
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+	local api = {}
+	api.Frame = row
+	api.Label = lbl
+	api.Set = function(a, b)
+		local v = (b == nil) and a or b
+		lbl.Text = tostring(v or "")
+	end
+	return api
+end
+
+function UI:CreateParagraph(sectionBody, opt)
+	opt = opt or {}
+	local title = opt.Title or opt.Name or "Info"
+	local text = opt.Text or ""
+
+	local row = Instance.new("Frame")
+	row.Name = "Paragraph"
+	row.BackgroundColor3 = THEME.Panel2
+	row.BackgroundTransparency = 0.30
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(74))
+	row.ZIndex = 25
+	AddCorner(row, 10)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.60)
+	row.Parent = sectionBody
+
+	local t1 = MakeText(row, tostring(title), 13, "bold")
+	t1.ZIndex = 26
+	t1.Size = UDim2.new(1, -16, 0, ScalePx(20))
+	t1.Position = UDim2.fromOffset(10, 10)
+
+	local t2 = MakeText(row, tostring(text), 12, "")
+	t2.ZIndex = 26
+	t2.TextColor3 = THEME.SubText
+	t2.TextWrapped = true
+	t2.TextYAlignment = Enum.TextYAlignment.Top
+	t2.Size = UDim2.new(1, -16, 1, -ScalePx(34))
+	t2.Position = UDim2.fromOffset(10, ScalePx(30))
+
+	local api = {}
+	api.Frame = row
+	api.Set = function(a, b)
+		local v = (b == nil) and a or b
+		t2.Text = tostring(v or "")
+	end
+	return api
+end
+
+function UI:CreateDivider(sectionBody, opt)
+	opt = opt or {}
+
+	local row = Instance.new("Frame")
+	row.Name = "Divider"
+	row.BackgroundTransparency = 1
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(16))
+	row.ZIndex = 25
+	row.Parent = sectionBody
+
+	local line = Instance.new("Frame")
+	line.Name = "Line"
+	line.BackgroundColor3 = opt.Color or THEME.StrokeSoft
+	line.BackgroundTransparency = 0.55
+	line.BorderSizePixel = 0
+	line.Size = UDim2.new(1, -20, 0, 1)
+	line.Position = UDim2.fromOffset(10, math.floor(row.Size.Y.Offset / 2))
+	line.ZIndex = 26
+	line.Parent = row
+
+	local api = {}
+	api.Frame = row
+	return api
+end
+
+function UI:CreateKeybind(sectionBody, opt)
+	opt = opt or {}
+	local name = opt.Name or "Keybind"
+	local default = opt.Default
+	local cb = opt.Callback or function() end
+	local persistKey = self:_GetPersistKey(sectionBody, "Keybind", name)
+
+	local row = Instance.new("Frame")
+	row.Name = "Row"
+	row.BackgroundColor3 = THEME.Panel2
+	row.BackgroundTransparency = 0.30
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(46))
+	row.ZIndex = 25
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.55)
+	row.Parent = sectionBody
+
+	local title = MakeText(row, name, 13, "semibold")
+	title.ZIndex = 26
+	title.Size = UDim2.new(1, -160, 1, 0)
+	title.Position = UDim2.fromOffset(12, 0)
+
+	local keyBtn = Instance.new("TextButton")
+	keyBtn.Name = "Key"
+	keyBtn.AutoButtonColor = false
+	keyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	keyBtn.BackgroundTransparency = 0.92
+	keyBtn.BorderSizePixel = 0
+	keyBtn.Size = UDim2.fromOffset(120, ScalePx(28))
+	keyBtn.Position = UDim2.new(1, -132, 0.5, -math.floor(ScalePx(28) / 2))
+	keyBtn.ZIndex = 27
+	keyBtn.Font = Enum.Font.Gotham
+	keyBtn.TextSize = ScalePx(12)
+	keyBtn.TextColor3 = THEME.Text
+	keyBtn.Text = "None"
+	AddCorner(keyBtn, 10)
+	AddStroke(keyBtn, 1, THEME.StrokeSoft, 0.55)
+	keyBtn.Parent = row
+
+	local click = MakeButtonBase(row)
+	click.ZIndex = 28
+	click.Size = UDim2.fromScale(1, 1)
+	BindHoverFX(click, row)
+	BindClickFX(click, row)
+
+	local function normKey(k)
+		if typeof(k) == "EnumItem" then
+			return k
+		end
+		return nil
+	end
+
+	local value = normKey(default) or Enum.KeyCode.Unknown
+	local saved = self._UIState[persistKey]
+	if typeof(saved) == "string" and Enum.KeyCode[saved] then
+		value = Enum.KeyCode[saved]
+	end
+
+	local function render()
+		if value and value ~= Enum.KeyCode.Unknown then
+			keyBtn.Text = tostring(value.Name)
+		else
+			keyBtn.Text = "None"
+		end
+	end
+
+	local api = {}
+	api.Frame = row
+	api.Get = function() return value end
+	api.Set = function(a, b)
+		local v = (b == nil) and a or b
+		v = normKey(v) or Enum.KeyCode.Unknown
+		value = v
+		self._UIState[persistKey] = (v and v ~= Enum.KeyCode.Unknown) and v.Name or ""
+		render()
+		pcall(cb, v)
+	end
+	api._PersistKey = persistKey
+	api._SetFromInput = function(kc)
+		api:Set(kc)
+	end
+
+	click.MouseButton1Click:Connect(function()
+		keyBtn.Text = "Press..."
+		UI._AwaitingKeybind = api
+	end)
+
+	render()
+	self._Controls[persistKey] = api
+	return api
 end
 
 function UI:CreateToggle(sectionBody, opt)
@@ -2534,22 +2732,29 @@ function UI:CreateWindow()
 
 	self:_UpdateRightLayout(false)
 
-	UserInputService.InputBegan:Connect(function(input, gpe)
-		if gpe then return end
+	UserInputService.InputBegan:Connect(function(input, gp)
+		if gp then return end
 		if UserInputService:GetFocusedTextBox() then return end
 		if not self._Alive then return end
 
 		if UI._AwaitingKeybind then
+			local awaiting = UI._AwaitingKeybind
 			local kc = input.KeyCode
 			if kc and kc ~= Enum.KeyCode.Unknown then
 				UI._AwaitingKeybind = false
-				UI._Settings.MinimizeKeyCode = kc
-				if UI._KeybindLabel then
-					UI._KeybindLabel.Text = "Minimize Keybind: " .. tostring(kc.Name)
+				if type(awaiting) == "table" and type(awaiting._SetFromInput) == "function" then
+					pcall(function()
+						awaiting._SetFromInput(kc)
+					end)
+				else
+					UI._Settings.MinimizeKeyCode = kc
+					if UI._KeybindLabel then
+						UI._KeybindLabel.Text = "Minimize Keybind: " .. tostring(kc.Name)
+					end
+					pcall(function()
+						UI:_SaveSettings()
+					end)
 				end
-				pcall(function()
-					UI:_SaveSettings()
-				end)
 			end
 			return
 		end
