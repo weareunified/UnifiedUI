@@ -238,8 +238,7 @@ local function AutoCanvas(scrolling, layout)
 end
 
 local UI = {}
-UI.Tabs = {}
-local Tabs = UI.Tabs
+local Tabs = {}
 
 UI._Alive = true
 UI._Open = true
@@ -440,52 +439,6 @@ local function _NormPath(p)
 	p = tostring(p or "")
 	return (p:gsub("\\\\", "/"))
 end
-
-
-local function _TryRejoin()
-	local ts = TeleportService
-	local players = Players
-	local function rejoin()
-		if #players:GetPlayers() <= 1 then
-			players.LocalPlayer:Kick("\nRejoining...")
-			task.wait(0.5)
-			ts:Teleport(game.PlaceId, players.LocalPlayer)
-		else
-			ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, players.LocalPlayer)
-		end
-	end
-	local ok, err = pcall(rejoin)
-	return ok, err
-end
-
-local function _TryServerhop(lowPing)
-	local ts = TeleportService
-	local http = HttpService
-	local function hop()
-		local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100"
-		local raw = game:HttpGet(url)
-		local decoded = http:JSONDecode(raw)
-		if not decoded or not decoded.data then return false, "No servers found" end
-		
-		local servers = decoded.data
-		if lowPing then
-			table.sort(servers, function(a, b) return (a.ping or 999) < (b.ping or 999) end)
-		end
-		
-		for _, s in ipairs(servers) do
-			if s.id ~= game.JobId and (s.playing or 0) < (s.maxPlayers or 12) then
-				ts:TeleportToPlaceInstance(game.PlaceId, s.id, Players.LocalPlayer)
-				return true
-			end
-		end
-		return false, "No suitable server found"
-	end
-	local ok, res = pcall(hop)
-	return ok, res
-end
-
-UI._TryRejoin = _TryRejoin
-UI._TryServerhop = _TryServerhop
 
 local function _SanitizeConfigName(name)
 	name = tostring(name or "")
@@ -1091,31 +1044,27 @@ function UI:CreateSection(page, title)
 	t.ZIndex = 12
 	t.Size = UDim2.new(1, 0, 1, 0)
 	t.Position = UDim2.fromOffset(0, 0)
-	t.TextTransparency = 0
-	t.Visible = true
-	t.Parent = header
 
-	local body = Instance.new("Frame")
+	local body
+	local isTouch = IS_MOBILE
+	body = Instance.new("ScrollingFrame")
+	body.Active = true
+	body.ScrollingEnabled = true
+	body.ScrollBarThickness = isTouch and 4 or 2
+	body.ScrollBarImageColor3 = THEME.Primary
+	body.ScrollBarImageTransparency = 0.55
+	body.ScrollingDirection = Enum.ScrollingDirection.Y
+	body.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+	body.CanvasSize = UDim2.new(0, 0, 0, 0)
+	body.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	body.BorderSizePixel = 0
 	body.Name = "Body"
 	body.BackgroundTransparency = 1
-	body.Size = UDim2.new(1, -12, 1, -ScalePx(50))
-	body.Position = UDim2.fromOffset(6, ScalePx(46))
+	body.Size = UDim2.new(1, -18, 0, 0)
+	body.Position = UDim2.fromOffset(9, ScalePx(50))
 	body.ZIndex = 11
+	body.ClipsDescendants = true
 	body.Parent = section
-
-	local bodyList = Instance.new("UIListLayout")
-	bodyList.SortOrder = Enum.SortOrder.LayoutOrder
-	bodyList.Padding = UDim.new(0, 8)
-	bodyList.Parent = body
-
-	local function updateSectionSize()
-		local contentSize = bodyList.AbsoluteContentSize.Y
-		local headerSize = ScalePx(50)
-		section.Size = UDim2.new(1, 0, 0, contentSize + headerSize + 12)
-	end
-
-	bodyList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSize)
-	updateSectionSize()
 
 	local function FindParentScrollingFrame(node)
 		local cur = node and node.Parent
@@ -1204,9 +1153,8 @@ function UI:CreateSection(page, title)
 	updateSize(false)
 
 	local SectionAPI = {}
-	SectionAPI.Body = body
 	SectionAPI.Frame = section
-
+	SectionAPI.Body = body
 	return SectionAPI
 end
 
@@ -1972,7 +1920,6 @@ function UI:CreateTab(tabInfo)
 	page.Size = UDim2.fromScale(1, 1)
 	page.Visible = false
 	page.ZIndex = 50
-	page.ClipsDescendants = false -- Ensure sections aren't clipped if layout is weird
 	pcall(function()
 		page:SetAttribute("UH_TabName", tostring(name))
 	end)
@@ -2023,13 +1970,8 @@ function UI:CreateTab(tabInfo)
 	local function updateColumns()
 		local padL = pagePad.PaddingLeft.Offset
 		local padR = pagePad.PaddingRight.Offset
-		-- Use a fixed fallback width if AbsoluteSize is 0 (common during init)
-		local pageW = page.AbsoluteSize.X
-		if pageW == 0 then pageW = 580 end 
-		
-		local w = math.max(0, pageW - padL - padR)
+		local w = math.max(0, page.AbsoluteSize.X - padL - padR)
 		local half = math.floor((w - colGap) / 2)
-		
 		col1.Size = UDim2.new(0, half, 0, l1.AbsoluteContentSize.Y)
 		col2.Size = UDim2.new(0, half, 0, l2.AbsoluteContentSize.Y)
 		col2.Position = UDim2.new(0, half + colGap, 0, 0)
@@ -2038,6 +1980,11 @@ function UI:CreateTab(tabInfo)
 		columnsWrap.Size = UDim2.new(1, 0, 0, h)
 		page.CanvasSize = UDim2.new(0, 0, 0, h + 120)
 	end
+
+	page:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateColumns)
+	l1:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateColumns)
+	l2:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateColumns)
+	updateColumns()
 
 	local TabAPI = {}
 	TabAPI.Name = name
@@ -2053,12 +2000,6 @@ function UI:CreateTab(tabInfo)
 	TabAPI._Text = textLbl
 	TabAPI._ActiveGlow = nil
 	TabAPI._Active = false
-
-	TabAPI._UpdateColumns = updateColumns
-	page:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateColumns)
-	l1:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateColumns)
-	l2:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateColumns)
-	updateColumns()
 
 	function TabAPI:CreateSection(title)
 		self._ColIndex += 1
@@ -2131,12 +2072,6 @@ function UI:SelectTab(name)
 
 	nextTab._SetActiveVisual(true)
 	nextTab.Page.Visible = true
-	-- Force immediate layout update for columns
-	pcall(function()
-		if nextTab._UpdateColumns then
-			nextTab._UpdateColumns()
-		end
-	end)
 	local sc2 = nextTab.Page:FindFirstChildOfClass("UIScale")
 	if not sc2 then sc2 = Instance.new("UIScale") sc2.Parent = nextTab.Page end
 	sc2.Scale = 0.985
@@ -2191,12 +2126,9 @@ function UI:CreateWindow()
 	sg.ResetOnSpawn = false
 	sg.IgnoreGuiInset = true
 	sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	sg.DisplayOrder = 100
-	sg.Enabled = true
 
-	local uiParent = GetUIParent()
 	pcall(ProtectGui, sg)
-	sg.Parent = uiParent
+	sg.Parent = GetUIParent()
 
 	local shade = Instance.new("Frame")
 	shade.Name = "Shade"
@@ -2572,7 +2504,6 @@ function UI:CreateWindow()
 	self._TabsHolder = tabsHolder
 	self._Pages = pages
 	self._NotifyStack = notifyStack
-
 	pcall(function()
 		self:_AttachLocalization(sg)
 		self:_ApplyLanguageNow()
