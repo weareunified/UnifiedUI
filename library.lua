@@ -1930,12 +1930,12 @@ function UI:CreateDropdown(sectionBody, opt)
 	valueLbl.Size = UDim2.new(1, -28, 1, 0)
 	valueLbl.Position = UDim2.fromOffset(8, 0)
 
-	local arrow = MakeText(selectBg, "▾", 14, "bold")
+	local arrow = MakeText(selectBg, "▲", 14, "bold")
 	arrow.TextXAlignment = Enum.TextXAlignment.Center
 	arrow.ZIndex = 22
 	arrow.Size = UDim2.fromOffset(22, 22)
 	arrow.Position = UDim2.new(1, -22, 0.5, -11)
-	arrow.Rotation = 0
+	arrow.Rotation = 180
 
 	local click = MakeButtonBase(selectBg)
 	click.ZIndex = 23
@@ -2040,7 +2040,7 @@ function UI:CreateDropdown(sectionBody, opt)
 		openToken += 1
 		local token = openToken
 		opened = state == true
-		Tween(arrow, {Rotation = opened and 180 or 0}, 0.35)
+		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
 		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
 		local contentH = optList.AbsoluteContentSize.Y
 		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
@@ -2144,11 +2144,12 @@ function UI:CreateConfigDropdown(parent, config)
 	valueLbl.Size = UDim2.new(1, -28, 1, 0)
 	valueLbl.Position = UDim2.fromOffset(8, 0)
 
-	local arrow = MakeText(selectBg, "▾", 14, "bold")
+	local arrow = MakeText(selectBg, "▲", 14, "bold")
 	arrow.TextXAlignment = Enum.TextXAlignment.Center
 	arrow.ZIndex = 22
 	arrow.Size = UDim2.fromOffset(22, 22)
 	arrow.Position = UDim2.new(1, -22, 0.5, -11)
+	arrow.Rotation = 180
 
 	local click = MakeButtonBase(selectBg)
 	click.ZIndex = 23
@@ -2192,7 +2193,7 @@ function UI:CreateConfigDropdown(parent, config)
 		openToken += 1
 		local token = openToken
 		opened = state == true
-		Tween(arrow, {Rotation = opened and 180 or 0}, 0.35)
+		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
 		
 		local function updateSizes()
 			local contentH = optList.AbsoluteContentSize.Y
