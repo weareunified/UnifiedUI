@@ -1698,19 +1698,21 @@ function UI:CreateDropdown(sectionBody, opt)
 	BindHoverFX(click, selectBg)
 	BindClickFX(click, selectBg)
 
-	local overlay = nil
-	local backdrop = nil
+	local BASE_H = ScalePx(54)
+	local OPEN_GAP = ScalePx(10)
 
 	local optionsHolder = Instance.new("Frame")
+	optionsHolder.Name = "Options"
 	optionsHolder.BackgroundColor3 = THEME.Panel
 	optionsHolder.BackgroundTransparency = 0.08
-	optionsHolder.Size = UDim2.fromOffset(0, 0)
-	optionsHolder.Position = UDim2.fromOffset(0, 0)
-	optionsHolder.ZIndex = 10000
+	optionsHolder.BorderSizePixel = 0
+	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
+	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
+	optionsHolder.ZIndex = row.ZIndex + 10
 	optionsHolder.ClipsDescendants = true
 	AddCorner(optionsHolder, 12)
 	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.55)
-	optionsHolder.Parent = nil
+	optionsHolder.Parent = row
 
 	local optPad = Instance.new("UIPadding")
 	optPad.PaddingTop = UDim.new(0, 8)
@@ -1779,52 +1781,25 @@ function UI:CreateDropdown(sectionBody, opt)
 		Tween(arrow, {Rotation = opened and 180 or 0}, 0.35)
 		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
 		local contentH = optList.AbsoluteContentSize.Y
-		local h = opened and (contentH + 4) or 0
-		if opened then
-			if not overlay then
-				overlay = row:FindFirstAncestorOfClass("ScreenGui")
-			end
-			if overlay then
-				if not backdrop then
-					backdrop = Instance.new("TextButton")
-					backdrop.Name = "DropdownBackdrop"
-					backdrop.BackgroundTransparency = 1
-					backdrop.Text = ""
-					backdrop.AutoButtonColor = false
-					backdrop.Size = UDim2.fromScale(1, 1)
-					backdrop.Position = UDim2.fromScale(0, 0)
-					backdrop.ZIndex = optionsHolder.ZIndex - 1
-					backdrop.Parent = overlay
-					backdrop.MouseButton1Click:Connect(function()
-						if opened then
-							setOpen(false)
-						end
-					end)
-				else
-					backdrop.Parent = overlay
-				end
-				optionsHolder.Parent = overlay
-				local abs = selectBg.AbsolutePosition
-				local sz = selectBg.AbsoluteSize
-				optionsHolder.Position = UDim2.fromOffset(abs.X, abs.Y + sz.Y + ScalePx(6))
-				optionsHolder.Size = UDim2.fromOffset(sz.X, 0)
-			end
-		else
-			Tween(optionsHolder, {Size = UDim2.fromOffset(optionsHolder.Size.X.Offset, 0)}, 0.18)
-			task.delay(0.19, function()
+		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
+		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
+		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
+
+		if not opened then
+			task.delay(0.23, function()
 				if token ~= openToken then return end
-				if optionsHolder then optionsHolder.Parent = nil end
-				if backdrop then backdrop.Parent = nil end
+				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
+				row.Size = UDim2.new(1, 0, 0, BASE_H)
 			end)
-			return
 		end
-		Tween(optionsHolder, {Size = UDim2.fromOffset(optionsHolder.Size.X.Offset, h)}, 0.22)
 	end
 
 	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		if opened then
 			local contentH = optList.AbsoluteContentSize.Y
-			Tween(optionsHolder, {Size = UDim2.fromOffset(optionsHolder.Size.X.Offset, contentH + 4)}, 0.25)
+			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
+			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
+			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
 		end
 	end)
 
