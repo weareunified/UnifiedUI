@@ -1977,7 +1977,9 @@ function UI:CreateDropdown(sectionBody, opt)
 
 	local function rebuild()
 		for _, ch in ipairs(optionsHolder:GetChildren()) do
-			if ch:IsA("Frame") then ch:Destroy() end
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then 
+				ch:Destroy() 
+			end
 		end
 		for i, item in ipairs(list) do
 			local optRow = Instance.new("Frame")
@@ -2006,9 +2008,6 @@ function UI:CreateDropdown(sectionBody, opt)
 				valueLbl.Text = tostring(item)
 				valueLbl.TextColor3 = THEME.Text
 				self._UIState[persistKey] = _StripRichText(value)
-				-- pcall(function()
-				-- 	self:_SaveSettings()
-				-- end) -- Disabled Auto Saving
 				task.spawn(function()
 					pcall(cb, _StripRichText(value))
 				end)
