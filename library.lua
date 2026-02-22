@@ -107,22 +107,16 @@ local function MakeText(parent, text, size, weight)
 	lbl.BackgroundTransparency = 1
 	lbl.Text = text or ""
 	pcall(function()
-		if lbl:GetAttribute("UH_OrigText") == nil then
-			lbl:SetAttribute("UH_OrigText", tostring(text or ""))
-		end
+		lbl:SetAttribute("UH_OrigText", tostring(text or ""))
 	end)
+	lbl.Font = (weight == "bold") and Enum.Font.GothamBold or (weight == "semibold" and Enum.Font.GothamSemibold or Enum.Font.GothamMedium)
+	lbl.TextSize = (size or 14) * TEXT_SCALE
 	lbl.TextColor3 = THEME.Text
-	lbl.TextSize = math.floor(((size or 14) * TEXT_SCALE) + 0.5)
-	lbl.Font = Enum.Font.Gotham
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	lbl.TextYAlignment = Enum.TextYAlignment.Center
 	lbl.RichText = true
+	lbl.ClipsDescendants = true
 	lbl.Parent = parent
-	if weight == "bold" then
-		lbl.Font = Enum.Font.GothamBold
-	elseif weight == "semibold" then
-		lbl.Font = Enum.Font.GothamSemibold
-	end
 	return lbl
 end
 
@@ -341,6 +335,22 @@ UI._Translations = {
 	},
 }
 
+function UI:MergeTranslations(tbl)
+	if type(tbl) ~= "table" then return false end
+	self._Translations = self._Translations or {}
+	for lang, dict in pairs(tbl) do
+		if type(lang) == "string" and type(dict) == "table" then
+			self._Translations[lang] = self._Translations[lang] or {}
+			for k, v in pairs(dict) do
+				if type(k) == "string" and type(v) == "string" then
+					self._Translations[lang][k] = v
+				end
+			end
+		end
+	end
+	return true
+end
+
 function UI:_TranslateText(original)
 	original = tostring(original or "")
 	local lang = (self._Settings and self._Settings.Language) or "English"
@@ -382,6 +392,33 @@ function UI:_ApplyLanguageToObject(obj)
 		if obj.Text ~= newText then
 			obj.Text = newText
 		end
+	elseif obj:IsA("Frame") or obj:IsA("ScrollingFrame") then
+		local tabOrig = obj:GetAttribute("UH_TabName")
+		if tabOrig then
+			local newTab = self:_TranslateText(tabOrig)
+			obj:SetAttribute("UH_TabName_Translated", newTab)
+			for _, child in ipairs(obj:GetDescendants()) do
+				if child:IsA("TextLabel") and (child:GetAttribute("UH_OrigText") == tabOrig or child.Text == tabOrig) then
+					child.Text = newTab
+					if not child:GetAttribute("UH_OrigText") then
+						child:SetAttribute("UH_OrigText", tabOrig)
+					end
+				end
+			end
+		end
+		local secOrig = obj:GetAttribute("UH_SectionTitle")
+		if secOrig then
+			local newSec = self:_TranslateText(secOrig)
+			obj:SetAttribute("UH_SectionTitle_Translated", newSec)
+			for _, child in ipairs(obj:GetDescendants()) do
+				if child:IsA("TextLabel") and (child:GetAttribute("UH_OrigText") == secOrig or child.Text == secOrig) then
+					child.Text = newSec
+					if not child:GetAttribute("UH_OrigText") then
+						child:SetAttribute("UH_OrigText", secOrig)
+					end
+				end
+			end
+		end
 	end
 end
 
@@ -406,7 +443,6 @@ function UI:SetLanguage(lang)
 	end
 	self._Settings.Language = lang
 	pcall(function()
-		-- self:_SaveSettings() -- Disabled Auto Saving
 	end)
 	local sg = self.ScreenGui
 	if sg and sg.Parent then
@@ -596,6 +632,7 @@ function UI:_LoadConfig(name)
 	end)
 	if not ok or type(decoded) ~= "table" then return false end
 	local loadedOpacity = nil
+	local loadedLanguage = nil
 	if type(decoded.Settings) == "table" then
 		if typeof(decoded.Settings.MinimizeKeyCode) == "string" and Enum.KeyCode[decoded.Settings.MinimizeKeyCode] then
 			self._Settings.MinimizeKeyCode = Enum.KeyCode[decoded.Settings.MinimizeKeyCode]
@@ -606,6 +643,10 @@ function UI:_LoadConfig(name)
 		if type(decoded.Settings.Opacity) == "number" then
 			loadedOpacity = decoded.Settings.Opacity
 			self._Settings.Opacity = decoded.Settings.Opacity
+		end
+		if type(decoded.Settings.Language) == "string" then
+			loadedLanguage = decoded.Settings.Language
+			self._Settings.Language = decoded.Settings.Language
 		end
 	end
 	if type(decoded.UIState) == "table" then
@@ -630,6 +671,15 @@ function UI:_LoadConfig(name)
 		if self._Main and self._Settings.Opacity then
 			self._Main.BackgroundTransparency = 1 - (self._Settings.Opacity / 100)
 		end
+		if loadedLanguage ~= nil then
+			pcall(function()
+				self:SetLanguage(loadedLanguage)
+			end)
+		else
+			pcall(function()
+				self:_ApplyLanguageNow()
+			end)
+		end
 	end)
 	return true
 end
@@ -642,6 +692,7 @@ function UI:_SaveConfig(name)
 			MinimizeKeyCode = (self._Settings and self._Settings.MinimizeKeyCode and self._Settings.MinimizeKeyCode.Name) or "RightControl",
 			NotificationsEnabled = (self._Settings and self._Settings.NotificationsEnabled) ~= false,
 			Opacity = (self._Settings and self._Settings.Opacity) or 90,
+			Language = (self._Settings and self._Settings.Language) or "English",
 		},
 		UIState = self._UIState,
 	}
@@ -691,7 +742,6 @@ function UI:_GetPersistKey(sectionBody, controlType, controlName)
 end
 
 	pcall(function()
-		-- UI:_LoadSettings() -- Disabled Auto Loading
 	end)
 
 function UI:_QueueOnTeleport()
@@ -1014,6 +1064,187 @@ local function CreateParticles(parent)
 	return holder
 end
 
+function UI:CreateTab(opt)
+	opt = opt or {}
+	local name = opt.Name or "Tab"
+	local icon = opt.Icon
+	
+	local page = Instance.new("ScrollingFrame")
+	page.Name = name .. "Page"
+	page.BackgroundTransparency = 1
+	page.BorderSizePixel = 0
+	page.Size = UDim2.fromScale(1, 1)
+	page.ScrollBarThickness = 2
+	page.ScrollBarImageColor3 = THEME.Primary
+	page.Visible = false
+	page.ZIndex = 50
+	pcall(function()
+		page:SetAttribute("UH_TabName", name)
+	end)
+	page.Parent = self._Pages
+
+	local pageList = Instance.new("UIListLayout")
+	pageList.SortOrder = Enum.SortOrder.LayoutOrder
+	pageList.Padding = UDim.new(0, 12)
+	pageList.Parent = page
+
+	local pagePad = Instance.new("UIPadding")
+	pagePad.PaddingTop = UDim.new(0, 2)
+	pagePad.PaddingBottom = UDim.new(0, 20)
+	pagePad.PaddingLeft = UDim.new(0, 2)
+	pagePad.PaddingRight = UDim.new(0, 2)
+	pagePad.Parent = page
+
+	AutoCanvas(page, pageList)
+
+	local tabBtn = {
+		Name = name,
+		Page = page,
+	}
+
+	function tabBtn:CreateSection(title)
+		local section = Instance.new("Frame")
+		section.Name = title or "Section"
+		section.BackgroundColor3 = THEME.Panel
+		section.BorderSizePixel = 0
+		section.Size = UDim2.new(1, 0, 0, ScalePx(54))
+		section.ZIndex = 10
+		pcall(function()
+			section:SetAttribute("UH_SectionTitle", tostring(title or "Section"))
+		end)
+		AddCorner(section, 12)
+		AddGradient(section, THEME.Surface, THEME.Panel, 90)
+		section.Parent = page
+
+		local header = Instance.new("Frame")
+		header.Name = "Header"
+		header.BackgroundTransparency = 1
+		header.Size = UDim2.new(1, -28, 0, ScalePx(34))
+		header.Position = UDim2.fromOffset(14, 0)
+		header.ZIndex = 11
+		header.Parent = section
+
+		local t = MakeText(header, title or "Section", 14, "bold")
+		t.ZIndex = 12
+		t.Size = UDim2.new(1, 0, 1, 0)
+		t.Position = UDim2.fromOffset(0, 0)
+
+		local sectionBody = Instance.new("Frame")
+		sectionBody.Name = "Body"
+		sectionBody.BackgroundTransparency = 1
+		sectionBody.ClipsDescendants = true
+		sectionBody.Size = UDim2.new(1, 0, 0, 0)
+		sectionBody.Position = UDim2.fromOffset(0, ScalePx(34))
+		sectionBody.ZIndex = 11
+		sectionBody.Parent = section
+
+		local bodyList = Instance.new("UIListLayout")
+		bodyList.SortOrder = Enum.SortOrder.LayoutOrder
+		bodyList.Padding = UDim.new(0, 8)
+		bodyList.Parent = sectionBody
+
+		local bodyPad = Instance.new("UIPadding")
+		bodyPad.PaddingTop = UDim.new(0, 0)
+		bodyPad.PaddingBottom = UDim.new(0, 14)
+		bodyPad.PaddingLeft = UDim.new(0, 0)
+		bodyPad.PaddingRight = UDim.new(0, 0)
+		bodyPad.Parent = sectionBody
+
+		bodyList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			local h = bodyList.AbsoluteContentSize.Y + bodyPad.PaddingBottom.Offset
+			sectionBody.Size = UDim2.new(1, 0, 0, h)
+			section.Size = UDim2.new(1, 0, 0, h + ScalePx(34))
+		end)
+
+		return {
+			Body = sectionBody,
+			Section = section
+		}
+	end
+
+	function tabBtn:CreateLockedSection(title)
+		local s = self:CreateSection(title)
+		local header = s.Section:FindFirstChild("Header")
+		if header then
+			local pill = Instance.new("Frame")
+			pill.Name = "LockedPill"
+			pill.BackgroundColor3 = THEME.BG
+			pill.Size = UDim2.fromOffset(60, 18)
+			pill.Position = UDim2.new(1, -65, 0.5, -9)
+			pill.ZIndex = header.ZIndex + 1
+			AddCorner(pill, 8)
+			AddStroke(pill, 1, THEME.StrokeSoft, 0.6)
+			pill.Parent = header
+
+			local ptxt = MakeText(pill, "LOCKED", 11, "bold")
+			ptxt.ZIndex = pill.ZIndex + 1
+			ptxt.TextColor3 = THEME.SubText
+			ptxt.TextXAlignment = Enum.TextXAlignment.Center
+			ptxt.Size = UDim2.fromScale(1, 1)
+			ptxt.Parent = pill
+		end
+		
+		local overlay = Instance.new("TextButton")
+		overlay.Name = "LockedOverlay"
+		overlay.BackgroundTransparency = 1
+		overlay.Size = UDim2.fromScale(1, 1)
+		overlay.ZIndex = 50
+		overlay.Text = ""
+		overlay.Parent = s.Section
+		
+		overlay.MouseButton1Click:Connect(function()
+			UI:Notify("Premium", "This section is locked! Redeem a key in the Premium tab.", 3)
+		end)
+		
+		return s
+	end
+
+	table.insert(Tabs, tabBtn)
+	
+	local sidebar = self._Main:FindFirstChild("Sidebar")
+	local tabList = sidebar and sidebar:FindFirstChild("TabList")
+	
+	if tabList then
+		local surface = Instance.new("Frame")
+		surface.Name = name .. "Tab"
+		surface.BackgroundColor3 = THEME.Primary
+		surface.BackgroundTransparency = 1
+		surface.Size = UDim2.new(1, -12, 0, 32)
+		surface.ZIndex = 32
+		AddCorner(surface, 8)
+		surface.Parent = tabList
+
+		local btn = MakeButtonBase(surface)
+		btn.ZIndex = 35
+		btn.Size = UDim2.fromScale(1, 1)
+		
+		if icon then
+			local iconLabel = Instance.new("ImageLabel")
+			iconLabel.Name = "Icon"
+			iconLabel.BackgroundTransparency = 1
+			iconLabel.Image = icon
+			iconLabel.Size = UDim2.fromOffset(18, 18)
+			iconLabel.Position = UDim2.fromOffset(8, 7)
+			iconLabel.ZIndex = 34
+			iconLabel.Parent = surface
+		end
+
+		local textLbl = MakeText(surface, name, 12, "semibold")
+		textLbl.ZIndex = 34
+		textLbl.Size = UDim2.new(1, icon and -34 or -16, 1, 0)
+		textLbl.Position = UDim2.fromOffset(icon and 30 or 12, 0)
+		textLbl.Parent = surface
+
+		btn.MouseButton1Click:Connect(function()
+			self:SelectTab(name)
+		end)
+		
+		tabBtn.Surface = surface
+	end
+
+	return tabBtn
+end
+
 function UI:CreateSection(page, title)
 	local section = Instance.new("Frame")
 	section.Name = "Section"
@@ -1316,9 +1547,6 @@ function UI:CreateToggle(sectionBody, opt)
 		value = not value
 		render(true)
 		self._UIState[persistKey] = value
-		-- pcall(function()
-		-- 	self:_SaveSettings()
-		-- end) -- Disabled Auto Saving
 		task.spawn(function()
 			pcall(cb, value)
 		end)
@@ -1334,9 +1562,6 @@ function UI:CreateToggle(sectionBody, opt)
 		value = (v == true)
 		render(true)
 		self._UIState[persistKey] = value
-		-- pcall(function()
-		-- 	self:_SaveSettings()
-		-- end) -- Disabled Auto Saving
 		pcall(cb, value)
 	end
 	self._Controls[persistKey] = api
@@ -1660,9 +1885,6 @@ function UI:CreateTextbox(sectionBody, opt)
 	box.FocusLost:Connect(function(enterPressed)
 		Tween(glow, {Transparency = 1}, 0.22)
 		self._UIState[persistKey] = box.Text
-		-- pcall(function()
-		-- 	self:_SaveSettings()
-		-- end) -- Disabled Auto Saving
 		task.spawn(function()
 			pcall(cb, box.Text, enterPressed)
 		end)
@@ -1675,9 +1897,6 @@ function UI:CreateTextbox(sectionBody, opt)
 		local v = (b == nil) and a or b
 		box.Text = tostring(v or "")
 		self._UIState[persistKey] = box.Text
-		-- pcall(function()
-		-- 	self:_SaveSettings()
-		-- end) -- Disabled Auto Saving
 		pcall(cb, box.Text, false)
 	end
 	self._Controls[persistKey] = api
@@ -1828,9 +2047,6 @@ function UI:CreateSlider(sectionBody, opt)
 			value = newVal
 			render(true)
 			self._UIState[persistKey] = value
-			-- pcall(function()
-			-- 	self:_SaveSettings()
-			-- end) -- Disabled Auto Saving
 			if fire then
 				task.spawn(function()
 					pcall(cb, value)
@@ -1869,9 +2085,6 @@ function UI:CreateSlider(sectionBody, opt)
 		value = clampStep(tonumber(v) or min)
 		render(true)
 		self._UIState[persistKey] = value
-		-- pcall(function()
-		-- 	self:_SaveSettings()
-		-- end) -- Disabled Auto Saving
 		pcall(cb, value)
 	end
 	self._Controls[persistKey] = api
@@ -2023,7 +2236,6 @@ function UI:CreateDropdown(sectionBody, opt)
 			end
 		end
 		
-		-- Force a layout update before measuring
 		optList:ApplyLayout()
 		
 		if opened then
@@ -2082,9 +2294,6 @@ function UI:CreateDropdown(sectionBody, opt)
 		valueLbl.Text = (v ~= "") and v or "Select..."
 		valueLbl.TextColor3 = (v ~= "") and THEME.Text or THEME.SubText
 		self._UIState[persistKey] = _StripRichText(value)
-		-- pcall(function()
-		-- 	self:_SaveSettings()
-		-- end) -- Disabled Auto Saving
 		pcall(cb, _StripRichText(value))
 	end
 	api.Refresh = function(a, b)
@@ -2268,7 +2477,6 @@ function UI:CreateConfigDropdown(parent, config)
 				end)
 			end
 		else
-			-- Placeholder if list is empty
 			itemCount = 1
 			local optRow = Instance.new("Frame")
 			optRow.Name = "NoConfigs"
@@ -2285,8 +2493,7 @@ function UI:CreateConfigDropdown(parent, config)
 		
 		optList:ApplyLayout()
 		
-		-- Immediately force update size calculation after rebuild
-		task.wait() -- Smallest possible yield to let layout absolute size update
+		task.wait()
 		local contentH = optList.AbsoluteContentSize.Y
 		if opened then
 			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
@@ -2743,7 +2950,6 @@ function UI:CreateWindow()
 	end)
 
 	if isMobile then
-		-- Draggable maximize button for mobile
 		local dragging = false
 		local dragStart, startPos
 		local moved = false
