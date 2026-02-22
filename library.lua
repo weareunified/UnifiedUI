@@ -1981,8 +1981,12 @@ function UI:CreateDropdown(sectionBody, opt)
 				ch:Destroy() 
 			end
 		end
+		
+		local itemCount = 0
 		for i, item in ipairs(list) do
+			itemCount = itemCount + 1
 			local optRow = Instance.new("Frame")
+			optRow.Name = "Option_" .. tostring(i)
 			optRow.BackgroundColor3 = THEME.Panel
 			optRow.BackgroundTransparency = 0.12
 			optRow.BorderSizePixel = 0
@@ -2013,6 +2017,14 @@ function UI:CreateDropdown(sectionBody, opt)
 				end)
 				setOpen(false)
 			end)
+		end
+		
+		-- Update height if already open
+		if opened then
+			local contentH = optList.AbsoluteContentSize.Y
+			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
+			optionsHolder.Size = UDim2.new(1, -28, 0, h)
+			row.Size = UDim2.new(1, 0, 0, BASE_H + (h > 0 and (h + OPEN_GAP) or 0))
 		end
 	end
 
