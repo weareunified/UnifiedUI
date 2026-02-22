@@ -2189,10 +2189,15 @@ function UI:CreateConfigDropdown(parent, config)
 		local token = openToken
 		opened = state == true
 		Tween(arrow, {Rotation = opened and 180 or 0}, 0.35)
-		local contentH = optList.AbsoluteContentSize.Y
-		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
-		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
+		
+		local function updateSizes()
+			local contentH = optList.AbsoluteContentSize.Y
+			local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
+			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
+			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
+		end
+		
+		updateSizes()
 
 		if not opened then
 			task.delay(0.23, function()
@@ -2202,6 +2207,15 @@ function UI:CreateConfigDropdown(parent, config)
 			end)
 		end
 	end
+
+	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		if opened then
+			local contentH = optList.AbsoluteContentSize.Y
+			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
+			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
+			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
+		end
+	end)
 
 	local function rebuild()
 		if not optionsHolder or not optionsHolder.Parent then return end
@@ -2213,7 +2227,7 @@ function UI:CreateConfigDropdown(parent, config)
 		end
 		
 		local itemCount = 0
-		if type(list) == "table" then
+		if type(list) == "table" and #list > 0 then
 			for i, item in ipairs(list) do
 				itemCount = itemCount + 1
 				local optRow = Instance.new("Frame")
@@ -2248,12 +2262,28 @@ function UI:CreateConfigDropdown(parent, config)
 					setOpen(false)
 				end)
 			end
+		else
+			-- Placeholder if list is empty
+			itemCount = 1
+			local optRow = Instance.new("Frame")
+			optRow.Name = "NoConfigs"
+			optRow.BackgroundTransparency = 1
+			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
+			optRow.Parent = optionsHolder
+			
+			local t = MakeText(optRow, "No configs found", 12, "")
+			t.TextColor3 = THEME.SubText
+			t.TextXAlignment = Enum.TextXAlignment.Center
+			t.Size = UDim2.fromScale(1, 1)
+			t.Parent = optRow
 		end
 		
 		optList:ApplyLayout()
 		
+		-- Immediately force update size calculation after rebuild
+		task.wait() -- Smallest possible yield to let layout absolute size update
+		local contentH = optList.AbsoluteContentSize.Y
 		if opened then
-			local contentH = optList.AbsoluteContentSize.Y
 			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
 			optionsHolder.Size = UDim2.new(1, -28, 0, h)
 			row.Size = UDim2.new(1, 0, 0, BASE_H + (h > 0 and (h + OPEN_GAP) or 0))
