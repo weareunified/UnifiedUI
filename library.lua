@@ -2309,7 +2309,11 @@ function UI:CreateConfigDropdown(parent, config)
 		list = (type(newList) == "table") and newList or {}
 		rebuild()
 	end
-	api.Set = function(v)
+	api.Set = function(a, b)
+		local v = b
+		if b == nil then
+			v = a
+		end
 		value = tostring(v or "")
 		valueLbl.Text = (value ~= "") and value or "Select..."
 		valueLbl.TextColor3 = (value ~= "") and THEME.Text or THEME.SubText
