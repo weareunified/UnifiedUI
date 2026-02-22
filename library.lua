@@ -255,6 +255,9 @@ UI._AwaitingKeybind = false
 UI._KeybindButton = nil
 UI._KeybindLabel = nil
 
+UI._AwaitingBind = nil
+UI._BindControls = {}
+
 UI._UIState = {}
 UI._Controls = {}
 
@@ -1289,6 +1292,139 @@ function UI:CreateToggle(sectionBody, opt)
 		pcall(cb, value)
 	end
 	self._Controls[persistKey] = api
+	return api
+end
+
+function UI:CreateBind(sectionBody, opt)
+	opt = opt or {}
+	local name = opt.Name or "Bind"
+	local default = opt.Default
+	local onPress = opt.Callback or function() end
+	local onChanged = opt.Changed
+	local persistKey = self:_GetPersistKey(sectionBody, "Bind", name)
+
+	if self._UIState and self._UIState[persistKey] ~= nil then
+		default = self._UIState[persistKey]
+	end
+
+	local keyCode = nil
+	pcall(function()
+		if typeof(default) == "EnumItem" and default.EnumType == Enum.KeyCode then
+			keyCode = default
+		elseif type(default) == "string" and Enum.KeyCode[default] then
+			keyCode = Enum.KeyCode[default]
+		end
+	end)
+
+	local row = Instance.new("Frame")
+	row.Name = "Bind"
+	row.BackgroundColor3 = THEME.Panel2
+	row.BackgroundTransparency = 0.25
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(46))
+	row.ZIndex = 20
+	AddCorner(row, 14)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	row.Parent = sectionBody
+
+	local lbl = MakeText(row, name, 13, "semibold")
+	lbl.ZIndex = 22
+	lbl.Size = UDim2.new(1, -160, 1, 0)
+	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.TextYAlignment = Enum.TextYAlignment.Center
+
+	local keyBtn = Instance.new("Frame")
+	keyBtn.Name = "Key"
+	keyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	keyBtn.BackgroundTransparency = 0.92
+	keyBtn.BorderSizePixel = 0
+	keyBtn.Size = UDim2.fromOffset(132, ScalePx(28))
+	keyBtn.Position = UDim2.new(1, -14, 0.5, 0)
+	keyBtn.AnchorPoint = Vector2.new(1, 0.5)
+	keyBtn.ZIndex = 21
+	AddCorner(keyBtn, 10)
+	AddStroke(keyBtn, 1, THEME.StrokeSoft, 0.55)
+	keyBtn.Parent = row
+
+	local glow = Instance.new("UIStroke")
+	glow.Thickness = 2
+	glow.Color = THEME.Primary
+	glow.Transparency = 1
+	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	glow.Parent = keyBtn
+
+	local keyLbl = MakeText(keyBtn, "None", 12, "")
+	keyLbl.ZIndex = 22
+	keyLbl.TextXAlignment = Enum.TextXAlignment.Center
+	keyLbl.Size = UDim2.fromScale(1, 1)
+	keyLbl.Position = UDim2.fromOffset(0, 0)
+
+	local click = MakeButtonBase(keyBtn)
+	click.ZIndex = 23
+	click.Size = UDim2.fromScale(1, 1)
+	BindHoverFX(click, keyBtn)
+	BindClickFX(click, keyBtn)
+
+	local awaiting = false
+
+	local function render()
+		if awaiting then
+			keyLbl.Text = "Press a key..."
+			keyLbl.TextColor3 = THEME.SubText
+			return
+		end
+		if typeof(keyCode) == "EnumItem" and keyCode.EnumType == Enum.KeyCode and keyCode ~= Enum.KeyCode.Unknown then
+			keyLbl.Text = tostring(keyCode.Name)
+			keyLbl.TextColor3 = THEME.Text
+		else
+			keyLbl.Text = "None"
+			keyLbl.TextColor3 = THEME.SubText
+		end
+	end
+
+	local function setKey(kc)
+		keyCode = kc
+		awaiting = false
+		render()
+		self._UIState[persistKey] = (typeof(keyCode) == "EnumItem" and keyCode.Name) or ""
+		if type(onChanged) == "function" then
+			pcall(onChanged, keyCode)
+		end
+	end
+
+	click.MouseButton1Click:Connect(function()
+		awaiting = true
+		render()
+		Tween(glow, {Transparency = 0.35}, 0.12)
+		self._AwaitingBind = {
+			Key = persistKey,
+			Set = setKey,
+			Glow = glow,
+		}
+	end)
+
+	render()
+
+	local api = {}
+	api.Frame = row
+	api.Get = function() return keyCode end
+	api.Set = function(a, b)
+		local v = (b == nil) and a or b
+		local kc = nil
+		if typeof(v) == "EnumItem" and v.EnumType == Enum.KeyCode then
+			kc = v
+		elseif type(v) == "string" and Enum.KeyCode[v] then
+			kc = Enum.KeyCode[v]
+		end
+		setKey(kc)
+	end
+	api.Trigger = function()
+		pcall(onPress)
+	end
+	api._KeyCode = function() return keyCode end
+
+	self._Controls[persistKey] = api
+	self._BindControls[persistKey] = api
 	return api
 end
 
@@ -2542,8 +2678,42 @@ function UI:CreateWindow()
 			return
 		end
 
+		if UI._AwaitingBind ~= nil then
+			local pending = UI._AwaitingBind
+			local kc = input.KeyCode
+			UI._AwaitingBind = nil
+			if pending and type(pending.Set) == "function" then
+				if kc == Enum.KeyCode.Escape then
+					pcall(pending.Set, nil)
+				elseif kc and kc ~= Enum.KeyCode.Unknown then
+					pcall(pending.Set, kc)
+				end
+			end
+			pcall(function()
+				if pending and pending.Glow then
+					Tween(pending.Glow, {Transparency = 1}, 0.12)
+				end
+			end)
+			return
+		end
+
 		if input.KeyCode == (self._Settings and self._Settings.MinimizeKeyCode) then
 			self:SetOpen(not self._Open)
+			return
+		end
+
+		local binds = UI._BindControls
+		if type(binds) == "table" then
+			for _, api in pairs(binds) do
+				if api and type(api._KeyCode) == "function" then
+					local kc = api._KeyCode()
+					if kc and input.KeyCode == kc then
+						if type(api.Trigger) == "function" then
+							task.spawn(api.Trigger)
+						end
+					end
+				end
+			end
 		end
 	end)
 
