@@ -1702,12 +1702,22 @@ function UI:CreateDropdown(sectionBody, opt)
 	local backdrop = nil
 
 	local optionsHolder = Instance.new("Frame")
-	optionsHolder.BackgroundTransparency = 1
+	optionsHolder.BackgroundColor3 = THEME.Panel
+	optionsHolder.BackgroundTransparency = 0.08
 	optionsHolder.Size = UDim2.fromOffset(0, 0)
 	optionsHolder.Position = UDim2.fromOffset(0, 0)
 	optionsHolder.ZIndex = 10000
 	optionsHolder.ClipsDescendants = true
+	AddCorner(optionsHolder, 12)
+	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.55)
 	optionsHolder.Parent = nil
+
+	local optPad = Instance.new("UIPadding")
+	optPad.PaddingTop = UDim.new(0, 8)
+	optPad.PaddingBottom = UDim.new(0, 8)
+	optPad.PaddingLeft = UDim.new(0, 8)
+	optPad.PaddingRight = UDim.new(0, 8)
+	optPad.Parent = optionsHolder
 
 	local optList = Instance.new("UIListLayout")
 	optList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -1716,6 +1726,7 @@ function UI:CreateDropdown(sectionBody, opt)
 
 	local opened = false
 	local value = default
+	local openToken = 0
 
 	local function rebuild()
 		for _, ch in ipairs(optionsHolder:GetChildren()) do
@@ -1726,7 +1737,7 @@ function UI:CreateDropdown(sectionBody, opt)
 			optRow.BackgroundColor3 = THEME.Panel
 			optRow.BackgroundTransparency = 0.12
 			optRow.BorderSizePixel = 0
-			optRow.Size = UDim2.new(1, 0, 0, 34)
+			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
 			optRow.ZIndex = optionsHolder.ZIndex + 1
 			AddCorner(optRow, 10)
 			AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
@@ -1754,12 +1765,7 @@ function UI:CreateDropdown(sectionBody, opt)
 				task.spawn(function()
 					pcall(cb, _StripRichText(value))
 				end)
-				opened = false
-				Tween(arrow, {Rotation = 0}, 0.35)
-				Tween(glow, {Transparency = 1}, 0.22)
-				local h = 0
-				Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.35)
-				Tween(row, {Size = UDim2.new(1, 0, 0, ScalePx(54))}, 0.35)
+				setOpen(false)
 			end)
 		end
 	end
@@ -1767,7 +1773,9 @@ function UI:CreateDropdown(sectionBody, opt)
 	rebuild()
 
 	local function setOpen(state)
-		opened = state
+		openToken += 1
+		local token = openToken
+		opened = state == true
 		Tween(arrow, {Rotation = opened and 180 or 0}, 0.35)
 		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
 		local contentH = optList.AbsoluteContentSize.Y
@@ -1802,10 +1810,15 @@ function UI:CreateDropdown(sectionBody, opt)
 				optionsHolder.Size = UDim2.fromOffset(sz.X, 0)
 			end
 		else
-			if optionsHolder then optionsHolder.Parent = nil end
-			if backdrop then backdrop.Parent = nil end
+			Tween(optionsHolder, {Size = UDim2.fromOffset(optionsHolder.Size.X.Offset, 0)}, 0.18)
+			task.delay(0.19, function()
+				if token ~= openToken then return end
+				if optionsHolder then optionsHolder.Parent = nil end
+				if backdrop then backdrop.Parent = nil end
+			end)
+			return
 		end
-		Tween(optionsHolder, {Size = UDim2.fromOffset(optionsHolder.Size.X.Offset, h)}, 0.35)
+		Tween(optionsHolder, {Size = UDim2.fromOffset(optionsHolder.Size.X.Offset, h)}, 0.22)
 	end
 
 	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
