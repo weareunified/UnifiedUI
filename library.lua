@@ -1976,6 +1976,8 @@ function UI:CreateDropdown(sectionBody, opt)
 	local openToken = 0
 
 	local function rebuild()
+		if not optionsHolder or not optionsHolder.Parent then return end
+		
 		for _, ch in ipairs(optionsHolder:GetChildren()) do
 			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then 
 				ch:Destroy() 
@@ -1983,43 +1985,47 @@ function UI:CreateDropdown(sectionBody, opt)
 		end
 		
 		local itemCount = 0
-		for i, item in ipairs(list) do
-			itemCount = itemCount + 1
-			local optRow = Instance.new("Frame")
-			optRow.Name = "Option_" .. tostring(i)
-			optRow.BackgroundColor3 = THEME.Panel
-			optRow.BackgroundTransparency = 0.12
-			optRow.BorderSizePixel = 0
-			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-			optRow.ZIndex = optionsHolder.ZIndex + 1
-			AddCorner(optRow, 10)
-			AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
-			optRow.Parent = optionsHolder
+		if type(list) == "table" then
+			for i, item in ipairs(list) do
+				itemCount = itemCount + 1
+				local optRow = Instance.new("Frame")
+				optRow.Name = "Option_" .. tostring(i)
+				optRow.BackgroundColor3 = THEME.Panel
+				optRow.BackgroundTransparency = 0.12
+				optRow.BorderSizePixel = 0
+				optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
+				optRow.ZIndex = optionsHolder.ZIndex + 1
+				AddCorner(optRow, 10)
+				AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
+				optRow.Parent = optionsHolder
 
-			local optBtn = MakeButtonBase(optRow)
-			optBtn.ZIndex = optRow.ZIndex + 1
-			optBtn.Size = UDim2.fromScale(1, 1)
-			BindHoverFX(optBtn, optRow)
-			BindClickFX(optBtn, optRow)
+				local optBtn = MakeButtonBase(optRow)
+				optBtn.ZIndex = optRow.ZIndex + 1
+				optBtn.Size = UDim2.fromScale(1, 1)
+				BindHoverFX(optBtn, optRow)
+				BindClickFX(optBtn, optRow)
 
-			local t = MakeText(optRow, tostring(item), 12, "")
-			t.ZIndex = optBtn.ZIndex + 1
-			t.Size = UDim2.new(1, -18, 1, 0)
-			t.Position = UDim2.fromOffset(10, 0)
+				local t = MakeText(optRow, tostring(item), 12, "")
+				t.ZIndex = optBtn.ZIndex + 1
+				t.Size = UDim2.new(1, -18, 1, 0)
+				t.Position = UDim2.fromOffset(10, 0)
 
-			optBtn.MouseButton1Click:Connect(function()
-				value = item
-				valueLbl.Text = tostring(item)
-				valueLbl.TextColor3 = THEME.Text
-				self._UIState[persistKey] = _StripRichText(value)
-				task.spawn(function()
-					pcall(cb, _StripRichText(value))
+				optBtn.MouseButton1Click:Connect(function()
+					value = item
+					valueLbl.Text = tostring(item)
+					valueLbl.TextColor3 = THEME.Text
+					self._UIState[persistKey] = _StripRichText(value)
+					task.spawn(function()
+						pcall(cb, _StripRichText(value))
+					end)
+					setOpen(false)
 				end)
-				setOpen(false)
-			end)
+			end
 		end
 		
-		-- Update height if already open
+		-- Force a layout update before measuring
+		optList:ApplyLayout()
+		
 		if opened then
 			local contentH = optList.AbsoluteContentSize.Y
 			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
@@ -2082,9 +2088,13 @@ function UI:CreateDropdown(sectionBody, opt)
 		pcall(cb, _StripRichText(value))
 	end
 	api.Refresh = function(newList)
-		list = newList or list
+		if type(newList) == "table" then
+			list = newList
+		end
 		rebuild()
-		if opened then setOpen(true) end
+		if opened then 
+			setOpen(true) 
+		end
 	end
 	self._Controls[persistKey] = api
 	return api
