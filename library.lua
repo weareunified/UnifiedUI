@@ -2572,6 +2572,11 @@ end
 
 if _G and _G.UNIFIED_UI_AUTOBOOT == true then
 	UI:CreateWindow()
-end
+ 
+	UI:CreateTab({Name = "Home"})
+	UI:SelectTab("Home")
+ 
+ 	UI._Settings.AutoLoadEnabled = false
+ end
 
 return UI
