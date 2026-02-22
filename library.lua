@@ -1161,6 +1161,59 @@ function UI:CreateSection(page, title)
 	return SectionAPI
 end
 
+function UI:CreateLockedSection(page, title)
+	local sec = self:CreateSection(page, title)
+	local section = sec.Frame
+
+	local header = section:FindFirstChild("Header")
+	if header then
+		local pill = Instance.new("Frame")
+		pill.Name = "LockedPill"
+		pill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		pill.BackgroundTransparency = 0.88
+		pill.BorderSizePixel = 0
+		pill.AnchorPoint = Vector2.new(1, 0.5)
+		pill.Position = UDim2.new(1, 0, 0.5, 0)
+		pill.Size = UDim2.fromOffset(78, ScalePx(22))
+		pill.ZIndex = header.ZIndex + 3
+		AddCorner(pill, 999)
+		AddStroke(pill, 1, THEME.StrokeSoft, 0.6)
+		pill.Parent = header
+
+		local ptxt = MakeText(pill, "LOCKED", 11, "bold")
+		ptxt.ZIndex = pill.ZIndex + 1
+		ptxt.TextColor3 = THEME.SubText
+		ptxt.TextXAlignment = Enum.TextXAlignment.Center
+		ptxt.Size = UDim2.fromScale(1, 1)
+		ptxt.Position = UDim2.fromOffset(0, 0)
+	end
+
+	local overlay = Instance.new("TextButton")
+	overlay.Name = "LockedOverlay"
+	overlay.AutoButtonColor = false
+	overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	overlay.BackgroundTransparency = 0.55
+	overlay.BorderSizePixel = 0
+	overlay.Size = UDim2.fromScale(1, 1)
+	overlay.Position = UDim2.fromScale(0, 0)
+	overlay.ZIndex = section.ZIndex + 200
+	overlay.Text = "LOCKED"
+	overlay.TextColor3 = THEME.Text
+	overlay.TextTransparency = 0.15
+	overlay.Font = Enum.Font.GothamBold
+	overlay.TextSize = math.floor((18 * TEXT_SCALE) + 0.5)
+	overlay.Parent = section
+	AddCorner(overlay, 12)
+
+	local api = {}
+	api.Frame = sec.Frame
+	api.Body = sec.Body
+	api.SetLocked = function(_, locked)
+		overlay.Visible = locked ~= false
+	end
+	return api
+end
+
 function UI:CreateToggle(sectionBody, opt)
 	opt = opt or {}
 	local name = opt.Name or "Toggle"
@@ -1475,6 +1528,67 @@ function UI:CreateButton(sectionBody, opt)
 			pcall(cb)
 		end)
 	end)
+
+	local api = {}
+	api.Frame = row
+	api.Label = lbl
+	api.SetText = function(_, text)
+		lbl.Text = tostring(text)
+	end
+	return api
+end
+
+function UI:CreateLockedButton(sectionBody, opt)
+	opt = opt or {}
+	local name = opt.Name or "Locked"
+
+	local row = Instance.new("Frame")
+	row.Name = "LockedButton"
+	row.BackgroundColor3 = THEME.Panel2
+	row.BackgroundTransparency = 0.55
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
+	row.ZIndex = 20
+	AddCorner(row, 14)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.7)
+	row.Parent = sectionBody
+
+	local lbl = MakeText(row, name, 13, "semibold")
+	lbl.ZIndex = 23
+	lbl.TextColor3 = THEME.SubText
+	lbl.Size = UDim2.new(1, -120, 1, 0)
+	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.TextYAlignment = Enum.TextYAlignment.Center
+
+	local pill = Instance.new("Frame")
+	pill.Name = "LockedPill"
+	pill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	pill.BackgroundTransparency = 0.88
+	pill.BorderSizePixel = 0
+	pill.AnchorPoint = Vector2.new(1, 0.5)
+	pill.Position = UDim2.new(1, -14, 0.5, 0)
+	pill.Size = UDim2.fromOffset(78, ScalePx(22))
+	pill.ZIndex = 23
+	AddCorner(pill, 999)
+	AddStroke(pill, 1, THEME.StrokeSoft, 0.75)
+	pill.Parent = row
+
+	local ptxt = MakeText(pill, "LOCKED", 11, "bold")
+	ptxt.ZIndex = pill.ZIndex + 1
+	ptxt.TextColor3 = THEME.SubText
+	ptxt.TextXAlignment = Enum.TextXAlignment.Center
+	ptxt.Size = UDim2.fromScale(1, 1)
+	ptxt.Position = UDim2.fromOffset(0, 0)
+
+	local blocker = Instance.new("TextButton")
+	blocker.Name = "Blocker"
+	blocker.AutoButtonColor = false
+	blocker.BackgroundTransparency = 1
+	blocker.Text = ""
+	blocker.Size = UDim2.fromScale(1, 1)
+	blocker.Position = UDim2.fromScale(0, 0)
+	blocker.ZIndex = 24
+	blocker.Parent = row
 
 	local api = {}
 	api.Frame = row
@@ -2129,6 +2243,12 @@ function UI:CreateTab(tabInfo)
 		self._ColIndex += 1
 		local parentCol = (self._ColIndex % 2 == 1) and self._Col1 or self._Col2
 		return UI:CreateSection(parentCol, title)
+	end
+
+	function TabAPI:CreateLockedSection(title)
+		self._ColIndex += 1
+		local parentCol = (self._ColIndex % 2 == 1) and self._Col1 or self._Col2
+		return UI:CreateLockedSection(parentCol, title)
 	end
 
 	local function setActiveVisual(active)
