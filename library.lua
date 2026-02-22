@@ -244,6 +244,7 @@ UI._Settings = {
 	AutoLoadName = "default",
 	Language = "English",
 	Opacity = 90,
+	FadeSpeed = 0.35,
 }
 UI._AwaitingKeybind = false
 UI._KeybindButton = nil
@@ -2336,20 +2337,22 @@ function UI:SetOpen(state)
 		self._MaximizeButton.Visible = not open
 	end
 
+	local fadeTime = self._Settings and self._Settings.FadeSpeed or 0.35
+
 	if open then
 		if shade then shade.Visible = false end
 		if container then container.Visible = true end
 		root.Visible = true
 		if cg then
 			cg.GroupTransparency = 1
-			Tween(cg, {GroupTransparency = 0}, 0.35)
+			Tween(cg, {GroupTransparency = 0}, fadeTime)
 		end
 	else
 		if shade then shade.Visible = false end
 		if cg then
-			Tween(cg, {GroupTransparency = 1}, 0.30)
+			Tween(cg, {GroupTransparency = 1}, fadeTime * 0.85)
 		end
-		task.delay(0.32, function()
+		task.delay(fadeTime + 0.02, function()
 			if not self._Open and root then
 				root.Visible = false
 				if container then container.Visible = false end
