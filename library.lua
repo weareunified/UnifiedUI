@@ -22,10 +22,10 @@ local EASE_DIR = Enum.EasingDirection.Out
 
 local THEME = {
 	Primary = Color3.fromRGB(139, 92, 246),
-	BG = Color3.fromRGB(28, 28, 34),
-	Panel = Color3.fromRGB(36, 36, 44),
-	Panel2 = Color3.fromRGB(42, 42, 52),
-	Surface = Color3.fromRGB(30, 26, 34),
+	BG = Color3.fromRGB(20, 20, 24),
+	Panel = Color3.fromRGB(28, 28, 34),
+	Panel2 = Color3.fromRGB(34, 34, 42),
+	Surface = Color3.fromRGB(24, 20, 28),
 	Text = Color3.fromRGB(235, 235, 245),
 	SubText = Color3.fromRGB(170, 170, 190),
 	Stroke = Color3.fromRGB(90, 90, 110),
