@@ -1481,7 +1481,7 @@ function UI:CreateToggle(sectionBody, opt)
 	local track = Instance.new("Frame")
 	track.Name = "Track"
 	track.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	track.BackgroundTransparency = 0.82
+	track.BackgroundTransparency = 0.65
 	track.BorderSizePixel = 0
 	track.Size = UDim2.fromOffset(46, 22)
 	track.Position = UDim2.new(1, -60, 0.5, -11)
@@ -1534,12 +1534,12 @@ function UI:CreateToggle(sectionBody, opt)
 		if anim then
 			Tween(knob, {Position = kpos, BackgroundColor3 = tcol}, 0.28)
 			Tween(glow, {Transparency = on and 0.35 or 1}, 0.28)
-			Tween(track, {BackgroundTransparency = on and 0.74 or 0.82}, 0.28)
+			Tween(track, {BackgroundTransparency = on and 0.55 or 0.65}, 0.28)
 		else
 			knob.Position = kpos
 			knob.BackgroundColor3 = tcol
 			glow.Transparency = on and 0.35 or 1
-			track.BackgroundTransparency = on and 0.74 or 0.82
+			track.BackgroundTransparency = on and 0.55 or 0.65
 		end
 	end
 
