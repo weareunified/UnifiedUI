@@ -2100,6 +2100,185 @@ function UI:CreateDropdown(sectionBody, opt)
 	return api
 end
 
+function UI:CreateConfigDropdown(parent, config)
+	config = config or {}
+	local name = config.Name or "Select Config"
+	local list = config.List or {}
+	local cb = config.Callback or function() end
+
+	local row = Instance.new("Frame")
+	row.Name = "ConfigDropdown"
+	row.BackgroundColor3 = THEME.Panel2
+	row.BackgroundTransparency = 0.25
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
+	row.ZIndex = 20
+	row.ClipsDescendants = true
+	AddCorner(row, 14)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	row.Parent = parent
+
+	local lbl = MakeText(row, name, 13, "semibold")
+	lbl.ZIndex = 22
+	lbl.Size = UDim2.new(1, -28, 0, 18)
+	lbl.Position = UDim2.fromOffset(14, 8)
+
+	local selectBg = Instance.new("Frame")
+	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	selectBg.BackgroundTransparency = 0.92
+	selectBg.BorderSizePixel = 0
+	selectBg.Size = UDim2.new(1, -28, 0, 24)
+	selectBg.Position = UDim2.fromOffset(14, 26)
+	selectBg.ZIndex = 21
+	AddCorner(selectBg, 10)
+	AddStroke(selectBg, 1, THEME.StrokeSoft, 0.55)
+	selectBg.Parent = row
+
+	local valueLbl = MakeText(selectBg, "Select...", 12, "")
+	valueLbl.TextColor3 = THEME.SubText
+	valueLbl.ZIndex = 22
+	valueLbl.Size = UDim2.new(1, -28, 1, 0)
+	valueLbl.Position = UDim2.fromOffset(8, 0)
+
+	local arrow = MakeText(selectBg, "▾", 14, "bold")
+	arrow.TextXAlignment = Enum.TextXAlignment.Center
+	arrow.ZIndex = 22
+	arrow.Size = UDim2.fromOffset(22, 22)
+	arrow.Position = UDim2.new(1, -22, 0.5, -11)
+
+	local click = MakeButtonBase(selectBg)
+	click.ZIndex = 23
+	click.Size = UDim2.fromScale(1, 1)
+	BindHoverFX(click, selectBg)
+	BindClickFX(click, selectBg)
+
+	local BASE_H = ScalePx(54)
+	local OPEN_GAP = ScalePx(10)
+
+	local optionsHolder = Instance.new("Frame")
+	optionsHolder.Name = "Options"
+	optionsHolder.BackgroundColor3 = THEME.Panel
+	optionsHolder.BackgroundTransparency = 0.08
+	optionsHolder.BorderSizePixel = 0
+	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
+	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
+	optionsHolder.ZIndex = row.ZIndex + 10
+	optionsHolder.ClipsDescendants = true
+	AddCorner(optionsHolder, 12)
+	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.55)
+	optionsHolder.Parent = row
+
+	local optPad = Instance.new("UIPadding")
+	optPad.PaddingTop = UDim.new(0, 8)
+	optPad.PaddingBottom = UDim.new(0, 8)
+	optPad.PaddingLeft = UDim.new(0, 8)
+	optPad.PaddingRight = UDim.new(0, 8)
+	optPad.Parent = optionsHolder
+
+	local optList = Instance.new("UIListLayout")
+	optList.SortOrder = Enum.SortOrder.LayoutOrder
+	optList.Padding = UDim.new(0, 8)
+	optList.Parent = optionsHolder
+
+	local opened = false
+	local value = ""
+	local openToken = 0
+
+	local function setOpen(state)
+		openToken += 1
+		local token = openToken
+		opened = state == true
+		Tween(arrow, {Rotation = opened and 180 or 0}, 0.35)
+		local contentH = optList.AbsoluteContentSize.Y
+		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
+		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
+		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
+
+		if not opened then
+			task.delay(0.23, function()
+				if token ~= openToken then return end
+				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
+				row.Size = UDim2.new(1, 0, 0, BASE_H)
+			end)
+		end
+	end
+
+	local function rebuild()
+		if not optionsHolder or not optionsHolder.Parent then return end
+		
+		for _, ch in ipairs(optionsHolder:GetChildren()) do
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then 
+				ch:Destroy() 
+			end
+		end
+		
+		local itemCount = 0
+		if type(list) == "table" then
+			for i, item in ipairs(list) do
+				itemCount = itemCount + 1
+				local optRow = Instance.new("Frame")
+				optRow.Name = "Option_" .. tostring(i)
+				optRow.BackgroundColor3 = THEME.Panel
+				optRow.BackgroundTransparency = 0.12
+				optRow.BorderSizePixel = 0
+				optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
+				optRow.ZIndex = optionsHolder.ZIndex + 1
+				AddCorner(optRow, 10)
+				AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
+				optRow.Parent = optionsHolder
+
+				local optBtn = MakeButtonBase(optRow)
+				optBtn.ZIndex = optRow.ZIndex + 1
+				optBtn.Size = UDim2.fromScale(1, 1)
+				BindHoverFX(optBtn, optRow)
+				BindClickFX(optBtn, optRow)
+
+				local t = MakeText(optRow, tostring(item), 12, "")
+				t.ZIndex = optBtn.ZIndex + 1
+				t.Size = UDim2.new(1, -18, 1, 0)
+				t.Position = UDim2.fromOffset(10, 0)
+
+				optBtn.MouseButton1Click:Connect(function()
+					value = item
+					valueLbl.Text = tostring(item)
+					valueLbl.TextColor3 = THEME.Text
+					task.spawn(function()
+						pcall(cb, value)
+					end)
+					setOpen(false)
+				end)
+			end
+		end
+		
+		optList:ApplyLayout()
+		
+		if opened then
+			local contentH = optList.AbsoluteContentSize.Y
+			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
+			optionsHolder.Size = UDim2.new(1, -28, 0, h)
+			row.Size = UDim2.new(1, 0, 0, BASE_H + (h > 0 and (h + OPEN_GAP) or 0))
+		end
+	end
+
+	rebuild()
+
+	click.MouseButton1Click:Connect(function()
+		setOpen(not opened)
+	end)
+
+	local api = {}
+	api.Refresh = function(newList)
+		list = newList or {}
+		rebuild()
+	end
+	api.Set = function(v)
+		value = tostring(v or "")
+		valueLbl.Text = (value ~= "") and value or "Select..."
+		valueLbl.TextColor3 = (value ~= "") and THEME.Text or THEME.SubText
+	end
+	return api
+end
+
 function UI:CreateTab(tabInfo)
 	tabInfo = tabInfo or {}
 	local name = tabInfo.Name or "Tab"
