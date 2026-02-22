@@ -84,13 +84,7 @@ local function AddCorner(inst, r)
 end
 
 local function AddStroke(inst, thickness, color, transparency)
-	local s = Instance.new("UIStroke")
-	s.Thickness = thickness or 1
-	s.Color = color or THEME.StrokeSoft
-	s.Transparency = transparency or 0.35
-	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	s.Parent = inst
-	return s
+	return nil
 end
 
 local function AddShadow(inst, zindex)
