@@ -74,6 +74,7 @@ end
 
 local function _NormSearch(s)
 	s = tostring(s or "")
+	s = s:gsub("<[^>]->", "")
 	s = s:lower()
 	s = s:gsub("%s+", " ")
 	s = s:gsub("^%s+", ""):gsub("%s+$", "")
@@ -495,7 +496,7 @@ function UI:_ApplySearch(rawQuery)
 				end
 			end
 		end
-		for _, sec in ipairs(page:GetChildren()) do
+		for _, sec in ipairs(page:GetDescendants()) do
 			if sec:IsA("Frame") and sec.Name == "Section" then
 				sec.Visible = true
 			end
@@ -507,12 +508,15 @@ function UI:_ApplySearch(rawQuery)
 		return
 	end
 
-	for _, sec in ipairs(page:GetChildren()) do
+	for _, sec in ipairs(page:GetDescendants()) do
 		if not (sec:IsA("Frame") and sec.Name == "Section") then
 			continue
 		end
 
-		local secTitle = _NormSearch(sec:GetAttribute("UH_SearchText") or sec:GetAttribute("UH_SectionTitle") or "")
+		local secKey = sec:GetAttribute("UH_SearchText")
+		local secOrig = sec:GetAttribute("UH_SectionTitle")
+		local secTranslated = sec:GetAttribute("UH_SectionTitle_Translated")
+		local secTitle = _NormSearch(secKey or secTranslated or secOrig or "")
 		local secMatch = (secTitle ~= "" and secTitle:find(query, 1, true) ~= nil)
 		local secAny = false
 
@@ -1857,7 +1861,11 @@ function UI:CreateButton(sectionBody, opt)
 	api.Frame = row
 	api.Label = lbl
 	api.SetText = function(_, text)
-		lbl.Text = tostring(text)
+		local t = tostring(text)
+		lbl.Text = t
+		pcall(function()
+			row:SetAttribute("UH_SearchText", t)
+		end)
 	end
 	return api
 end
@@ -1921,7 +1929,11 @@ function UI:CreateLockedButton(sectionBody, opt)
 	api.Frame = row
 	api.Label = lbl
 	api.SetText = function(_, text)
-		lbl.Text = tostring(text)
+		local t = tostring(text)
+		lbl.Text = t
+		pcall(function()
+			row:SetAttribute("UH_SearchText", t)
+		end)
 	end
 	return api
 end
