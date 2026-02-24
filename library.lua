@@ -548,6 +548,31 @@ end
 local CONFIG_DIR = "Unified"
 local SETTINGS_PATH = CONFIG_DIR .. "/config.json"
 local CONFIGS_DIR = CONFIG_DIR .. "/configs"
+local PREMIUM_KEY_PATH = CONFIG_DIR .. "/premium.key"
+
+function UI:GetPremiumKey()
+	_EnsureFolder(CONFIG_DIR)
+	local raw = _ReadFile(PREMIUM_KEY_PATH)
+	if type(raw) ~= "string" then
+		return ""
+	end
+	raw = raw:gsub("^%s+", ""):gsub("%s+$", "")
+	return raw
+end
+
+function UI:HasPremium()
+	return self:GetPremiumKey() ~= ""
+end
+
+function UI:SetPremiumKey(key)
+	key = tostring(key or "")
+	key = key:gsub("^%s+", ""):gsub("%s+$", "")
+	if key == "" then
+		return false
+	end
+	_EnsureFolder(CONFIG_DIR)
+	return _WriteFile(PREMIUM_KEY_PATH, key) == true
+end
 
 function UI:_LoadSettings()
 	_EnsureFolder(CONFIG_DIR)
@@ -2309,6 +2334,289 @@ function UI:CreateDropdown(sectionBody, opt)
 			setOpen(true)
 		end
 	end
+	self._Controls[persistKey] = api
+	return api
+end
+
+function UI:CreateMultiDropdown(sectionBody, opt)
+	opt = opt or {}
+	local name = opt.Name or "Multi Dropdown"
+	local list = opt.List or {"Option A", "Option B", "Option C"}
+	local default = opt.Default
+	local cb = opt.Callback or function() end
+	local persistKey = self:_GetPersistKey(sectionBody, "MultiDropdown", name)
+
+	if self._UIState and self._UIState[persistKey] ~= nil then
+		default = self._UIState[persistKey]
+	end
+
+	local selected = {}
+	local selectedSet = {}
+	local function setSelected(arr)
+		selected = {}
+		selectedSet = {}
+		if type(arr) == "table" then
+			for _, v in ipairs(arr) do
+				local s = tostring(v)
+				if s ~= "" and not selectedSet[s] then
+					selectedSet[s] = true
+					table.insert(selected, s)
+				end
+			end
+		elseif type(arr) == "string" then
+			local ok, decoded = pcall(function()
+				return HttpService:JSONDecode(arr)
+			end)
+			if ok and type(decoded) == "table" then
+				for _, v in ipairs(decoded) do
+					local s = tostring(v)
+					if s ~= "" and not selectedSet[s] then
+						selectedSet[s] = true
+						table.insert(selected, s)
+					end
+				end
+			end
+		end
+	end
+
+	setSelected(default)
+
+	local row = Instance.new("Frame")
+	row.Name = "MultiDropdown"
+	row.BackgroundColor3 = THEME.Panel2
+	row.BackgroundTransparency = 0.25
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
+	row.ZIndex = 20
+	row.ClipsDescendants = true
+	AddCorner(row, 14)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	row.Parent = sectionBody
+
+	local lbl = MakeText(row, name, 13, "semibold")
+	lbl.ZIndex = 22
+	lbl.Size = UDim2.new(1, -28, 0, 18)
+	lbl.Position = UDim2.fromOffset(14, 8)
+
+	local selectBg = Instance.new("Frame")
+	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	selectBg.BackgroundTransparency = 0.92
+	selectBg.BorderSizePixel = 0
+	selectBg.Size = UDim2.new(1, -28, 0, 24)
+	selectBg.Position = UDim2.fromOffset(14, 26)
+	selectBg.ZIndex = 21
+	AddCorner(selectBg, 10)
+	AddStroke(selectBg, 1, THEME.StrokeSoft, 0.55)
+	selectBg.Parent = row
+
+	local glow = Instance.new("UIStroke")
+	glow.Thickness = 2
+	glow.Color = THEME.Primary
+	glow.Transparency = 1
+	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	glow.Parent = selectBg
+
+	local valueLbl = MakeText(selectBg, "Select...", 12, "")
+	valueLbl.TextColor3 = THEME.SubText
+	valueLbl.ZIndex = 22
+	valueLbl.Size = UDim2.new(1, -28, 1, 0)
+	valueLbl.Position = UDim2.fromOffset(8, 0)
+	valueLbl.TextWrapped = true
+	valueLbl.TextTruncate = Enum.TextTruncate.AtEnd
+
+	local arrow = MakeText(selectBg, "▲", 14, "bold")
+	arrow.TextXAlignment = Enum.TextXAlignment.Center
+	arrow.ZIndex = 22
+	arrow.Size = UDim2.fromOffset(22, 22)
+	arrow.Position = UDim2.new(1, -22, 0.5, -11)
+	arrow.Rotation = 180
+
+	local click = MakeButtonBase(selectBg)
+	click.ZIndex = 23
+	click.Size = UDim2.fromScale(1, 1)
+	BindHoverFX(click, selectBg)
+	BindClickFX(click, selectBg)
+
+	local BASE_H = ScalePx(54)
+	local OPEN_GAP = ScalePx(10)
+
+	local optionsHolder = Instance.new("Frame")
+	optionsHolder.Name = "Options"
+	optionsHolder.BackgroundColor3 = THEME.Panel
+	optionsHolder.BackgroundTransparency = 0.08
+	optionsHolder.BorderSizePixel = 0
+	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
+	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
+	optionsHolder.ZIndex = row.ZIndex + 10
+	optionsHolder.ClipsDescendants = true
+	AddCorner(optionsHolder, 12)
+	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.55)
+	optionsHolder.Parent = row
+
+	local optPad = Instance.new("UIPadding")
+	optPad.PaddingTop = UDim.new(0, 8)
+	optPad.PaddingBottom = UDim.new(0, 8)
+	optPad.PaddingLeft = UDim.new(0, 8)
+	optPad.PaddingRight = UDim.new(0, 8)
+	optPad.Parent = optionsHolder
+
+	local optList = Instance.new("UIListLayout")
+	optList.SortOrder = Enum.SortOrder.LayoutOrder
+	optList.Padding = UDim.new(0, 8)
+	optList.Parent = optionsHolder
+
+	local opened = false
+	local openToken = 0
+
+	local function refreshValueText()
+		if #selected == 0 then
+			valueLbl.Text = "Select..."
+			valueLbl.TextColor3 = THEME.SubText
+			return
+		end
+		valueLbl.Text = table.concat(selected, ", ")
+		valueLbl.TextColor3 = THEME.Text
+	end
+
+	local function persistAndCallback()
+		self._UIState[persistKey] = selected
+		task.spawn(function()
+			pcall(cb, selected)
+		end)
+	end
+
+	local function setOpen(state)
+		openToken += 1
+		local token = openToken
+		opened = state == true
+		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
+		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
+		local contentH = optList.AbsoluteContentSize.Y
+		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
+		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
+		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
+
+		if not opened then
+			task.delay(0.23, function()
+				if token ~= openToken then return end
+				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
+				row.Size = UDim2.new(1, 0, 0, BASE_H)
+			end)
+		end
+	end
+
+	local function rebuild()
+		if not optionsHolder or not optionsHolder.Parent then return end
+
+		for _, ch in ipairs(optionsHolder:GetChildren()) do
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then
+				ch:Destroy()
+			end
+		end
+
+		if type(list) ~= "table" or #list == 0 then
+			list = {}
+		end
+
+		for i, item in ipairs(list) do
+			local s = tostring(item)
+			local optRow = Instance.new("Frame")
+			optRow.Name = "Option_" .. tostring(i)
+			optRow.BackgroundColor3 = THEME.Panel
+			optRow.BackgroundTransparency = 0.12
+			optRow.BorderSizePixel = 0
+			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
+			optRow.ZIndex = optionsHolder.ZIndex + 1
+			AddCorner(optRow, 10)
+			AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
+			optRow.Parent = optionsHolder
+
+			local optBtn = MakeButtonBase(optRow)
+			optBtn.ZIndex = optRow.ZIndex + 1
+			optBtn.Size = UDim2.fromScale(1, 1)
+			BindHoverFX(optBtn, optRow)
+			BindClickFX(optBtn, optRow)
+
+			local check = MakeText(optRow, "□", 14, "bold")
+			check.ZIndex = optBtn.ZIndex + 1
+			check.TextXAlignment = Enum.TextXAlignment.Center
+			check.Size = UDim2.fromOffset(18, 18)
+			check.Position = UDim2.fromOffset(6, ScalePx(8))
+
+			local t = MakeText(optRow, s, 12, "")
+			t.ZIndex = optBtn.ZIndex + 1
+			t.Size = UDim2.new(1, -34, 1, 0)
+			t.Position = UDim2.fromOffset(28, 0)
+
+			local function renderOption()
+				local on = selectedSet[s] == true
+				check.Text = on and "■" or "□"
+				check.TextColor3 = on and THEME.Primary or THEME.SubText
+			end
+			renderOption()
+
+			optBtn.MouseButton1Click:Connect(function()
+				if selectedSet[s] then
+					selectedSet[s] = nil
+					for idx = #selected, 1, -1 do
+						if selected[idx] == s then
+							table.remove(selected, idx)
+						end
+					end
+				else
+					selectedSet[s] = true
+					table.insert(selected, s)
+				end
+				renderOption()
+				refreshValueText()
+				persistAndCallback()
+			end)
+		end
+
+		refreshValueText()
+	end
+
+	rebuild()
+	refreshValueText()
+	persistAndCallback()
+
+	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		if opened then
+			local contentH = optList.AbsoluteContentSize.Y
+			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
+			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
+			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
+		end
+	end)
+
+	click.MouseButton1Click:Connect(function()
+		setOpen(not opened)
+	end)
+
+	local api = {}
+	api.Frame = row
+	api.Get = function() return selected end
+	api.Set = function(a, b)
+		local v = (b == nil) and a or b
+		setSelected(v)
+		rebuild()
+		refreshValueText()
+		persistAndCallback()
+	end
+	api.Refresh = function(a, b)
+		local newList = b
+		if b == nil then
+			newList = a
+		end
+		if type(newList) == "table" then
+			list = newList
+		end
+		rebuild()
+		if opened then
+			setOpen(true)
+		end
+	end
+
 	self._Controls[persistKey] = api
 	return api
 end
