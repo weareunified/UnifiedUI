@@ -2083,12 +2083,20 @@ function UI:CreateSlider(sectionBody, opt)
 	bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	bar.BackgroundTransparency = 0.92
 	bar.BorderSizePixel = 0
-	bar.Size = UDim2.new(1, -28, 0, 10)
+	bar.Size = UDim2.new(1, -64, 0, 10)
 	bar.Position = UDim2.fromOffset(14, 36)
 	bar.ZIndex = 21
 	AddCorner(bar, 999)
 	AddStroke(bar, 1, THEME.StrokeSoft, 0.6)
 	bar.Parent = row
+
+	local endLbl = MakeText(row, tostring(default), 11, "semibold")
+	endLbl.Name = "ValueDisplay"
+	endLbl.TextColor3 = THEME.Primary
+	endLbl.TextXAlignment = Enum.TextXAlignment.Center
+	endLbl.Size = UDim2.fromOffset(36, 18)
+	endLbl.Position = UDim2.new(1, -44, 0, 32)
+	endLbl.ZIndex = 22
 
 	local fill = Instance.new("Frame")
 	fill.BackgroundColor3 = THEME.Primary
@@ -2139,6 +2147,7 @@ function UI:CreateSlider(sectionBody, opt)
 		local alpha = (value - min) / (max - min)
 		alpha = math.clamp(alpha, 0, 1)
 		valBox.Text = tostring(value)
+		endLbl.Text = tostring(value)
 		if anim then
 			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.22)
 			Tween(knob, {Position = UDim2.new(alpha, 0, 0.5, 0)}, 0.22)
