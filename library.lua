@@ -72,6 +72,14 @@ local function ScalePx(n)
 	return math.floor((n * TEXT_SCALE) + 0.5)
 end
 
+local function _NormSearch(s)
+	s = tostring(s or "")
+	s = s:lower()
+	s = s:gsub("%s+", " ")
+	s = s:gsub("^%s+", ""):gsub("%s+$", "")
+	return s
+end
+
 local function AddCorner(inst, r)
 	local c = Instance.new("UICorner")
 	local rr = r or 10
@@ -231,6 +239,8 @@ local Tabs = {}
 UI._Alive = true
 UI._Open = true
 UI._TabSwitchToken = 0
+
+UI._SearchToken = 0
 UI._Settings = {
 	MinimizeKeyCode = Enum.KeyCode.RightControl,
 	NotificationsEnabled = true,
@@ -461,6 +471,103 @@ function UI:_ApplyLanguageNow()
 		for i = 1, #descendants do
 			self:_ApplyLanguageToObject(descendants[i])
 			if i % 100 == 0 then task.wait() end
+		end
+	end
+end
+
+function UI:_ApplySearch(rawQuery)
+	local query = _NormSearch(rawQuery)
+
+	local function setAllVisible(tabApi)
+		if tabApi.Button then tabApi.Button.Visible = true end
+		if tabApi.Page then
+			for _, d in ipairs(tabApi.Page:GetDescendants()) do
+				if d:IsA("GuiObject") then
+					local st = d:GetAttribute("UH_SearchText")
+					if st ~= nil then
+						d.Visible = true
+					end
+				end
+			end
+		end
+		if tabApi.Page then
+			for _, sec in ipairs(tabApi.Page:GetDescendants()) do
+				if sec:IsA("Frame") and sec.Name == "Section" then
+					sec.Visible = true
+				end
+			end
+		end
+	end
+
+	if query == "" then
+		for _, t in pairs(Tabs) do
+			if type(t) == "table" and t.Page and t.Button then
+				setAllVisible(t)
+			end
+		end
+		return
+	end
+
+	local currentName = self._CurrentTab
+	local firstVisibleName = nil
+
+	for tabName, t in pairs(Tabs) do
+		if type(t) ~= "table" or not t.Page or not t.Button then
+			continue
+		end
+
+		local tabText = _NormSearch(tostring(t._FullName or t.Name or tabName))
+		local tabMatch = (tabText:find(query, 1, true) ~= nil)
+		local anyMatch = false
+
+		local sections = {}
+		for _, d in ipairs(t.Page:GetChildren()) do
+			if d:IsA("Frame") and d.Name == "Section" then
+				table.insert(sections, d)
+			end
+		end
+
+		for _, sec in ipairs(sections) do
+			local secTitle = _NormSearch(sec:GetAttribute("UH_SearchText") or sec:GetAttribute("UH_SectionTitle") or "")
+			local secMatch = tabMatch or (secTitle ~= "" and secTitle:find(query, 1, true) ~= nil)
+			local secAny = false
+
+			for _, obj in ipairs(sec:GetDescendants()) do
+				if obj:IsA("GuiObject") then
+					local st = obj:GetAttribute("UH_SearchText")
+					if st ~= nil then
+						local text = _NormSearch(st)
+						local ok = secMatch or (text ~= "" and text:find(query, 1, true) ~= nil)
+						obj.Visible = ok
+						if ok then
+							secAny = true
+							anyMatch = true
+						end
+					end
+				end
+			end
+
+			sec.Visible = secAny or secMatch
+			if sec.Visible then
+				anyMatch = true
+			end
+		end
+
+		if tabMatch then
+			anyMatch = true
+		end
+
+		t.Button.Visible = anyMatch
+		if anyMatch and firstVisibleName == nil then
+			firstVisibleName = tostring(tabName)
+		end
+	end
+
+	if currentName and Tabs[currentName] and Tabs[currentName].Button and Tabs[currentName].Button.Visible == false then
+		if firstVisibleName then
+			pcall(function()
+				self:SelectTab(firstVisibleName)
+			end)
 		end
 	end
 end
@@ -1280,6 +1387,7 @@ function UI:CreateSection(page, title)
 	section.ZIndex = 10
 	pcall(function()
 		section:SetAttribute("UH_SectionTitle", tostring(title or "Section"))
+		section:SetAttribute("UH_SearchText", tostring(title or "Section"))
 	end)
 	AddCorner(section, 12)
 	AddGradient(section, THEME.Surface, THEME.Panel, 90)
@@ -1482,6 +1590,9 @@ function UI:CreateToggle(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, ScalePx(40))
 	row.ZIndex = 20
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	row.Parent = sectionBody
 
@@ -1621,6 +1732,9 @@ function UI:CreateBind(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, ScalePx(46))
 	row.ZIndex = 20
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
 	row.Parent = sectionBody
@@ -1738,6 +1852,9 @@ function UI:CreateButton(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
 	row.ZIndex = 20
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
 	row.Parent = sectionBody
@@ -1794,6 +1911,9 @@ function UI:CreateLockedButton(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
 	row.ZIndex = 20
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.7)
 	row.Parent = sectionBody
@@ -1862,6 +1982,9 @@ function UI:CreateTextbox(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, 54)
 	row.ZIndex = 20
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
 	row.Parent = sectionBody
@@ -1948,6 +2071,9 @@ function UI:CreateSlider(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, ScalePx(62))
 	row.ZIndex = 20
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
 	row.Parent = sectionBody
@@ -1977,7 +2103,6 @@ function UI:CreateSlider(sectionBody, opt)
 	valBox.ZIndex = valLbl.ZIndex + 1
 	valBox.Size = valLbl.Size
 	valBox.Position = valLbl.Position
-	valBox.Parent = row
 	valLbl.Visible = false
 
 	local bar = Instance.new("Frame")
@@ -2135,6 +2260,9 @@ function UI:CreateDropdown(sectionBody, opt)
 	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
 	row.ZIndex = 20
 	row.ClipsDescendants = true
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
 	row.Parent = sectionBody
@@ -2389,6 +2517,9 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
 	row.ZIndex = 20
 	row.ClipsDescendants = true
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
 	AddCorner(row, 14)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
 	row.Parent = sectionBody
@@ -2845,6 +2976,9 @@ function UI:CreateTab(tabInfo)
 	local tabButton = Instance.new("Frame")
 	tabButton.Name = "TabButton"
 	tabButton.BackgroundTransparency = 1
+	pcall(function()
+		tabButton:SetAttribute("UH_TabName", tostring(name))
+	end)
 	if IS_MOBILE then
 		tabButton.Size = UDim2.new(1, -12, 0, 44)
 	else
@@ -3466,6 +3600,20 @@ function UI:CreateWindow()
 	BindClickFX(searchBtn, searchWrap)
 	searchBtn.MouseButton1Click:Connect(function()
 		searchBox:CaptureFocus()
+	end)
+
+	self._SearchBox = searchBox
+	searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+		if not self._Alive then return end
+		self._SearchToken += 1
+		local token = self._SearchToken
+		task.delay(0.05, function()
+			if not self._Alive then return end
+			if token ~= self._SearchToken then return end
+			pcall(function()
+				self:_ApplySearch(searchBox.Text)
+			end)
+		end)
 	end)
 
 	local pages = Instance.new("Frame")
