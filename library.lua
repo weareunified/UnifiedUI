@@ -2211,6 +2211,13 @@ function UI:CreateSlider(sectionBody, opt)
 		self._UIState[persistKey] = value
 		pcall(cb, value)
 	end
+	api.SetText = function(_, text)
+		local t = tostring(text)
+		lbl.Text = t
+		pcall(function()
+			row:SetAttribute("UH_SearchText", t)
+		end)
+	end
 	self._Controls[persistKey] = api
 	return api
 end
