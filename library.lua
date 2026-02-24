@@ -478,97 +478,59 @@ end
 function UI:_ApplySearch(rawQuery)
 	local query = _NormSearch(rawQuery)
 
-	local function setAllVisible(tabApi)
-		if tabApi.Button then tabApi.Button.Visible = true end
-		if tabApi.Page then
-			for _, d in ipairs(tabApi.Page:GetDescendants()) do
-				if d:IsA("GuiObject") then
-					local st = d:GetAttribute("UH_SearchText")
-					if st ~= nil then
-						d.Visible = true
-					end
+	local currentName = self._CurrentTab
+	local t = currentName and Tabs[currentName]
+	if type(t) ~= "table" or not t.Page then
+		return
+	end
+
+	local page = t.Page
+
+	local function setAllVisibleInPage()
+		for _, d in ipairs(page:GetDescendants()) do
+			if d:IsA("GuiObject") then
+				local st = d:GetAttribute("UH_SearchText")
+				if st ~= nil then
+					d.Visible = true
 				end
 			end
 		end
-		if tabApi.Page then
-			for _, sec in ipairs(tabApi.Page:GetDescendants()) do
-				if sec:IsA("Frame") and sec.Name == "Section" then
-					sec.Visible = true
-				end
+		for _, sec in ipairs(page:GetChildren()) do
+			if sec:IsA("Frame") and sec.Name == "Section" then
+				sec.Visible = true
 			end
 		end
 	end
 
 	if query == "" then
-		for _, t in pairs(Tabs) do
-			if type(t) == "table" and t.Page and t.Button then
-				setAllVisible(t)
-			end
-		end
+		setAllVisibleInPage()
 		return
 	end
 
-	local currentName = self._CurrentTab
-	local firstVisibleName = nil
-
-	for tabName, t in pairs(Tabs) do
-		if type(t) ~= "table" or not t.Page or not t.Button then
+	for _, sec in ipairs(page:GetChildren()) do
+		if not (sec:IsA("Frame") and sec.Name == "Section") then
 			continue
 		end
 
-		local tabText = _NormSearch(tostring(t._FullName or t.Name or tabName))
-		local tabMatch = (tabText:find(query, 1, true) ~= nil)
-		local anyMatch = false
+		local secTitle = _NormSearch(sec:GetAttribute("UH_SearchText") or sec:GetAttribute("UH_SectionTitle") or "")
+		local secMatch = (secTitle ~= "" and secTitle:find(query, 1, true) ~= nil)
+		local secAny = false
 
-		local sections = {}
-		for _, d in ipairs(t.Page:GetChildren()) do
-			if d:IsA("Frame") and d.Name == "Section" then
-				table.insert(sections, d)
-			end
-		end
-
-		for _, sec in ipairs(sections) do
-			local secTitle = _NormSearch(sec:GetAttribute("UH_SearchText") or sec:GetAttribute("UH_SectionTitle") or "")
-			local secMatch = tabMatch or (secTitle ~= "" and secTitle:find(query, 1, true) ~= nil)
-			local secAny = false
-
-			for _, obj in ipairs(sec:GetDescendants()) do
-				if obj:IsA("GuiObject") then
-					local st = obj:GetAttribute("UH_SearchText")
-					if st ~= nil then
-						local text = _NormSearch(st)
-						local ok = secMatch or (text ~= "" and text:find(query, 1, true) ~= nil)
-						obj.Visible = ok
-						if ok then
-							secAny = true
-							anyMatch = true
-						end
+		for _, obj in ipairs(sec:GetDescendants()) do
+			if obj:IsA("GuiObject") then
+				local st = obj:GetAttribute("UH_SearchText")
+				if st ~= nil then
+					local text = _NormSearch(st)
+					local ok = secMatch or (text ~= "" and text:find(query, 1, true) ~= nil)
+					obj.Visible = ok
+					if ok then
+						secAny = true
 					end
 				end
 			end
-
-			sec.Visible = secAny or secMatch
-			if sec.Visible then
-				anyMatch = true
-			end
 		end
 
-		if tabMatch then
-			anyMatch = true
-		end
-
-		t.Button.Visible = anyMatch
-		if anyMatch and firstVisibleName == nil then
-			firstVisibleName = tostring(tabName)
-		end
-	end
-
-	if currentName and Tabs[currentName] and Tabs[currentName].Button and Tabs[currentName].Button.Visible == false then
-		if firstVisibleName then
-			pcall(function()
-				self:SelectTab(firstVisibleName)
-			end)
-		end
+		sec.Visible = secAny or secMatch
 	end
 end
 
