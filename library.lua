@@ -132,6 +132,12 @@ local function _NormSearch(s)
 	return s
 end
 
+local function _StripRichText(s)
+	s = tostring(s or "")
+	s = s:gsub("<[^>]->", "")
+	return s
+end
+
 local function AddCorner(inst, r)
 	local c = Instance.new("UICorner")
 	local rr = r or 10
