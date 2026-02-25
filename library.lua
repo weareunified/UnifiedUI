@@ -46,6 +46,18 @@ local THEME_PRESETS = {
 		StrokeSoft = Color3.fromRGB(78, 78, 96),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
+	Special = {
+		Primary = Color3.fromRGB(255, 90, 205),
+		BG = Color3.fromRGB(10, 12, 18),
+		Panel = Color3.fromRGB(18, 20, 30),
+		Panel2 = Color3.fromRGB(26, 28, 42),
+		Surface = Color3.fromRGB(14, 16, 26),
+		Text = Color3.fromRGB(246, 248, 255),
+		SubText = Color3.fromRGB(190, 205, 230),
+		Stroke = Color3.fromRGB(120, 120, 150),
+		StrokeSoft = Color3.fromRGB(85, 90, 120),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
 	Dark = {
 		Primary = Color3.fromRGB(139, 92, 246),
 		BG = Color3.fromRGB(20, 20, 24),
@@ -451,7 +463,7 @@ end
 UI.ThemePresets = THEME_PRESETS
 
 function UI:GetThemeNames()
-	local preferred = {"Default", "Dark", "Light", "Crimson", "Ocean", "Emerald", "Sunset"}
+	local preferred = {"Default", "Special", "Dark", "Light", "Crimson", "Ocean", "Emerald", "Sunset"}
 	local out = {}
 	local used = {}
 	for _, name in ipairs(preferred) do
