@@ -34,6 +34,18 @@ local THEME = {
 }
 
 local THEME_PRESETS = {
+	Default = {
+		Primary = Color3.fromRGB(139, 92, 246),
+		BG = Color3.fromRGB(26, 26, 32),
+		Panel = Color3.fromRGB(34, 34, 42),
+		Panel2 = Color3.fromRGB(40, 40, 50),
+		Surface = Color3.fromRGB(30, 26, 36),
+		Text = Color3.fromRGB(235, 235, 245),
+		SubText = Color3.fromRGB(170, 170, 190),
+		Stroke = Color3.fromRGB(90, 90, 110),
+		StrokeSoft = Color3.fromRGB(78, 78, 96),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
 	Dark = {
 		Primary = Color3.fromRGB(139, 92, 246),
 		BG = Color3.fromRGB(20, 20, 24),
@@ -381,7 +393,6 @@ UI._Settings = {
 	NotificationsEnabled = true,
 	AutoLoadEnabled = false,
 	AutoLoadName = "default",
-	Language = "English",
 	Theme = "",
 	Opacity = 90,
 	FadeSpeed = 0.35,
@@ -399,221 +410,6 @@ UI._Controls = {}
 pcall(function()
 	UI:_LoadSettings()
 end)
-
-UI._Translations = {
-	English = {},
-	Swedish = {
-		["Update"] = "Uppdatering",
-		["Premium"] = "Premium",
-		["Features"] = "Funktioner",
-		["Visuals"] = "Visuellt",
-		["Movement"] = "Rörelse",
-		["Automation"] = "Automatisering",
-		["Utilities"] = "Verktyg",
-		["Misc"] = "Övrigt",
-		["Settings"] = "Inställningar",
-		["Languages"] = "Språk",
-		["Enable Notifications"] = "Aktivera notiser",
-		["Change Opacity"] = "Ändra opacitet",
-		["Config"] = "Konfiguration",
-		["Load Config"] = "Ladda konfiguration",
-		["Save Config"] = "Spara konfiguration",
-		["Delete Config"] = "Ta bort konfiguration",
-		["Game"] = "Spel",
-		["Rejoin"] = "Gå med igen",
-		["Silent Aim"] = "Tyst sikte",
-		["Aimbot"] = "Aimbot",
-		["ESP"] = "ESP",
-		["Fly"] = "Flyg",
-		["Noclip"] = "Noclip",
-		["WalkSpeed"] = "Gånghastighet",
-		["JumpPower"] = "Hopphöjd",
-	},
-	Russian = {
-		["Update"] = "Обновление",
-		["Premium"] = "Премиум",
-		["Features"] = "Функции",
-		["Visuals"] = "Визуал",
-		["Movement"] = "Движение",
-		["Automation"] = "Автоматизация",
-		["Utilities"] = "Утилиты",
-		["Misc"] = "Разное",
-		["Settings"] = "Настройки",
-		["Languages"] = "Языки",
-		["Enable Notifications"] = "Включить уведомления",
-		["Change Opacity"] = "Прозрачность",
-		["Config"] = "Конфиг",
-		["Load Config"] = "Загрузить конфиг",
-		["Save Config"] = "Сохранить конфиг",
-		["Delete Config"] = "Удалить конфиг",
-		["Game"] = "Игра",
-		["Rejoin"] = "Перезайти",
-		["Silent Aim"] = "Тихая наводка",
-		["Aimbot"] = "Aimbot",
-		["ESP"] = "ESP",
-		["Fly"] = "Полет",
-		["Noclip"] = "Ноклип",
-		["WalkSpeed"] = "Скорость ходьбы",
-		["JumpPower"] = "Сила прыжка",
-	},
-	Ukraine = {
-		["Update"] = "Оновлення",
-		["Premium"] = "Преміум",
-		["Features"] = "Функції",
-		["Visuals"] = "Візуал",
-		["Movement"] = "Рух",
-		["Automation"] = "Автоматизація",
-		["Utilities"] = "Утиліти",
-		["Misc"] = "Різне",
-		["Settings"] = "Налаштування",
-		["Languages"] = "Мови",
-		["Enable Notifications"] = "Увімкнути сповіщення",
-		["Change Opacity"] = "Прозорість",
-		["Config"] = "Конфіг",
-		["Load Config"] = "Завантажити конфіг",
-		["Save Config"] = "Зберегти конфіг",
-		["Delete Config"] = "Видалити конфіг",
-		["Game"] = "Гра",
-		["Rejoin"] = "Перезайти",
-		["Silent Aim"] = "Тихе наведення",
-		["Aimbot"] = "Aimbot",
-		["ESP"] = "ESP",
-		["Fly"] = "Політ",
-		["Noclip"] = "Нокліп",
-		["WalkSpeed"] = "Швидкість ходьби",
-		["JumpPower"] = "Сила стрибка",
-	},
-}
-
-function UI:MergeTranslations(tbl)
-	if type(tbl) ~= "table" then return false end
-	self._Translations = self._Translations or {}
-	for lang, dict in pairs(tbl) do
-		if type(lang) == "string" and type(dict) == "table" then
-			self._Translations[lang] = self._Translations[lang] or {}
-			for k, v in pairs(dict) do
-				if type(k) == "string" and type(v) == "string" then
-					self._Translations[lang][k] = v
-				end
-			end
-		end
-	end
-	return true
-end
-
-function UI:_TranslateText(original)
-	original = tostring(original or "")
-	local lang = (self._Settings and self._Settings.Language) or "English"
-	local dict = self._Translations and self._Translations[lang]
-	if dict and dict[original] then
-		return dict[original]
-	end
-	return original
-end
-
-function UI:_ApplyLanguageToObject(obj)
-	if not obj then return end
-	if obj:IsA("TextLabel") or obj:IsA("TextButton") then
-		local orig = obj:GetAttribute("UH_OrigText")
-		if orig == nil then
-			orig = obj.Text
-			obj:SetAttribute("UH_OrigText", tostring(orig or ""))
-		end
-		local newText = self:_TranslateText(orig)
-		if obj.Text ~= newText then
-			obj.Text = newText
-		end
-	elseif obj:IsA("TextBox") then
-		local origText = obj:GetAttribute("UH_OrigText")
-		if origText == nil then
-			origText = obj.Text
-			obj:SetAttribute("UH_OrigText", tostring(origText or ""))
-		end
-		local origPh = obj:GetAttribute("UH_OrigPlaceholder")
-		if origPh == nil then
-			origPh = obj.PlaceholderText
-			obj:SetAttribute("UH_OrigPlaceholder", tostring(origPh or ""))
-		end
-		local newPh = self:_TranslateText(origPh)
-		if obj.PlaceholderText ~= newPh then
-			obj.PlaceholderText = newPh
-		end
-		local newText = self:_TranslateText(origText)
-		if obj.Text ~= newText then
-			obj.Text = newText
-		end
-	elseif obj:IsA("Frame") or obj:IsA("ScrollingFrame") then
-		local tabOrig = obj:GetAttribute("UH_TabName")
-		if tabOrig then
-			local newTab = self:_TranslateText(tabOrig)
-			obj:SetAttribute("UH_TabName_Translated", newTab)
-			for _, child in ipairs(obj:GetDescendants()) do
-				if child:IsA("TextLabel") and (child:GetAttribute("UH_OrigText") == tabOrig or child.Text == tabOrig) then
-					child.Text = newTab
-					if not child:GetAttribute("UH_OrigText") then
-						child:SetAttribute("UH_OrigText", tabOrig)
-					end
-				end
-			end
-		end
-		local secOrig = obj:GetAttribute("UH_SectionTitle")
-		if secOrig then
-			local newSec = self:_TranslateText(secOrig)
-			obj:SetAttribute("UH_SectionTitle_Translated", newSec)
-			for _, child in ipairs(obj:GetDescendants()) do
-				if child:IsA("TextLabel") and (child:GetAttribute("UH_OrigText") == secOrig or child.Text == secOrig) then
-					child.Text = newSec
-					if not child:GetAttribute("UH_OrigText") then
-						child:SetAttribute("UH_OrigText", secOrig)
-					end
-				end
-			end
-		end
-	end
-end
-
-function UI:_AttachLocalization(rootGui)
-	if not rootGui or not rootGui.Parent then return end
-	if rootGui:GetAttribute("UH_LocAttached") == true then return end
-	rootGui:SetAttribute("UH_LocAttached", true)
-	local descendants = rootGui:GetDescendants()
-	for i = 1, #descendants do
-		self:_ApplyLanguageToObject(descendants[i])
-		if i % 100 == 0 then task.wait() end
-	end
-	rootGui.DescendantAdded:Connect(function(d)
-		self:_ApplyLanguageToObject(d)
-	end)
-end
-
-function UI:SetLanguage(lang)
-	lang = tostring(lang or "English")
-	if not (self._Translations and self._Translations[lang]) then
-		lang = "English"
-	end
-	self._Settings.Language = lang
-	pcall(function()
-	end)
-	local sg = self.ScreenGui
-	if sg and sg.Parent then
-		local descendants = sg:GetDescendants()
-		for i = 1, #descendants do
-			self:_ApplyLanguageToObject(descendants[i])
-			if i % 100 == 0 then task.wait() end
-		end
-	end
-end
-
-function UI:_ApplyLanguageNow()
-	local sg = self.ScreenGui
-	if sg and sg.Parent then
-		local descendants = sg:GetDescendants()
-		for i = 1, #descendants do
-			self:_ApplyLanguageToObject(descendants[i])
-			if i % 100 == 0 then task.wait() end
-		end
-	end
-end
 
 function UI:_ApplySearch(rawQuery)
 	local query = _NormSearch(rawQuery)
@@ -808,9 +604,6 @@ function UI:_LoadSettings()
 	if type(decoded.Opacity) == "number" then
 		self._Settings.Opacity = decoded.Opacity
 	end
-	if type(decoded.Language) == "string" then
-		self._Settings.Language = decoded.Language
-	end
 	if type(decoded.Theme) == "string" then
 		self._Settings.Theme = decoded.Theme
 	end
@@ -826,7 +619,6 @@ function UI:_SaveSettings()
 		NotificationsEnabled = (self._Settings and self._Settings.NotificationsEnabled) ~= false,
 		AutoLoadEnabled = false,
 		AutoLoadName = (self._Settings and self._Settings.AutoLoadName) or "default",
-		Language = (self._Settings and self._Settings.Language) or "English",
 		Theme = (self._Settings and self._Settings.Theme) or "",
 		Opacity = (self._Settings and self._Settings.Opacity) or 90,
 		UIState = self._UIState,
@@ -873,7 +665,6 @@ function UI:_LoadConfig(name)
 	end)
 	if not ok or type(decoded) ~= "table" then return false end
 	local loadedOpacity = nil
-	local loadedLanguage = nil
 	if type(decoded.Settings) == "table" then
 		if typeof(decoded.Settings.MinimizeKeyCode) == "string" and Enum.KeyCode[decoded.Settings.MinimizeKeyCode] then
 			self._Settings.MinimizeKeyCode = Enum.KeyCode[decoded.Settings.MinimizeKeyCode]
@@ -884,10 +675,6 @@ function UI:_LoadConfig(name)
 		if type(decoded.Settings.Opacity) == "number" then
 			loadedOpacity = decoded.Settings.Opacity
 			self._Settings.Opacity = decoded.Settings.Opacity
-		end
-		if type(decoded.Settings.Language) == "string" then
-			loadedLanguage = decoded.Settings.Language
-			self._Settings.Language = decoded.Settings.Language
 		end
 	end
 	if type(decoded.UIState) == "table" then
@@ -912,15 +699,6 @@ function UI:_LoadConfig(name)
 		if self._Main and self._Settings.Opacity then
 			self._Main.BackgroundTransparency = 1 - (self._Settings.Opacity / 100)
 		end
-		if loadedLanguage ~= nil then
-			pcall(function()
-				self:SetLanguage(loadedLanguage)
-			end)
-		else
-			pcall(function()
-				self:_ApplyLanguageNow()
-			end)
-		end
 	end)
 	return true
 end
@@ -933,7 +711,6 @@ function UI:_SaveConfig(name)
 			MinimizeKeyCode = (self._Settings and self._Settings.MinimizeKeyCode and self._Settings.MinimizeKeyCode.Name) or "RightControl",
 			NotificationsEnabled = (self._Settings and self._Settings.NotificationsEnabled) ~= false,
 			Opacity = (self._Settings and self._Settings.Opacity) or 90,
-			Language = (self._Settings and self._Settings.Language) or "English",
 		},
 		UIState = self._UIState,
 	}
@@ -1161,7 +938,7 @@ function UI:Notify(title, body, duration)
 	AddCorner(card, 14)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
 	AddShadow(card, 199)
-	AddGradient(card, Color3.fromRGB(18, 18, 26), Color3.fromRGB(14, 14, 18), 90)
+	AddGradient(card, THEME.Surface, THEME.Panel, 90)
 	card.Parent = self._NotifyStack
 
 	local glow = Instance.new("UIStroke")
@@ -3452,7 +3229,7 @@ function UI:CreateWindow()
 	main.ZIndex = 10
 	main.Visible = true
 	AddCorner(main, 12)
-	AddGradient(main, Color3.fromRGB(48, 48, 58), Color3.fromRGB(30, 30, 38), 90)
+	AddGradient(main, THEME.Panel2, THEME.Panel, 90)
 	AddShadow(main, 9)
 	main.Parent = container
 
@@ -3677,7 +3454,7 @@ function UI:CreateWindow()
 	rightSurface.ZIndex = 12
 	AddCorner(rightSurface, 12)
 	AddStroke(rightSurface, 1, THEME.StrokeSoft, 0.45)
-	AddGradient(rightSurface, Color3.fromRGB(18, 18, 26), Color3.fromRGB(12, 12, 18), 90)
+	AddGradient(rightSurface, THEME.Surface, THEME.Panel, 90)
 	AddShadow(rightSurface, 11)
 	rightSurface.Parent = right
 
@@ -3790,10 +3567,6 @@ function UI:CreateWindow()
 		if type(self._Settings) == "table" and type(self._Settings.Theme) == "string" and self._Settings.Theme ~= "" then
 			self:SetTheme(self._Settings.Theme)
 		end
-	end)
-	pcall(function()
-		self:_AttachLocalization(sg)
-		self:_ApplyLanguageNow()
 	end)
 	self._TitleText = nil
 	self._TitleIcon = nil
