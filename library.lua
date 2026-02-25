@@ -333,19 +333,19 @@ function UI:SetTheme(theme)
 
 	for _, inst in ipairs(sg:GetDescendants()) do
 		pcall(function()
-			if inst:IsA("GuiObject") then
-				local bc = inst.BackgroundColor3
-				for k, oc in pairs(old) do
-					if _SameColor(bc, oc) then
-						inst.BackgroundColor3 = THEME[k]
-						break
-					end
-				end
-			elseif inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
+			if inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
 				local tc = inst.TextColor3
 				for k, oc in pairs(old) do
 					if _SameColor(tc, oc) then
 						inst.TextColor3 = THEME[k]
+						break
+					end
+				end
+			elseif inst:IsA("GuiObject") then
+				local bc = inst.BackgroundColor3
+				for k, oc in pairs(old) do
+					if _SameColor(bc, oc) then
+						inst.BackgroundColor3 = THEME[k]
 						break
 					end
 				end
