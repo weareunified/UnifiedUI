@@ -59,27 +59,27 @@ local THEME_PRESETS = {
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Light = {
-		Primary = Color3.fromRGB(139, 92, 246),
-		BG = Color3.fromRGB(235, 236, 242),
-		Panel = Color3.fromRGB(248, 248, 252),
-		Panel2 = Color3.fromRGB(240, 241, 247),
-		Surface = Color3.fromRGB(252, 252, 255),
-		Text = Color3.fromRGB(28, 28, 34),
-		SubText = Color3.fromRGB(95, 95, 115),
-		Stroke = Color3.fromRGB(160, 160, 175),
-		StrokeSoft = Color3.fromRGB(185, 185, 200),
+		Primary = Color3.fromRGB(70, 110, 255),
+		BG = Color3.fromRGB(247, 248, 252),
+		Panel = Color3.fromRGB(255, 255, 255),
+		Panel2 = Color3.fromRGB(242, 244, 248),
+		Surface = Color3.fromRGB(250, 250, 252),
+		Text = Color3.fromRGB(18, 18, 22),
+		SubText = Color3.fromRGB(90, 90, 105),
+		Stroke = Color3.fromRGB(170, 170, 185),
+		StrokeSoft = Color3.fromRGB(200, 200, 212),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Crimson = {
-		Primary = Color3.fromRGB(220, 50, 80),
-		BG = Color3.fromRGB(24, 20, 24),
-		Panel = Color3.fromRGB(34, 26, 30),
-		Panel2 = Color3.fromRGB(42, 30, 36),
-		Surface = Color3.fromRGB(30, 22, 26),
-		Text = Color3.fromRGB(240, 238, 242),
-		SubText = Color3.fromRGB(185, 170, 180),
-		Stroke = Color3.fromRGB(110, 90, 100),
-		StrokeSoft = Color3.fromRGB(96, 78, 88),
+		Primary = Color3.fromRGB(175, 25, 55),
+		BG = Color3.fromRGB(20, 12, 14),
+		Panel = Color3.fromRGB(32, 16, 18),
+		Panel2 = Color3.fromRGB(48, 20, 24),
+		Surface = Color3.fromRGB(26, 14, 16),
+		Text = Color3.fromRGB(242, 238, 240),
+		SubText = Color3.fromRGB(200, 185, 190),
+		Stroke = Color3.fromRGB(120, 85, 95),
+		StrokeSoft = Color3.fromRGB(100, 70, 78),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 }
@@ -305,7 +305,8 @@ end
 
 local function _SameColor(a, b)
 	if typeof(a) ~= "Color3" or typeof(b) ~= "Color3" then return false end
-	return a.R == b.R and a.G == b.G and a.B == b.B
+	local eps = 0.005
+	return math.abs(a.R - b.R) < eps and math.abs(a.G - b.G) < eps and math.abs(a.B - b.B) < eps
 end
 
 function UI:SetTheme(theme)
