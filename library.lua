@@ -1623,7 +1623,7 @@ function UI:CreateToggle(sectionBody, opt)
 
 	local glow = Instance.new("UIStroke")
 	glow.Thickness = 2
-	glow.Color = THEME.Primary
+	glow.Color = THEME.Text
 	glow.Transparency = 1
 	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	glow.Parent = track
@@ -1631,16 +1631,16 @@ function UI:CreateToggle(sectionBody, opt)
 	local value = default
 	local function render(anim)
 		local on = value
-		local tcol = on and THEME.Primary or THEME.Text
+		local tcol = THEME.Text
 		local kpos = on and UDim2.fromOffset(27, 3) or UDim2.fromOffset(3, 3)
 		if anim then
 			Tween(knob, {Position = kpos, BackgroundColor3 = tcol}, 0.28)
-			Tween(glow, {Transparency = on and 0.35 or 1}, 0.28)
+			Tween(glow, {Transparency = on and 0.6 or 1}, 0.28)
 			Tween(track, {BackgroundTransparency = on and 0.55 or 0.65}, 0.28)
 		else
 			knob.Position = kpos
 			knob.BackgroundColor3 = tcol
-			glow.Transparency = on and 0.35 or 1
+			glow.Transparency = on and 0.6 or 1
 			track.BackgroundTransparency = on and 0.55 or 0.65
 		end
 	end
@@ -1679,7 +1679,10 @@ function UI:CreateBind(sectionBody, opt)
 	local persistKey = self:_GetPersistKey(sectionBody, "Bind", name)
 
 	if self._UIState and self._UIState[persistKey] ~= nil then
-		default = self._UIState[persistKey]
+		local saved = self._UIState[persistKey]
+		if not (type(saved) == "string" and saved == "") then
+			default = saved
+		end
 	end
 
 	local keyCode = nil
