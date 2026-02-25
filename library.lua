@@ -1593,10 +1593,10 @@ function UI:CreateToggle(sectionBody, opt)
 			Tween(glow, {Transparency = on and 0.6 or 1}, 0.28)
 			Tween(track, {BackgroundColor3 = bgCol, BackgroundTransparency = bgTr}, 0.28)
 			Tween(trackStroke, {Color = stCol, Transparency = stTr}, 0.28)
-			Tween(trackGrad, {Color = ColorSequence.new({
+			trackGrad.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, topCol),
 				ColorSequenceKeypoint.new(1, botCol),
-			})}, 0.28)
+			})
 		else
 			knob.Position = kpos
 			knob.BackgroundColor3 = tcol
