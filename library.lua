@@ -22,14 +22,14 @@ local EASE_DIR = Enum.EasingDirection.Out
 
 local THEME = {
 	Primary = Color3.fromRGB(139, 92, 246),
-	BG = Color3.fromRGB(20, 20, 24),
-	Panel = Color3.fromRGB(28, 28, 34),
-	Panel2 = Color3.fromRGB(34, 34, 42),
-	Surface = Color3.fromRGB(24, 20, 28),
-	Text = Color3.fromRGB(235, 235, 245),
-	SubText = Color3.fromRGB(170, 170, 190),
-	Stroke = Color3.fromRGB(90, 90, 110),
-	StrokeSoft = Color3.fromRGB(78, 78, 96),
+	BG = Color3.fromRGB(238, 238, 244),
+	Panel = Color3.fromRGB(248, 248, 252),
+	Panel2 = Color3.fromRGB(242, 242, 248),
+	Surface = Color3.fromRGB(246, 246, 250),
+	Text = Color3.fromRGB(22, 22, 28),
+	SubText = Color3.fromRGB(90, 90, 102),
+	Stroke = Color3.fromRGB(150, 150, 165),
+	StrokeSoft = Color3.fromRGB(170, 170, 185),
 	Shadow = Color3.fromRGB(0, 0, 0),
 }
 
@@ -1018,7 +1018,7 @@ function UI:Notify(title, body, duration)
 	AddCorner(card, 14)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
 	AddShadow(card, 199)
-	AddGradient(card, Color3.fromRGB(18, 18, 26), Color3.fromRGB(14, 14, 18), 90)
+	AddGradient(card, Color3.fromRGB(252, 252, 255), Color3.fromRGB(242, 242, 248), 90)
 	card.Parent = self._NotifyStack
 
 	local glow = Instance.new("UIStroke")
@@ -3309,7 +3309,7 @@ function UI:CreateWindow()
 	main.ZIndex = 10
 	main.Visible = true
 	AddCorner(main, 12)
-	AddGradient(main, Color3.fromRGB(48, 48, 58), Color3.fromRGB(30, 30, 38), 90)
+	AddGradient(main, Color3.fromRGB(252, 252, 255), Color3.fromRGB(238, 238, 244), 90)
 	AddShadow(main, 9)
 	main.Parent = container
 
@@ -3467,7 +3467,7 @@ function UI:CreateWindow()
 	sidebar.Position = UDim2.fromOffset(0, 0)
 	sidebar.ZIndex = 12
 	AddCorner(sidebar, 12)
-	AddGradient(sidebar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 90)
+	AddGradient(sidebar, Color3.fromRGB(255, 255, 255), Color3.fromRGB(242, 242, 248), 90)
 	sidebar.Parent = body
 
 	local sideDivider = Instance.new("Frame")
@@ -3534,7 +3534,7 @@ function UI:CreateWindow()
 	rightSurface.ZIndex = 12
 	AddCorner(rightSurface, 12)
 	AddStroke(rightSurface, 1, THEME.StrokeSoft, 0.45)
-	AddGradient(rightSurface, Color3.fromRGB(18, 18, 26), Color3.fromRGB(12, 12, 18), 90)
+	AddGradient(rightSurface, Color3.fromRGB(255, 255, 255), Color3.fromRGB(242, 242, 248), 90)
 	AddShadow(rightSurface, 11)
 	rightSurface.Parent = right
 
