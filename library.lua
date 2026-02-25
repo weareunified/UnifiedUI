@@ -1276,7 +1276,7 @@ function UI:CreateSection(page, title)
 	section.BackgroundColor3 = THEME.Surface
 	section.BackgroundTransparency = 0.05
 	section.BorderSizePixel = 0
-	section.Size = UDim2.new(1, 0, 0, ScalePx(54))
+	section.Size = UDim2.new(1, 0, 0, 0)
 	section.AutomaticSize = Enum.AutomaticSize.Y
 	section.ZIndex = 10
 	pcall(function()
@@ -1309,7 +1309,7 @@ function UI:CreateSection(page, title)
 	body.AutomaticSize = Enum.AutomaticSize.Y
 	body.Position = UDim2.fromOffset(9, ScalePx(50))
 	body.ZIndex = 11
-	body.ClipsDescendants = true
+	body.ClipsDescendants = false
 	body.Parent = section
 
 	local list = Instance.new("UIListLayout")
@@ -1323,14 +1323,6 @@ function UI:CreateSection(page, title)
 	pad.PaddingLeft = UDim.new(0, ScalePx(2))
 	pad.PaddingRight = UDim.new(0, ScalePx(2))
 	pad.Parent = body
-
-	local spacer = Instance.new("Frame")
-	spacer.Name = "Spacer"
-	spacer.BackgroundTransparency = 1
-	spacer.BorderSizePixel = 0
-	spacer.Size = UDim2.new(1, 0, 0, ScalePx(28))
-	spacer.LayoutOrder = 999999
-	spacer.Parent = body
 
 	local SectionAPI = {}
 	SectionAPI.Frame = section
