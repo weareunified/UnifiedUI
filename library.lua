@@ -1504,14 +1504,19 @@ function UI:CreateToggle(sectionBody, opt)
 
 	local track = Instance.new("Frame")
 	track.Name = "Track"
-	track.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	track.BackgroundTransparency = 0.65
+	track.BackgroundColor3 = THEME.StrokeSoft
+	track.BackgroundTransparency = 0.55
 	track.BorderSizePixel = 0
 	track.Size = UDim2.fromOffset(46, 22)
 	track.Position = UDim2.new(1, -60, 0.5, -11)
 	track.ZIndex = 22
 	AddCorner(track, 999)
-	AddStroke(track, 1, THEME.StrokeSoft, 0.55)
+	local trackStroke = Instance.new("UIStroke")
+	trackStroke.Thickness = 1
+	trackStroke.Color = THEME.StrokeSoft
+	trackStroke.Transparency = 0.45
+	trackStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	trackStroke.Parent = track
 	track.Parent = row
 
 	local rightReserved = 14 + 46 + 14
@@ -1555,15 +1560,23 @@ function UI:CreateToggle(sectionBody, opt)
 		local on = value
 		local tcol = THEME.Text
 		local kpos = on and UDim2.fromOffset(27, 3) or UDim2.fromOffset(3, 3)
+		local bgCol = on and THEME.Primary or THEME.StrokeSoft
+		local bgTr = on and 0.25 or 0.55
+		local stCol = on and THEME.Primary or THEME.StrokeSoft
+		local stTr = on and 0.15 or 0.45
 		if anim then
 			Tween(knob, {Position = kpos, BackgroundColor3 = tcol}, 0.28)
 			Tween(glow, {Transparency = on and 0.6 or 1}, 0.28)
-			Tween(track, {BackgroundTransparency = on and 0.55 or 0.65}, 0.28)
+			Tween(track, {BackgroundColor3 = bgCol, BackgroundTransparency = bgTr}, 0.28)
+			Tween(trackStroke, {Color = stCol, Transparency = stTr}, 0.28)
 		else
 			knob.Position = kpos
 			knob.BackgroundColor3 = tcol
 			glow.Transparency = on and 0.6 or 1
-			track.BackgroundTransparency = on and 0.55 or 0.65
+			track.BackgroundColor3 = bgCol
+			track.BackgroundTransparency = bgTr
+			trackStroke.Color = stCol
+			trackStroke.Transparency = stTr
 		end
 	end
 
