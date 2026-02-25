@@ -351,12 +351,29 @@ local function _SameColor(a, b)
 	return math.abs(a.R - b.R) < eps and math.abs(a.G - b.G) < eps and math.abs(a.B - b.B) < eps
 end
 
+local function _NormThemeName(s)
+	s = tostring(s or "")
+	s = s:gsub("^%s+", ""):gsub("%s+$", "")
+	return s
+end
+
 function UI:SetTheme(theme)
 	local old = _CopyTheme(THEME)
 	local newTheme = nil
 
 	if type(theme) == "string" then
-		newTheme = THEME_PRESETS[theme]
+		local raw = _NormThemeName(theme)
+		newTheme = THEME_PRESETS[raw]
+		if newTheme == nil then
+			local needle = raw:lower()
+			for k, v in pairs(THEME_PRESETS) do
+				if type(k) == "string" and k:lower() == needle then
+					newTheme = v
+					theme = k
+					break
+				end
+			end
+		end
 	elseif type(theme) == "table" then
 		newTheme = theme
 	end
@@ -429,6 +446,31 @@ function UI:SetTheme(theme)
 	end)
 
 	return true
+end
+
+UI.ThemePresets = THEME_PRESETS
+
+function UI:GetThemeNames()
+	local preferred = {"Default", "Dark", "Light", "Crimson", "Ocean", "Emerald", "Sunset"}
+	local out = {}
+	local used = {}
+	for _, name in ipairs(preferred) do
+		if THEME_PRESETS[name] ~= nil then
+			table.insert(out, name)
+			used[name] = true
+		end
+	end
+	local extra = {}
+	for k, _ in pairs(THEME_PRESETS) do
+		if type(k) == "string" and not used[k] then
+			table.insert(extra, k)
+		end
+	end
+	table.sort(extra)
+	for _, k in ipairs(extra) do
+		table.insert(out, k)
+	end
+	return out
 end
 
 UI._Settings = {
