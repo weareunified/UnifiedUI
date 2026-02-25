@@ -1517,6 +1517,10 @@ function UI:CreateToggle(sectionBody, opt)
 	trackStroke.Transparency = 0.45
 	trackStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	trackStroke.Parent = track
+
+	local trackGrad = Instance.new("UIGradient")
+	trackGrad.Rotation = 90
+	trackGrad.Parent = track
 	track.Parent = row
 
 	local rightReserved = 14 + 46 + 14
@@ -1561,14 +1565,26 @@ function UI:CreateToggle(sectionBody, opt)
 		local tcol = THEME.Text
 		local kpos = on and UDim2.fromOffset(27, 3) or UDim2.fromOffset(3, 3)
 		local bgCol = on and THEME.Primary or THEME.StrokeSoft
-		local bgTr = on and 0.25 or 0.55
+		local bgTr = on and 0.22 or 0.58
 		local stCol = on and THEME.Primary or THEME.StrokeSoft
-		local stTr = on and 0.15 or 0.45
+		local stTr = on and 0.12 or 0.50
+		local function clamp01(x)
+			return math.max(0, math.min(1, x))
+		end
+		local function shade(c, f)
+			return Color3.new(clamp01(c.R * f), clamp01(c.G * f), clamp01(c.B * f))
+		end
+		local topCol = shade(bgCol, on and 1.10 or 1.06)
+		local botCol = shade(bgCol, on and 0.92 or 0.88)
 		if anim then
 			Tween(knob, {Position = kpos, BackgroundColor3 = tcol}, 0.28)
 			Tween(glow, {Transparency = on and 0.6 or 1}, 0.28)
 			Tween(track, {BackgroundColor3 = bgCol, BackgroundTransparency = bgTr}, 0.28)
 			Tween(trackStroke, {Color = stCol, Transparency = stTr}, 0.28)
+			Tween(trackGrad, {Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, topCol),
+				ColorSequenceKeypoint.new(1, botCol),
+			})}, 0.28)
 		else
 			knob.Position = kpos
 			knob.BackgroundColor3 = tcol
@@ -1577,6 +1593,10 @@ function UI:CreateToggle(sectionBody, opt)
 			track.BackgroundTransparency = bgTr
 			trackStroke.Color = stCol
 			trackStroke.Transparency = stTr
+			trackGrad.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, topCol),
+				ColorSequenceKeypoint.new(1, botCol),
+			})
 		end
 	end
 
