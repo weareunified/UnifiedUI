@@ -2262,7 +2262,9 @@ function UI:CreateDropdown(sectionBody, opt)
 			end
 		end
 		
-		optList:ApplyLayout()
+		pcall(function()
+			optList:ApplyLayout()
+		end)
 		
 		if opened then
 			local contentH = optList.AbsoluteContentSize.Y
