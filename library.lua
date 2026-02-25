@@ -1277,6 +1277,7 @@ function UI:CreateSection(page, title)
 	section.BackgroundTransparency = 0.05
 	section.BorderSizePixel = 0
 	section.Size = UDim2.new(1, 0, 0, ScalePx(54))
+	section.AutomaticSize = Enum.AutomaticSize.Y
 	section.ZIndex = 10
 	pcall(function()
 		section:SetAttribute("UH_SectionTitle", tostring(title or "Section"))
@@ -1301,65 +1302,15 @@ function UI:CreateSection(page, title)
 	t.Position = UDim2.fromOffset(0, 0)
 
 	local body
-	local isTouch = IS_MOBILE
-	body = Instance.new("ScrollingFrame")
-	body.Active = true
-	body.ScrollingEnabled = true
-	body.ScrollBarThickness = isTouch and 4 or 2
-	body.ScrollBarImageColor3 = THEME.Primary
-	body.ScrollBarImageTransparency = 0.55
-	body.ScrollingDirection = Enum.ScrollingDirection.Y
-	body.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
-	body.CanvasSize = UDim2.new(0, 0, 0, 0)
-	body.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	body.BorderSizePixel = 0
+	body = Instance.new("Frame")
 	body.Name = "Body"
 	body.BackgroundTransparency = 1
 	body.Size = UDim2.new(1, -18, 0, 0)
+	body.AutomaticSize = Enum.AutomaticSize.Y
 	body.Position = UDim2.fromOffset(9, ScalePx(50))
 	body.ZIndex = 11
 	body.ClipsDescendants = true
 	body.Parent = section
-
-	local function FindParentScrollingFrame(node)
-		local cur = node and node.Parent
-		while cur do
-			if cur:IsA("ScrollingFrame") then
-				return cur
-			end
-			cur = cur.Parent
-		end
-		return nil
-	end
-
-	local parentScroll = FindParentScrollingFrame(body)
-	if parentScroll then
-		body.MouseEnter:Connect(function()
-			parentScroll.ScrollingEnabled = false
-		end)
-		body.MouseLeave:Connect(function()
-			parentScroll.ScrollingEnabled = true
-		end)
-
-		local function bindGuard(obj)
-			if not obj:IsA("GuiObject") then return end
-			obj.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-					parentScroll.ScrollingEnabled = false
-				end
-			end)
-			obj.InputEnded:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.Touch then
-					parentScroll.ScrollingEnabled = true
-				end
-			end)
-		end
-
-		for _, d in ipairs(body:GetDescendants()) do
-			bindGuard(d)
-		end
-		body.DescendantAdded:Connect(bindGuard)
-	end
 
 	local list = Instance.new("UIListLayout")
 	list.Padding = UDim.new(0, ScalePx(10))
@@ -1380,32 +1331,6 @@ function UI:CreateSection(page, title)
 	spacer.Size = UDim2.new(1, 0, 0, ScalePx(28))
 	spacer.LayoutOrder = 999999
 	spacer.Parent = body
-
-	local function updateSize(anim)
-		local contentH = list.AbsoluteContentSize.Y
-		local paddingH = pad.PaddingTop.Offset + pad.PaddingBottom.Offset
-		local slackH = ScalePx(80)
-		contentH = contentH + paddingH + slackH
-		local maxSectionH = isTouch and ScalePx(600) or ScalePx(360)
-		local targetSectionH = math.min(ScalePx(54) + contentH, maxSectionH)
-		local targetBodyH = math.max(0, targetSectionH - ScalePx(54))
-		if anim then
-			Tween(body, {Size = UDim2.new(1, -18, 0, targetBodyH)}, 0.22)
-			Tween(section, {Size = UDim2.new(1, 0, 0, targetSectionH)}, 0.22)
-		else
-			body.Size = UDim2.new(1, -18, 0, targetBodyH)
-			section.Size = UDim2.new(1, 0, 0, targetSectionH)
-		end
-		body.CanvasSize = UDim2.new(0, 0, 0, contentH + 50)
-		body.ScrollingEnabled = true
-		body.ScrollBarThickness = isTouch and 4 or 2
-	end
-
-	list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		updateSize(true)
-	end)
-
-	updateSize(false)
 
 	local SectionAPI = {}
 	SectionAPI.Frame = section
@@ -2956,11 +2881,11 @@ function UI:CreateTab(tabInfo)
 	page.Name = name .. "Page"
 	page.BackgroundTransparency = 1
 	page.BorderSizePixel = 0
-	page.ScrollBarThickness = 2
-	page.ScrollBarImageColor3 = THEME.Primary
-	page.ScrollBarImageTransparency = 0.45
+	page.ScrollBarThickness = 0
+	page.ScrollBarImageTransparency = 1
+	page.ScrollingEnabled = false
 	page.ScrollingDirection = Enum.ScrollingDirection.Y
-	page.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+	page.ElasticBehavior = Enum.ElasticBehavior.Never
 	page.CanvasSize = UDim2.new(0, 0, 0, 0)
 	page.Size = UDim2.fromScale(1, 1)
 	page.Visible = false
@@ -2980,24 +2905,38 @@ function UI:CreateTab(tabInfo)
 	local columnsWrap = Instance.new("Frame")
 	columnsWrap.Name = "Columns"
 	columnsWrap.BackgroundTransparency = 1
-	columnsWrap.Size = UDim2.new(1, 0, 0, 0)
+	columnsWrap.Size = UDim2.new(1, 0, 1, 0)
 	columnsWrap.Position = UDim2.fromOffset(0, 0)
 	columnsWrap.ZIndex = 51
 	columnsWrap.Parent = page
 
 	local colGap = 12
-	local col1 = Instance.new("Frame")
+	local col1 = Instance.new("ScrollingFrame")
 	col1.Name = "Col1"
 	col1.BackgroundTransparency = 1
-	col1.Size = UDim2.new(0.5, -math.floor(colGap/2), 0, 0)
+	col1.BorderSizePixel = 0
+	col1.ScrollBarThickness = 2
+	col1.ScrollBarImageColor3 = THEME.Primary
+	col1.ScrollBarImageTransparency = 0.45
+	col1.ScrollingDirection = Enum.ScrollingDirection.Y
+	col1.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+	col1.CanvasSize = UDim2.new(0, 0, 0, 0)
+	col1.Size = UDim2.new(0.5, -math.floor(colGap/2), 1, 0)
 	col1.Position = UDim2.new(0, 0, 0, 0)
 	col1.ZIndex = 52
 	col1.Parent = columnsWrap
 
-	local col2 = Instance.new("Frame")
+	local col2 = Instance.new("ScrollingFrame")
 	col2.Name = "Col2"
 	col2.BackgroundTransparency = 1
-	col2.Size = UDim2.new(0.5, -math.floor(colGap/2), 0, 0)
+	col2.BorderSizePixel = 0
+	col2.ScrollBarThickness = 2
+	col2.ScrollBarImageColor3 = THEME.Primary
+	col2.ScrollBarImageTransparency = 0.45
+	col2.ScrollingDirection = Enum.ScrollingDirection.Y
+	col2.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+	col2.CanvasSize = UDim2.new(0, 0, 0, 0)
+	col2.Size = UDim2.new(0.5, -math.floor(colGap/2), 1, 0)
 	col2.Position = UDim2.new(0.5, math.floor(colGap/2), 0, 0)
 	col2.ZIndex = 52
 	col2.Parent = columnsWrap
@@ -3012,23 +2951,20 @@ function UI:CreateTab(tabInfo)
 	l2.Padding = UDim.new(0, 14)
 	l2.Parent = col2
 
+	AutoCanvas(col1, l1)
+	AutoCanvas(col2, l2)
+
 	local function updateColumns()
 		local padL = pagePad.PaddingLeft.Offset
 		local padR = pagePad.PaddingRight.Offset
 		local w = math.max(0, page.AbsoluteSize.X - padL - padR)
 		local half = math.floor((w - colGap) / 2)
-		col1.Size = UDim2.new(0, half, 0, l1.AbsoluteContentSize.Y)
-		col2.Size = UDim2.new(0, half, 0, l2.AbsoluteContentSize.Y)
+		col1.Size = UDim2.new(0, half, 1, 0)
+		col2.Size = UDim2.new(0, half, 1, 0)
 		col2.Position = UDim2.new(0, half + colGap, 0, 0)
-
-		local h = math.max(l1.AbsoluteContentSize.Y, l2.AbsoluteContentSize.Y)
-		columnsWrap.Size = UDim2.new(1, 0, 0, h)
-		page.CanvasSize = UDim2.new(0, 0, 0, h + 120)
 	end
 
 	page:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateColumns)
-	l1:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateColumns)
-	l2:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateColumns)
 	updateColumns()
 
 	local TabAPI = {}
