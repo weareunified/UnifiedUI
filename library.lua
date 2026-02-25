@@ -82,6 +82,42 @@ local THEME_PRESETS = {
 		StrokeSoft = Color3.fromRGB(100, 70, 78),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
+	Ocean = {
+		Primary = Color3.fromRGB(35, 160, 255),
+		BG = Color3.fromRGB(18, 22, 28),
+		Panel = Color3.fromRGB(26, 32, 40),
+		Panel2 = Color3.fromRGB(30, 40, 52),
+		Surface = Color3.fromRGB(22, 28, 36),
+		Text = Color3.fromRGB(235, 245, 255),
+		SubText = Color3.fromRGB(165, 190, 205),
+		Stroke = Color3.fromRGB(90, 115, 130),
+		StrokeSoft = Color3.fromRGB(70, 92, 110),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
+	Emerald = {
+		Primary = Color3.fromRGB(35, 220, 150),
+		BG = Color3.fromRGB(18, 24, 22),
+		Panel = Color3.fromRGB(26, 34, 32),
+		Panel2 = Color3.fromRGB(30, 44, 38),
+		Surface = Color3.fromRGB(22, 30, 28),
+		Text = Color3.fromRGB(238, 248, 244),
+		SubText = Color3.fromRGB(170, 200, 190),
+		Stroke = Color3.fromRGB(92, 120, 112),
+		StrokeSoft = Color3.fromRGB(74, 96, 90),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
+	Sunset = {
+		Primary = Color3.fromRGB(255, 120, 55),
+		BG = Color3.fromRGB(24, 18, 20),
+		Panel = Color3.fromRGB(36, 24, 24),
+		Panel2 = Color3.fromRGB(48, 30, 26),
+		Surface = Color3.fromRGB(30, 20, 20),
+		Text = Color3.fromRGB(248, 240, 235),
+		SubText = Color3.fromRGB(210, 190, 180),
+		Stroke = Color3.fromRGB(125, 100, 95),
+		StrokeSoft = Color3.fromRGB(105, 85, 80),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
 }
 
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end)
@@ -2950,10 +2986,18 @@ function UI:CreateTab(tabInfo)
 		local padL = pagePad.PaddingLeft.Offset
 		local padR = pagePad.PaddingRight.Offset
 		local w = math.max(0, page.AbsoluteSize.X - padL - padR)
-		local half = math.floor((w - colGap) / 2)
-		col1.Size = UDim2.new(0, half, 1, 0)
-		col2.Size = UDim2.new(0, half, 1, 0)
-		col2.Position = UDim2.new(0, half + colGap, 0, 0)
+		if IS_MOBILE then
+			col1.Size = UDim2.new(0, w, 1, 0)
+			col2.Visible = false
+			col2.ScrollingEnabled = false
+		else
+			local half = math.floor((w - colGap) / 2)
+			col1.Size = UDim2.new(0, half, 1, 0)
+			col2.Size = UDim2.new(0, half, 1, 0)
+			col2.Position = UDim2.new(0, half + colGap, 0, 0)
+			col2.Visible = true
+			col2.ScrollingEnabled = true
+		end
 	end
 
 	page:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateColumns)
@@ -2976,13 +3020,13 @@ function UI:CreateTab(tabInfo)
 
 	function TabAPI:CreateSection(title)
 		self._ColIndex += 1
-		local parentCol = (self._ColIndex % 2 == 1) and self._Col1 or self._Col2
+		local parentCol = IS_MOBILE and self._Col1 or ((self._ColIndex % 2 == 1) and self._Col1 or self._Col2)
 		return UI:CreateSection(parentCol, title)
 	end
 
 	function TabAPI:CreateLockedSection(title)
 		self._ColIndex += 1
-		local parentCol = (self._ColIndex % 2 == 1) and self._Col1 or self._Col2
+		local parentCol = IS_MOBILE and self._Col1 or ((self._ColIndex % 2 == 1) and self._Col1 or self._Col2)
 		return UI:CreateLockedSection(parentCol, title)
 	end
 
