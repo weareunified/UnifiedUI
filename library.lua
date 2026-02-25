@@ -3060,12 +3060,12 @@ function UI:CreateTab(tabInfo)
 
 	local l1 = Instance.new("UIListLayout")
 	l1.SortOrder = Enum.SortOrder.LayoutOrder
-	l1.Padding = UDim.new(0, 14)
+	l1.Padding = UDim.new(0, 8)
 	l1.Parent = col1
 
 	local l2 = Instance.new("UIListLayout")
 	l2.SortOrder = Enum.SortOrder.LayoutOrder
-	l2.Padding = UDim.new(0, 14)
+	l2.Padding = UDim.new(0, 8)
 	l2.Parent = col2
 
 	AutoCanvas(col1, l1)
