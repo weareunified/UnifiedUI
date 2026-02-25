@@ -22,15 +22,54 @@ local EASE_DIR = Enum.EasingDirection.Out
 
 local THEME = {
 	Primary = Color3.fromRGB(139, 92, 246),
-	BG = Color3.fromRGB(238, 238, 244),
-	Panel = Color3.fromRGB(248, 248, 252),
-	Panel2 = Color3.fromRGB(242, 242, 248),
-	Surface = Color3.fromRGB(246, 246, 250),
-	Text = Color3.fromRGB(22, 22, 28),
-	SubText = Color3.fromRGB(90, 90, 102),
-	Stroke = Color3.fromRGB(150, 150, 165),
-	StrokeSoft = Color3.fromRGB(170, 170, 185),
+	BG = Color3.fromRGB(26, 26, 32),
+	Panel = Color3.fromRGB(34, 34, 42),
+	Panel2 = Color3.fromRGB(40, 40, 50),
+	Surface = Color3.fromRGB(30, 26, 36),
+	Text = Color3.fromRGB(235, 235, 245),
+	SubText = Color3.fromRGB(170, 170, 190),
+	Stroke = Color3.fromRGB(90, 90, 110),
+	StrokeSoft = Color3.fromRGB(78, 78, 96),
 	Shadow = Color3.fromRGB(0, 0, 0),
+}
+
+local THEME_PRESETS = {
+	Dark = {
+		Primary = Color3.fromRGB(139, 92, 246),
+		BG = Color3.fromRGB(20, 20, 24),
+		Panel = Color3.fromRGB(28, 28, 34),
+		Panel2 = Color3.fromRGB(34, 34, 42),
+		Surface = Color3.fromRGB(24, 20, 28),
+		Text = Color3.fromRGB(235, 235, 245),
+		SubText = Color3.fromRGB(170, 170, 190),
+		Stroke = Color3.fromRGB(90, 90, 110),
+		StrokeSoft = Color3.fromRGB(78, 78, 96),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
+	Light = {
+		Primary = Color3.fromRGB(139, 92, 246),
+		BG = Color3.fromRGB(235, 236, 242),
+		Panel = Color3.fromRGB(248, 248, 252),
+		Panel2 = Color3.fromRGB(240, 241, 247),
+		Surface = Color3.fromRGB(252, 252, 255),
+		Text = Color3.fromRGB(28, 28, 34),
+		SubText = Color3.fromRGB(95, 95, 115),
+		Stroke = Color3.fromRGB(160, 160, 175),
+		StrokeSoft = Color3.fromRGB(185, 185, 200),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
+	Crimson = {
+		Primary = Color3.fromRGB(220, 50, 80),
+		BG = Color3.fromRGB(24, 20, 24),
+		Panel = Color3.fromRGB(34, 26, 30),
+		Panel2 = Color3.fromRGB(42, 30, 36),
+		Surface = Color3.fromRGB(30, 22, 26),
+		Text = Color3.fromRGB(240, 238, 242),
+		SubText = Color3.fromRGB(185, 170, 180),
+		Stroke = Color3.fromRGB(110, 90, 100),
+		StrokeSoft = Color3.fromRGB(96, 78, 88),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
 }
 
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end)
@@ -242,12 +281,108 @@ UI._Open = true
 UI._TabSwitchToken = 0
 
 UI._SearchToken = 0
+UI._Settings = UI._Settings or {}
+
+local function _CopyTheme(src)
+	local t = {}
+	for k, v in pairs(src or {}) do
+		t[k] = v
+	end
+	return t
+end
+
+local function _SameColor(a, b)
+	if typeof(a) ~= "Color3" or typeof(b) ~= "Color3" then return false end
+	return a.R == b.R and a.G == b.G and a.B == b.B
+end
+
+function UI:SetTheme(theme)
+	local old = _CopyTheme(THEME)
+	local newTheme = nil
+
+	if type(theme) == "string" then
+		newTheme = THEME_PRESETS[theme]
+	elseif type(theme) == "table" then
+		newTheme = theme
+	end
+
+	if type(newTheme) ~= "table" then return false end
+
+	for k, _ in pairs(THEME) do
+		if typeof(newTheme[k]) == "Color3" then
+			THEME[k] = newTheme[k]
+		end
+	end
+
+	self._Settings.Theme = (type(theme) == "string") and theme or (self._Settings.Theme or "Custom")
+
+	local sg = self.ScreenGui
+	if not sg then return true end
+
+	for _, inst in ipairs(sg:GetDescendants()) do
+		pcall(function()
+			if inst:IsA("GuiObject") then
+				local bc = inst.BackgroundColor3
+				for k, oc in pairs(old) do
+					if _SameColor(bc, oc) then
+						inst.BackgroundColor3 = THEME[k]
+						break
+					end
+				end
+			elseif inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
+				local tc = inst.TextColor3
+				for k, oc in pairs(old) do
+					if _SameColor(tc, oc) then
+						inst.TextColor3 = THEME[k]
+						break
+					end
+				end
+			elseif inst:IsA("UIStroke") then
+				local c = inst.Color
+				for k, oc in pairs(old) do
+					if _SameColor(c, oc) then
+						inst.Color = THEME[k]
+						break
+					end
+				end
+			elseif inst:IsA("UIGradient") then
+				local cs = inst.Color
+				local keys = cs.Keypoints
+				local changed = false
+				for i = 1, #keys do
+					local kp = keys[i]
+					local col = kp.Value
+					for k, oc in pairs(old) do
+						if _SameColor(col, oc) then
+							keys[i] = ColorSequenceKeypoint.new(kp.Time, THEME[k])
+							changed = true
+							break
+						end
+					end
+				end
+				if changed then
+					inst.Color = ColorSequence.new(keys)
+				end
+			end
+		end)
+	end
+
+	pcall(function()
+		if type(self._SaveSettings) == "function" then
+			self:_SaveSettings()
+		end
+	end)
+
+	return true
+end
+
 UI._Settings = {
 	MinimizeKeyCode = Enum.KeyCode.RightControl,
 	NotificationsEnabled = true,
 	AutoLoadEnabled = false,
 	AutoLoadName = "default",
 	Language = "English",
+	Theme = "",
 	Opacity = 90,
 	FadeSpeed = 0.35,
 }
@@ -260,6 +395,10 @@ UI._BindControls = {}
 
 UI._UIState = {}
 UI._Controls = {}
+
+pcall(function()
+	UI:_LoadSettings()
+end)
 
 UI._Translations = {
 	English = {},
@@ -672,6 +811,9 @@ function UI:_LoadSettings()
 	if type(decoded.Language) == "string" then
 		self._Settings.Language = decoded.Language
 	end
+	if type(decoded.Theme) == "string" then
+		self._Settings.Theme = decoded.Theme
+	end
 	if type(decoded.UIState) == "table" then
 		self._UIState = decoded.UIState
 	end
@@ -685,6 +827,7 @@ function UI:_SaveSettings()
 		AutoLoadEnabled = false,
 		AutoLoadName = (self._Settings and self._Settings.AutoLoadName) or "default",
 		Language = (self._Settings and self._Settings.Language) or "English",
+		Theme = (self._Settings and self._Settings.Theme) or "",
 		Opacity = (self._Settings and self._Settings.Opacity) or 90,
 		UIState = self._UIState,
 	}
@@ -1018,7 +1161,7 @@ function UI:Notify(title, body, duration)
 	AddCorner(card, 14)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
 	AddShadow(card, 199)
-	AddGradient(card, Color3.fromRGB(252, 252, 255), Color3.fromRGB(242, 242, 248), 90)
+	AddGradient(card, Color3.fromRGB(18, 18, 26), Color3.fromRGB(14, 14, 18), 90)
 	card.Parent = self._NotifyStack
 
 	local glow = Instance.new("UIStroke")
@@ -3309,7 +3452,7 @@ function UI:CreateWindow()
 	main.ZIndex = 10
 	main.Visible = true
 	AddCorner(main, 12)
-	AddGradient(main, Color3.fromRGB(252, 252, 255), Color3.fromRGB(238, 238, 244), 90)
+	AddGradient(main, Color3.fromRGB(48, 48, 58), Color3.fromRGB(30, 30, 38), 90)
 	AddShadow(main, 9)
 	main.Parent = container
 
@@ -3467,7 +3610,7 @@ function UI:CreateWindow()
 	sidebar.Position = UDim2.fromOffset(0, 0)
 	sidebar.ZIndex = 12
 	AddCorner(sidebar, 12)
-	AddGradient(sidebar, Color3.fromRGB(255, 255, 255), Color3.fromRGB(242, 242, 248), 90)
+	AddGradient(sidebar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 90)
 	sidebar.Parent = body
 
 	local sideDivider = Instance.new("Frame")
@@ -3534,7 +3677,7 @@ function UI:CreateWindow()
 	rightSurface.ZIndex = 12
 	AddCorner(rightSurface, 12)
 	AddStroke(rightSurface, 1, THEME.StrokeSoft, 0.45)
-	AddGradient(rightSurface, Color3.fromRGB(255, 255, 255), Color3.fromRGB(242, 242, 248), 90)
+	AddGradient(rightSurface, Color3.fromRGB(18, 18, 26), Color3.fromRGB(12, 12, 18), 90)
 	AddShadow(rightSurface, 11)
 	rightSurface.Parent = right
 
@@ -3643,6 +3786,11 @@ function UI:CreateWindow()
 	self._TabsHolder = tabsHolder
 	self._Pages = pages
 	self._NotifyStack = notifyStack
+	pcall(function()
+		if type(self._Settings) == "table" and type(self._Settings.Theme) == "string" and self._Settings.Theme ~= "" then
+			self:SetTheme(self._Settings.Theme)
+		end
+	end)
 	pcall(function()
 		self:_AttachLocalization(sg)
 		self:_ApplyLanguageNow()
