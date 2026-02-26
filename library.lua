@@ -2077,27 +2077,11 @@ function UI:CreateSlider(sectionBody, opt)
 	local default = tonumber(opt.Default) or min
 	local step = tonumber(opt.Step) or 1
 	local cb = opt.Callback or function() end
-	local function _DecimalsFromStep(s)
-		s = tonumber(s) or 1
-		if s <= 0 then return 0 end
-		local txt = tostring(s)
-		local dec = txt:match("%.(%d+)")
-		if dec then
-			return math.clamp(#dec, 0, 6)
-		end
-		return 0
-	end
 	local function _FormatNumber(n)
 		n = tonumber(n)
 		if n == nil then return "0" end
-		local d = _DecimalsFromStep(step)
-		local p = 10 ^ d
-		n = math.floor((n * p) + 0.5) / p
-		local s = string.format("%." .. tostring(d) .. "f", n)
-		if d > 0 then
-			s = s:gsub("0+$", ""):gsub("%.$", "")
-		end
-		return s
+		n = math.floor(n + 0.5)
+		return tostring(n)
 	end
 	local persistKey = self:_GetPersistKey(sectionBody, "Slider", name)
 	if self._UIState and type(self._UIState[persistKey]) == "number" then
