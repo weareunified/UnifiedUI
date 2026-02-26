@@ -346,38 +346,6 @@ UI._Alive = true
 UI._Open = true
 UI._TabSwitchToken = 0
 
-local function _GetDropdownLayer(ui)
-	if ui and ui._DropdownLayer and ui._DropdownLayer.Parent then
-		return ui._DropdownLayer
-	end
-	local sg = ui and ui.ScreenGui
-	if not (sg and sg.Parent) then
-		return nil
-	end
-	local layer = sg:FindFirstChild("UH_DropdownLayer")
-	if layer and layer:IsA("Frame") then
-		ui._DropdownLayer = layer
-		return layer
-	end
-	layer = Instance.new("Frame")
-	layer.Name = "UH_DropdownLayer"
-	layer.BackgroundTransparency = 1
-	layer.Size = UDim2.fromScale(1, 1)
-	layer.Position = UDim2.fromScale(0, 0)
-	layer.ZIndex = 1000
-	layer.Parent = sg
-	ui._DropdownLayer = layer
-	return layer
-end
-
-local function _CloseActiveDropdown(ui)
-	pcall(function()
-		if ui and type(ui._ActiveDropdownClose) == "function" then
-			ui._ActiveDropdownClose()
-		end
-	end)
-end
-
 UI._SearchToken = 0
 UI._Settings = UI._Settings or {}
 
@@ -1592,129 +1560,65 @@ function UI:CreateToggle(sectionBody, opt)
 	local row = Instance.new("Frame")
 	row.Name = "Toggle"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 1
+	row.BackgroundTransparency = 0.2
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, ScalePx(40))
+	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
 	row.ZIndex = 20
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
-	AddCorner(row, 14)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = sectionBody
 
 	local btn = MakeButtonBase(row)
 	btn.ZIndex = 21
 	btn.Size = UDim2.fromScale(1, 1)
-	BindHoverFX(btn, row)
-	BindClickFX(btn, row)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
 	lbl.Position = UDim2.fromOffset(14, 0)
-	lbl.TextWrapped = true
+	lbl.Size = UDim2.new(1, -70, 1, 0)
 	lbl.TextYAlignment = Enum.TextYAlignment.Center
-	lbl.ClipsDescendants = true
-	if IS_MOBILE then
-		lbl.Position = UDim2.fromOffset(14, ScalePx(6))
-		lbl.TextYAlignment = Enum.TextYAlignment.Top
-		lbl.TextSize = math.max(10, math.floor(lbl.TextSize * 0.92))
-	end
 
 	local track = Instance.new("Frame")
 	track.Name = "Track"
 	track.BackgroundColor3 = THEME.StrokeSoft
-	track.BackgroundTransparency = 0.55
+	track.BackgroundTransparency = 0.5
 	track.BorderSizePixel = 0
-	track.Size = UDim2.fromOffset(46, 22)
-	track.Position = UDim2.new(1, -60, 0.5, -11)
+	track.Size = UDim2.fromOffset(40, 20)
+	track.Position = UDim2.new(1, -14, 0.5, 0)
+	track.AnchorPoint = Vector2.new(1, 0.5)
 	track.ZIndex = 22
 	AddCorner(track, 999)
-	local trackStroke = Instance.new("UIStroke")
-	trackStroke.Thickness = 1
-	trackStroke.Color = THEME.StrokeSoft
-	trackStroke.Transparency = 0.45
-	trackStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	trackStroke.Parent = track
-
-	local trackGrad = Instance.new("UIGradient")
-	trackGrad.Rotation = 90
-	trackGrad.Parent = track
 	track.Parent = row
-
-	local rightReserved = 14 + 46 + 14
-	if IS_MOBILE then
-		lbl.Size = UDim2.new(1, -(14 + rightReserved), 1, -ScalePx(12))
-	else
-		lbl.Size = UDim2.new(1, -(14 + rightReserved), 1, 0)
-	end
-
-	local function updateRowHeight()
-		local minH = ScalePx(40)
-		local padV = ScalePx(12)
-		local needed = math.max(minH, math.floor(lbl.TextBounds.Y + padV + 0.5))
-		row.Size = UDim2.new(1, 0, 0, needed)
-		track.Position = UDim2.new(1, -60, 0.5, -math.floor(track.Size.Y.Offset / 2))
-	end
-
-	lbl:GetPropertyChangedSignal("TextBounds"):Connect(updateRowHeight)
-	updateRowHeight()
 
 	local knob = Instance.new("Frame")
 	knob.Name = "Knob"
 	knob.BackgroundColor3 = THEME.Text
-	knob.BackgroundTransparency = 0
 	knob.BorderSizePixel = 0
-	knob.Size = UDim2.fromOffset(16, 16)
-	knob.Position = UDim2.fromOffset(3, 3)
+	knob.Size = UDim2.fromOffset(14, 14)
+	knob.Position = UDim2.new(0, 3, 0.5, 0)
+	knob.AnchorPoint = Vector2.new(0, 0.5)
 	knob.ZIndex = 23
 	AddCorner(knob, 999)
 	knob.Parent = track
 
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Text
-	glow.Transparency = 1
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = track
-
 	local value = default
 	local function render(anim)
-		local on = value
-		local tcol = THEME.Text
-		local kpos = on and UDim2.fromOffset(27, 3) or UDim2.fromOffset(3, 3)
-		local bgCol = on and THEME.Primary or THEME.StrokeSoft
-		local bgTr = on and 0.22 or 0.58
-		local stCol = on and THEME.Primary or THEME.StrokeSoft
-		local stTr = on and 0.12 or 0.50
-		local function clamp01(x)
-			return math.max(0, math.min(1, x))
-		end
-		local function shade(c, f)
-			return Color3.new(clamp01(c.R * f), clamp01(c.G * f), clamp01(c.B * f))
-		end
-		local topCol = shade(bgCol, on and 1.10 or 1.06)
-		local botCol = shade(bgCol, on and 0.92 or 0.88)
+		local kpos = value and UDim2.new(1, -3, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+		local kanchor = value and Vector2.new(1, 0.5) or Vector2.new(0, 0.5)
+		local trackCol = value and THEME.Primary or THEME.StrokeSoft
+		local trackTr = value and 0.2 or 0.5
+
 		if anim then
-			Tween(knob, {Position = kpos, BackgroundColor3 = tcol}, 0.28)
-			Tween(glow, {Transparency = on and 0.6 or 1}, 0.28)
-			Tween(track, {BackgroundColor3 = bgCol, BackgroundTransparency = bgTr}, 0.28)
-			Tween(trackStroke, {Color = stCol, Transparency = stTr}, 0.28)
-			trackGrad.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, topCol),
-				ColorSequenceKeypoint.new(1, botCol),
-			})
+			Tween(knob, {Position = kpos, AnchorPoint = kanchor}, 0.2, Enum.EasingStyle.Quad)
+			Tween(track, {BackgroundColor3 = trackCol, BackgroundTransparency = trackTr}, 0.2)
 		else
 			knob.Position = kpos
-			knob.BackgroundColor3 = tcol
-			glow.Transparency = on and 0.6 or 1
-			track.BackgroundColor3 = bgCol
-			track.BackgroundTransparency = bgTr
-			trackStroke.Color = stCol
-			trackStroke.Transparency = stTr
-			trackGrad.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, topCol),
-				ColorSequenceKeypoint.new(1, botCol),
-			})
+			knob.AnchorPoint = kanchor
+			track.BackgroundColor3 = trackCol
+			track.BackgroundTransparency = trackTr
 		end
 	end
 
@@ -1722,11 +1626,11 @@ function UI:CreateToggle(sectionBody, opt)
 		value = not value
 		render(true)
 		self._UIState[persistKey] = value
-		task.spawn(function()
-			pcall(cb, value)
-		end)
+		task.spawn(function() pcall(cb, value) end)
 	end)
 
+	BindHoverFX(btn, row)
+	BindClickFX(btn, row)
 	render(false)
 
 	local api = {}
@@ -1757,15 +1661,6 @@ function UI:CreateBind(sectionBody, opt)
 			default = saved
 		end
 	end
-
-	local keyCode = nil
-	pcall(function()
-		if typeof(default) == "EnumItem" and default.EnumType == Enum.KeyCode then
-			keyCode = default
-		elseif type(default) == "string" and Enum.KeyCode[default] then
-			keyCode = Enum.KeyCode[default]
-		end
-	end)
 
 	local row = Instance.new("Frame")
 	row.Name = "Bind"
@@ -1890,48 +1785,34 @@ function UI:CreateButton(sectionBody, opt)
 	local row = Instance.new("Frame")
 	row.Name = "Button"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 0.25
+	row.BackgroundTransparency = 0.2
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
+	row.Size = UDim2.new(1, 0, 0, ScalePx(40))
 	row.ZIndex = 20
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
-	AddCorner(row, 14)
-	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = sectionBody
 
 	local btn = MakeButtonBase(row)
 	btn.ZIndex = 22
 	btn.Size = UDim2.fromScale(1, 1)
 	btn.Active = true
-	BindHoverFX(btn, row)
-	BindClickFX(btn, row)
-
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Primary
-	glow.Transparency = 1
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = row
-
-	btn.MouseEnter:Connect(function()
-		Tween(glow, {Transparency = 0.45}, 0.22)
-	end)
-	btn.MouseLeave:Connect(function()
-		Tween(glow, {Transparency = 1}, 0.22)
-	end)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 23
-	lbl.Size = UDim2.new(1, -28, 1, 0)
-	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.Size = UDim2.new(1, 0, 1, 0)
+	lbl.TextXAlignment = Enum.TextXAlignment.Center
+	lbl.TextColor3 = THEME.Text
 
 	btn.Activated:Connect(function()
-		task.spawn(function()
-			pcall(cb)
-		end)
+		task.spawn(function() pcall(cb) end)
 	end)
+
+	BindHoverFX(btn, row)
+	BindClickFX(btn, row)
 
 	local api = {}
 	api.Frame = row
@@ -1939,9 +1820,7 @@ function UI:CreateButton(sectionBody, opt)
 	api.SetText = function(_, text)
 		local t = tostring(text)
 		lbl.Text = t
-		pcall(function()
-			row:SetAttribute("UH_SearchText", t)
-		end)
+		pcall(function() row:SetAttribute("UH_SearchText", t) end)
 	end
 	return api
 end
@@ -1953,43 +1832,40 @@ function UI:CreateLockedButton(sectionBody, opt)
 	local row = Instance.new("Frame")
 	row.Name = "LockedButton"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 0.55
+	row.BackgroundTransparency = 0.5
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
+	row.Size = UDim2.new(1, 0, 0, ScalePx(40))
 	row.ZIndex = 20
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
-	AddCorner(row, 14)
-	AddStroke(row, 1, THEME.StrokeSoft, 0.7)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = sectionBody
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 23
 	lbl.TextColor3 = THEME.SubText
-	lbl.Size = UDim2.new(1, -120, 1, 0)
-	lbl.Position = UDim2.fromOffset(14, 0)
-	lbl.TextYAlignment = Enum.TextYAlignment.Center
+	lbl.Size = UDim2.new(1, 0, 1, 0)
+	lbl.TextXAlignment = Enum.TextXAlignment.Center
 
 	local pill = Instance.new("Frame")
 	pill.Name = "LockedPill"
-	pill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	pill.BackgroundTransparency = 0.88
-	pill.BorderSizePixel = 0
+	pill.BackgroundColor3 = THEME.BG
+	pill.BackgroundTransparency = 0.2
+	pill.Size = UDim2.fromOffset(60, 18)
+	pill.Position = UDim2.new(1, -10, 0.5, 0)
 	pill.AnchorPoint = Vector2.new(1, 0.5)
-	pill.Position = UDim2.new(1, -14, 0.5, 0)
-	pill.Size = UDim2.fromOffset(78, ScalePx(22))
-	pill.ZIndex = 23
-	AddCorner(pill, 999)
-	AddStroke(pill, 1, THEME.StrokeSoft, 0.75)
+	pill.ZIndex = 24
+	AddCorner(pill, 8)
+	AddStroke(pill, 1, THEME.StrokeSoft, 0.6)
 	pill.Parent = row
 
-	local ptxt = MakeText(pill, "LOCKED", 11, "bold")
-	ptxt.ZIndex = pill.ZIndex + 1
+	local ptxt = MakeText(pill, "LOCKED", 10, "bold")
 	ptxt.TextColor3 = THEME.SubText
 	ptxt.TextXAlignment = Enum.TextXAlignment.Center
 	ptxt.Size = UDim2.fromScale(1, 1)
-	ptxt.Position = UDim2.fromOffset(0, 0)
+	ptxt.Parent = pill
 
 	local blocker = Instance.new("TextButton")
 	blocker.Name = "Blocker"
@@ -1997,9 +1873,12 @@ function UI:CreateLockedButton(sectionBody, opt)
 	blocker.BackgroundTransparency = 1
 	blocker.Text = ""
 	blocker.Size = UDim2.fromScale(1, 1)
-	blocker.Position = UDim2.fromScale(0, 0)
-	blocker.ZIndex = 24
+	blocker.ZIndex = 25
 	blocker.Parent = row
+
+	blocker.MouseButton1Click:Connect(function()
+		UI:Notify("Premium", "This feature is locked!", 2)
+	end)
 
 	local api = {}
 	api.Frame = row
@@ -2007,9 +1886,7 @@ function UI:CreateLockedButton(sectionBody, opt)
 	api.SetText = function(_, text)
 		local t = tostring(text)
 		lbl.Text = t
-		pcall(function()
-			row:SetAttribute("UH_SearchText", t)
-		end)
+		pcall(function() row:SetAttribute("UH_SearchText", t) end)
 	end
 	return api
 end
@@ -2028,39 +1905,22 @@ function UI:CreateTextbox(sectionBody, opt)
 	local row = Instance.new("Frame")
 	row.Name = "Textbox"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 0.25
+	row.BackgroundTransparency = 0.2
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, 54)
+	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
 	row.ZIndex = 20
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
-	AddCorner(row, 14)
-	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = sectionBody
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
-	lbl.Position = UDim2.fromOffset(14, 8)
-
-	local boxBg = Instance.new("Frame")
-	boxBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	boxBg.BackgroundTransparency = 0.92
-	boxBg.BorderSizePixel = 0
-	boxBg.Size = UDim2.new(1, -28, 0, 24)
-	boxBg.Position = UDim2.fromOffset(14, 26)
-	boxBg.ZIndex = 21
-	AddCorner(boxBg, 10)
-	AddStroke(boxBg, 1, THEME.StrokeSoft, 0.55)
-	boxBg.Parent = row
-
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Primary
-	glow.Transparency = 1
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = boxBg
+	lbl.Size = UDim2.new(1, -160, 1, 0)
+	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.TextYAlignment = Enum.TextYAlignment.Center
 
 	local box = Instance.new("TextBox")
 	box.BackgroundTransparency = 1
@@ -2068,24 +1928,33 @@ function UI:CreateTextbox(sectionBody, opt)
 	box.PlaceholderText = placeholder
 	box.PlaceholderColor3 = THEME.SubText
 	box.TextColor3 = THEME.Text
-	box.TextSize = math.floor((12 * TEXT_SCALE) + 0.5)
+	box.TextSize = 12 * TEXT_SCALE
 	box.Font = Enum.Font.Gotham
 	box.ClearTextOnFocus = false
-	box.TextXAlignment = Enum.TextXAlignment.Left
-	box.Size = UDim2.new(1, -12, 1, 0)
-	box.Position = UDim2.fromOffset(8, 0)
+	box.TextXAlignment = Enum.TextXAlignment.Right
+	box.Size = UDim2.new(0, 140, 0, 24)
+	box.Position = UDim2.new(1, -14, 0.5, 0)
+	box.AnchorPoint = Vector2.new(1, 0.5)
 	box.ZIndex = 22
-	box.Parent = boxBg
+	box.Parent = row
+
+	local underline = Instance.new("Frame")
+	underline.BackgroundColor3 = THEME.Primary
+	underline.BackgroundTransparency = 0.5
+	underline.BorderSizePixel = 0
+	underline.Size = UDim2.new(0, 0, 0, 1)
+	underline.Position = UDim2.new(1, -14, 0.5, 12)
+	underline.AnchorPoint = Vector2.new(1, 0.5)
+	underline.ZIndex = 23
+	underline.Parent = row
 
 	box.Focused:Connect(function()
-		Tween(glow, {Transparency = 0.35}, 0.22)
+		Tween(underline, {Size = UDim2.new(0, 140, 0, 1), BackgroundTransparency = 0}, 0.2)
 	end)
 	box.FocusLost:Connect(function(enterPressed)
-		Tween(glow, {Transparency = 1}, 0.22)
+		Tween(underline, {Size = UDim2.new(0, 0, 0, 1), BackgroundTransparency = 0.5}, 0.2)
 		self._UIState[persistKey] = box.Text
-		task.spawn(function()
-			pcall(cb, box.Text, enterPressed)
-		end)
+		task.spawn(function() pcall(cb, box.Text, enterPressed) end)
 	end)
 
 	local api = {}
@@ -2109,28 +1978,6 @@ function UI:CreateSlider(sectionBody, opt)
 	local default = tonumber(opt.Default) or min
 	local step = tonumber(opt.Step) or 1
 	local cb = opt.Callback or function() end
-	local function _DecimalsFromStep(s)
-		s = tonumber(s) or 1
-		if s <= 0 then return 0 end
-		local txt = tostring(s)
-		local dec = txt:match("%.(%d+)")
-		if dec then
-			return math.clamp(#dec, 0, 6)
-		end
-		return 0
-	end
-	local function _FormatNumber(n)
-		n = tonumber(n)
-		if n == nil then return "0" end
-		local d = _DecimalsFromStep(step)
-		local p = 10 ^ d
-		n = math.floor((n * p) + 0.5) / p
-		local s = string.format("%." .. tostring(d) .. "f", n)
-		if d > 0 then
-			s = s:gsub("0+$", ""):gsub("%.$", "")
-		end
-		return s
-	end
 	local persistKey = self:_GetPersistKey(sectionBody, "Slider", name)
 	if self._UIState and type(self._UIState[persistKey]) == "number" then
 		default = tonumber(self._UIState[persistKey]) or default
@@ -2139,15 +1986,15 @@ function UI:CreateSlider(sectionBody, opt)
 	local row = Instance.new("Frame")
 	row.Name = "Slider"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 0.25
+	row.BackgroundTransparency = 0.2
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, ScalePx(62))
+	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
 	row.ZIndex = 20
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
-	AddCorner(row, 14)
-	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = sectionBody
 
 	local lbl = MakeText(row, name, 13, "semibold")
@@ -2155,142 +2002,79 @@ function UI:CreateSlider(sectionBody, opt)
 	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
 
-	local valLbl = MakeText(row, _FormatNumber(default), 12, "")
-	valLbl.TextColor3 = THEME.SubText
-	valLbl.TextXAlignment = Enum.TextXAlignment.Right
-	valLbl.ZIndex = 22
-	valLbl.Size = UDim2.fromOffset(90, 18)
-	valLbl.Position = UDim2.new(1, -104, 0, 8)
-
 	local valBox = Instance.new("TextBox")
 	valBox.BackgroundTransparency = 1
-	valBox.Text = valLbl.Text
-	valBox.TextColor3 = valLbl.TextColor3
-	valBox.TextSize = valLbl.TextSize
-	valBox.Font = valLbl.Font
-	valBox.ClearTextOnFocus = false
+	valBox.Text = tostring(default)
+	valBox.TextColor3 = THEME.SubText
+	valBox.TextSize = 12 * TEXT_SCALE
+	valBox.Font = Enum.Font.Gotham
 	valBox.TextXAlignment = Enum.TextXAlignment.Right
-	valBox.TextYAlignment = Enum.TextYAlignment.Center
-	valBox.RichText = false
-	valBox.ZIndex = valLbl.ZIndex + 1
-	valBox.Size = valLbl.Size
-	valBox.Position = valLbl.Position
-	valLbl.Visible = false
+	valBox.ZIndex = 23
+	valBox.Size = UDim2.fromOffset(80, 18)
+	valBox.Position = UDim2.new(1, -14, 0, 8)
+	valBox.AnchorPoint = Vector2.new(1, 0)
+	valBox.Parent = row
 
 	local bar = Instance.new("Frame")
-	bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	bar.BackgroundTransparency = 0.92
+	bar.BackgroundColor3 = THEME.Surface
+	bar.BackgroundTransparency = 0.5
 	bar.BorderSizePixel = 0
-	bar.Size = UDim2.new(1, -64, 0, 10)
-	bar.Position = UDim2.fromOffset(14, 36)
+	bar.Size = UDim2.new(1, -28, 0, 4)
+	bar.Position = UDim2.fromOffset(14, 38)
 	bar.ZIndex = 21
 	AddCorner(bar, 999)
-	AddStroke(bar, 1, THEME.StrokeSoft, 0.6)
 	bar.Parent = row
-
-	local endLbl = MakeText(row, _FormatNumber(default), 11, "semibold")
-	endLbl.Name = "ValueDisplay"
-	endLbl.TextColor3 = THEME.Primary
-	endLbl.TextXAlignment = Enum.TextXAlignment.Center
-	endLbl.Size = UDim2.fromOffset(36, 18)
-	endLbl.Position = UDim2.new(1, -44, 0, 32)
-	endLbl.ZIndex = 22
 
 	local fill = Instance.new("Frame")
 	fill.BackgroundColor3 = THEME.Primary
-	fill.BackgroundTransparency = 0.0
 	fill.BorderSizePixel = 0
 	fill.Size = UDim2.new(0, 0, 1, 0)
-	fill.Position = UDim2.fromScale(0, 0)
 	fill.ZIndex = 22
 	AddCorner(fill, 999)
 	fill.Parent = bar
-	AddGradient(fill, Color3.fromRGB(160, 120, 255), THEME.Primary, 0)
 
 	local knob = Instance.new("Frame")
 	knob.BackgroundColor3 = THEME.Text
-	knob.BackgroundTransparency = 0.05
-	knob.BorderSizePixel = 0
-	knob.Size = UDim2.fromOffset(16, 16)
+	knob.Size = UDim2.fromOffset(12, 12)
 	knob.AnchorPoint = Vector2.new(0.5, 0.5)
 	knob.Position = UDim2.new(0, 0, 0.5, 0)
 	knob.ZIndex = 23
 	AddCorner(knob, 999)
 	knob.Parent = bar
 
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Primary
-	glow.Transparency = 0.65
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = knob
-
-	local hit = MakeButtonBase(bar)
-	hit.ZIndex = 24
-	hit.Size = UDim2.fromScale(1, 1)
-	hit.BackgroundTransparency = 1
-	BindHoverFX(hit, bar)
-
 	local dragging = false
 	local value = default
 
-	local function clampStep(v)
-		v = math.clamp(v, min, max)
-		local snapped = math.floor(((v - min) / step) + 0.5) * step + min
-		snapped = math.clamp(snapped, min, max)
-		return snapped
-	end
-
 	local function render(anim)
-		local alpha = (value - min) / (max - min)
-		alpha = math.clamp(alpha, 0, 1)
-		local formatted = _FormatNumber(value)
-		valBox.Text = formatted
-		endLbl.Text = formatted
+		local alpha = math.clamp((value - min) / (max - min), 0, 1)
 		if anim then
-			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.22)
-			Tween(knob, {Position = UDim2.new(alpha, 0, 0.5, 0)}, 0.22)
+			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.2)
+			Tween(knob, {Position = UDim2.new(alpha, 0, 0.5, 0)}, 0.2)
 		else
 			fill.Size = UDim2.new(alpha, 0, 1, 0)
 			knob.Position = UDim2.new(alpha, 0, 0.5, 0)
 		end
+		valBox.Text = tostring(value)
 	end
 
-	valBox.FocusLost:Connect(function()
-		local n = tonumber(valBox.Text)
-		if n == nil then
-			render(false)
-			return
-		end
-		value = clampStep(n)
-		render(true)
-		task.spawn(function()
-			pcall(cb, value)
-		end)
-	end)
-
-	local function setFromX(x, fire)
-		local absX = bar.AbsolutePosition.X
-		local w = bar.AbsoluteSize.X
-		local alpha = math.clamp((x - absX) / w, 0, 1)
+	local function update(input)
+		local x = input.Position.X
+		local barX = bar.AbsolutePosition.X
+		local barW = bar.AbsoluteSize.X
+		local alpha = math.clamp((x - barX) / barW, 0, 1)
 		local raw = min + (max - min) * alpha
-		local newVal = clampStep(raw)
-		if newVal ~= value then
-			value = newVal
-			render(true)
-			self._UIState[persistKey] = value
-			if fire then
-				task.spawn(function()
-					pcall(cb, value)
-				end)
-			end
-		end
+		local snapped = math.floor(raw / step + 0.5) * step
+		value = math.clamp(snapped, min, max)
+		render(false)
+		self._UIState[persistKey] = value
+		task.spawn(function() pcall(cb, value) end)
 	end
 
-	hit.MouseButton1Down:Connect(function()
-		dragging = true
-		local pos = UserInputService:GetMouseLocation()
-		setFromX(pos.X, true)
+	bar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			update(input)
+		end
 	end)
 
 	UserInputService.InputEnded:Connect(function(input)
@@ -2300,33 +2084,23 @@ function UI:CreateSlider(sectionBody, opt)
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if not dragging then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			setFromX(input.Position.X, true)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			update(input)
 		end
 	end)
 
 	render(false)
-	pcall(cb, value)
 
 	local api = {}
 	api.Frame = row
 	api.Get = function() return value end
 	api.Set = function(a, b)
 		local v = (b == nil) and a or b
-		value = clampStep(tonumber(v) or min)
+		value = math.clamp(tonumber(v) or min, min, max)
 		render(true)
 		self._UIState[persistKey] = value
 		pcall(cb, value)
 	end
-	api.SetText = function(_, text)
-		local t = tostring(text)
-		lbl.Text = t
-		pcall(function()
-			row:SetAttribute("UH_SearchText", t)
-		end)
-	end
-	self._Controls[persistKey] = api
 	return api
 end
 
@@ -2344,284 +2118,138 @@ function UI:CreateDropdown(sectionBody, opt)
 	local row = Instance.new("Frame")
 	row.Name = "Dropdown"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 0.25
+	row.BackgroundTransparency = 0.2
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
+	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
 	row.ZIndex = 20
-	row.ClipsDescendants = false
+	row.ClipsDescendants = true
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
-	AddCorner(row, 14)
-	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = sectionBody
+
+	local btn = MakeButtonBase(row)
+	btn.ZIndex = 21
+	btn.Size = UDim2.fromScale(1, 1)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
-	lbl.Position = UDim2.fromOffset(14, 8)
+	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.Size = UDim2.new(1, -120, 1, 0)
+	lbl.TextYAlignment = Enum.TextYAlignment.Center
 
-	local selectBg = Instance.new("Frame")
-	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	selectBg.BackgroundTransparency = 0.92
-	selectBg.BorderSizePixel = 0
-	selectBg.Size = UDim2.new(1, -28, 0, 24)
-	selectBg.Position = UDim2.fromOffset(14, 26)
-	selectBg.ZIndex = 21
-	AddCorner(selectBg, 10)
-	AddStroke(selectBg, 1, THEME.StrokeSoft, 0.55)
-	selectBg.Parent = row
-
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Primary
-	glow.Transparency = 1
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = selectBg
-
-	local valueLbl = MakeText(selectBg, default or "Select...", 12, "")
+	local valueLbl = MakeText(row, default or "Select...", 12, "medium")
 	valueLbl.TextColor3 = default and THEME.Text or THEME.SubText
 	valueLbl.ZIndex = 22
-	valueLbl.Size = UDim2.new(1, -28, 1, 0)
-	valueLbl.Position = UDim2.fromOffset(8, 0)
+	valueLbl.TextXAlignment = Enum.TextXAlignment.Right
+	valueLbl.Size = UDim2.new(0, 100, 1, 0)
+	valueLbl.Position = UDim2.new(1, -14, 0, 0)
+	valueLbl.AnchorPoint = Vector2.new(1, 0)
 
-	local arrow = MakeText(selectBg, "▲", 14, "bold")
-	arrow.TextXAlignment = Enum.TextXAlignment.Center
-	arrow.ZIndex = 22
-	arrow.Size = UDim2.fromOffset(22, 22)
-	arrow.Position = UDim2.new(1, -22, 0.5, -11)
-	arrow.Rotation = 180
+	local optionsHolder = Instance.new("Frame")
+	optionsHolder.Name = "Options"
+	optionsHolder.BackgroundColor3 = THEME.Panel
+	optionsHolder.BackgroundTransparency = 0.05
+	optionsHolder.BorderSizePixel = 0
+	optionsHolder.Size = UDim2.new(1, 0, 0, 0)
+	optionsHolder.Position = UDim2.fromOffset(0, ScalePx(44))
+	optionsHolder.ZIndex = row.ZIndex + 10
+	optionsHolder.ClipsDescendants = true
+	AddCorner(optionsHolder, 12)
+	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.6)
+	optionsHolder.Parent = row
 
-	local click = MakeButtonBase(selectBg)
-	click.ZIndex = 23
-	click.Size = UDim2.fromScale(1, 1)
-	BindHoverFX(click, selectBg)
-	BindClickFX(click, selectBg)
+	local optList = Instance.new("UIListLayout")
+	optList.SortOrder = Enum.SortOrder.LayoutOrder
+	optList.Padding = UDim.new(0, 4)
+	optList.Parent = optionsHolder
+
+	local optPad = Instance.new("UIPadding")
+	optPad.PaddingTop = UDim.new(0, 6)
+	optPad.PaddingBottom = UDim.new(0, 6)
+	optPad.PaddingLeft = UDim.new(0, 6)
+	optPad.PaddingRight = UDim.new(0, 6)
+	optPad.Parent = optionsHolder
 
 	local opened = false
 	local value = default
-	local layer = _GetDropdownLayer(self)
-	local blocker = nil
-	local menu = nil
-	local menuScroll = nil
-	local menuList = nil
-	local menuPad = nil
-	local followConn = nil
 	local openToken = 0
-	local MENU_MAX_H = ScalePx(240)
-
-	local function clearMenuItems()
-		if not menuScroll then return end
-		for _, ch in ipairs(menuScroll:GetChildren()) do
-			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then
-				ch:Destroy()
-			end
-		end
-	end
-
-	local function updateMenuSize()
-		if not (menu and menu.Parent and menuScroll and menuList and menuPad) then return end
-		local contentH = menuList.AbsoluteContentSize.Y
-		local h = contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset
-		h = math.clamp(h, 0, MENU_MAX_H)
-		menu.Size = UDim2.fromOffset(selectBg.AbsoluteSize.X, h)
-		menuScroll.CanvasSize = UDim2.new(0, 0, 0, contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset)
-	end
-
-	local function positionMenu()
-		if not (menu and menu.Parent) then return end
-		local absPos = selectBg.AbsolutePosition
-		local absSize = selectBg.AbsoluteSize
-		menu.Position = UDim2.fromOffset(absPos.X, absPos.Y + absSize.Y + 6)
-	end
-
-	local function ensureMenu()
-		if not layer then return end
-		if menu and menu.Parent then return end
-
-		menu = Instance.new("Frame")
-		menu.Name = "DropdownMenu"
-		menu.BackgroundColor3 = THEME.Panel
-		menu.BackgroundTransparency = 0.06
-		menu.BorderSizePixel = 0
-		menu.ZIndex = layer.ZIndex + 10
-		menu.ClipsDescendants = true
-		AddCorner(menu, 14)
-		AddStroke(menu, 1, THEME.StrokeSoft, 0.5)
-		menu.Parent = layer
-
-		menuScroll = Instance.new("ScrollingFrame")
-		menuScroll.Name = "Scroll"
-		menuScroll.BackgroundTransparency = 1
-		menuScroll.BorderSizePixel = 0
-		menuScroll.Size = UDim2.fromScale(1, 1)
-		menuScroll.Position = UDim2.fromScale(0, 0)
-		menuScroll.ZIndex = menu.ZIndex + 1
-		menuScroll.ScrollBarThickness = 4
-		menuScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-		menuScroll.Parent = menu
-
-		menuPad = Instance.new("UIPadding")
-		menuPad.PaddingTop = UDim.new(0, 10)
-		menuPad.PaddingBottom = UDim.new(0, 10)
-		menuPad.PaddingLeft = UDim.new(0, 10)
-		menuPad.PaddingRight = UDim.new(0, 10)
-		menuPad.Parent = menuScroll
-
-		menuList = Instance.new("UIListLayout")
-		menuList.SortOrder = Enum.SortOrder.LayoutOrder
-		menuList.Padding = UDim.new(0, 8)
-		menuList.Parent = menuScroll
-	end
-
-	local function rebuild()
-		ensureMenu()
-		if not (menuScroll and menuScroll.Parent) then return end
-		
-		clearMenuItems()
-		
-		local itemCount = 0
-		if type(list) == "table" then
-			for i, item in ipairs(list) do
-				itemCount = itemCount + 1
-				local optRow = Instance.new("Frame")
-				optRow.Name = "Option_" .. tostring(i)
-				optRow.BackgroundColor3 = THEME.Panel2
-				optRow.BackgroundTransparency = 0.18
-				optRow.BorderSizePixel = 0
-				optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-				optRow.ZIndex = menu.ZIndex + 2
-				AddCorner(optRow, 12)
-				AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
-				optRow.Parent = menuScroll
-
-				local optBtn = MakeButtonBase(optRow)
-				optBtn.ZIndex = optRow.ZIndex + 1
-				optBtn.Size = UDim2.fromScale(1, 1)
-				BindHoverFX(optBtn, optRow)
-				BindClickFX(optBtn, optRow)
-
-				local t = MakeText(optRow, tostring(item), 12, "")
-				t.ZIndex = optBtn.ZIndex + 1
-				t.Size = UDim2.new(1, -18, 1, 0)
-				t.Position = UDim2.fromOffset(10, 0)
-
-				optBtn.MouseButton1Click:Connect(function()
-					value = item
-					valueLbl.Text = tostring(item)
-					valueLbl.TextColor3 = THEME.Text
-					self._UIState[persistKey] = _StripRichText(value)
-					task.spawn(function()
-						pcall(cb, _StripRichText(value))
-					end)
-					setOpen(false)
-				end)
-			end
-		end
-		updateMenuSize()
-	end
-
-	rebuild()
 
 	local function setOpen(state)
 		openToken += 1
 		local token = openToken
 		opened = state == true
-		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
-		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
+		
+		local contentH = optList.AbsoluteContentSize.Y + 12
+		local targetH = opened and (ScalePx(44) + contentH) or ScalePx(44)
+		
+		Tween(row, {Size = UDim2.new(1, 0, 0, targetH)}, 0.25)
+		Tween(optionsHolder, {Size = UDim2.new(1, 0, 0, opened and contentH or 0)}, 0.25)
+	end
 
-		if opened then
-			_CloseActiveDropdown(self)
-			ensureMenu()
-			rebuild()
-			positionMenu()
-			updateMenuSize()
+	local function rebuild()
+		for _, ch in ipairs(optionsHolder:GetChildren()) do
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then 
+				ch:Destroy() 
+			end
+		end
+		
+		if type(list) == "table" then
+			for i, item in ipairs(list) do
+				local optBtn = Instance.new("TextButton")
+				optBtn.Name = "Option_" .. i
+				optBtn.BackgroundColor3 = THEME.Surface
+				optBtn.BackgroundTransparency = 1
+				optBtn.Size = UDim2.new(1, 0, 0, 30)
+				optBtn.Text = ""
+				optBtn.ZIndex = optionsHolder.ZIndex + 1
+				AddCorner(optBtn, 8)
+				optBtn.Parent = optionsHolder
 
-			if layer then
-				blocker = Instance.new("TextButton")
-				blocker.Name = "DropdownBlocker"
-				blocker.BackgroundTransparency = 1
-				blocker.Text = ""
-				blocker.AutoButtonColor = false
-				blocker.Size = UDim2.fromScale(1, 1)
-				blocker.Position = UDim2.fromScale(0, 0)
-				blocker.ZIndex = layer.ZIndex + 1
-				blocker.Parent = layer
-				blocker.MouseButton1Click:Connect(function()
+				local optLbl = MakeText(optBtn, tostring(item), 12, "medium")
+				optLbl.Size = UDim2.new(1, -12, 1, 0)
+				optLbl.Position = UDim2.fromOffset(6, 0)
+				optLbl.TextColor3 = (tostring(item) == tostring(value)) and THEME.Primary or THEME.Text
+
+				optBtn.MouseEnter:Connect(function() Tween(optBtn, {BackgroundTransparency = 0.8}, 0.2) end)
+				optBtn.MouseLeave:Connect(function() Tween(optBtn, {BackgroundTransparency = 1}, 0.2) end)
+				
+				optBtn.MouseButton1Click:Connect(function()
+					value = item
+					valueLbl.Text = tostring(item)
+					valueLbl.TextColor3 = THEME.Text
+					self._UIState[persistKey] = tostring(value)
+					task.spawn(function() pcall(cb, tostring(value)) end)
 					setOpen(false)
+					rebuild()
 				end)
-			end
-
-			followConn = RunService.RenderStepped:Connect(function()
-				pcall(positionMenu)
-			end)
-
-			local function closeSelf()
-				setOpen(false)
-			end
-			self._ActiveDropdownClose = closeSelf
-
-			menu.BackgroundTransparency = 1
-			Tween(menu, {BackgroundTransparency = 0.06}, 0.18)
-		else
-			if followConn then
-				followConn:Disconnect()
-				followConn = nil
-			end
-			if blocker then
-				pcall(function() blocker:Destroy() end)
-				blocker = nil
-			end
-			if menu then
-				Tween(menu, {BackgroundTransparency = 1}, 0.14)
-				task.delay(0.15, function()
-					if token ~= openToken then return end
-					pcall(function()
-						if menu then menu:Destroy() end
-					end)
-					menu = nil
-					menuScroll = nil
-					menuList = nil
-					menuPad = nil
-				end)
-			end
-			if self._ActiveDropdownClose and self._ActiveDropdownClose == self._ActiveDropdownClose then
-				self._ActiveDropdownClose = nil
 			end
 		end
 	end
 
-	click.MouseButton1Click:Connect(function()
-		setOpen(not opened)
-	end)
+	btn.MouseButton1Click:Connect(function() setOpen(not opened) end)
+	BindHoverFX(btn, row)
+	BindClickFX(btn, row)
+	rebuild()
 
 	local api = {}
 	api.Frame = row
 	api.Get = function() return value end
 	api.Set = function(a, b)
 		local v = (b == nil) and a or b
-		if type(v) == "table" then
-			v = ""
-		end
-		v = tostring(v or "")
-		value = v
-		valueLbl.Text = (v ~= "") and v or "Select..."
-		valueLbl.TextColor3 = (v ~= "") and THEME.Text or THEME.SubText
-		self._UIState[persistKey] = _StripRichText(value)
-		pcall(cb, _StripRichText(value))
+		value = tostring(v or "")
+		valueLbl.Text = (value ~= "") and value or "Select..."
+		valueLbl.TextColor3 = (value ~= "") and THEME.Text or THEME.SubText
+		self._UIState[persistKey] = value
+		pcall(cb, value)
+		rebuild()
 	end
 	api.Refresh = function(a, b)
-		local newList = b
-		if b == nil then
-			newList = a
-		end
-		if type(newList) == "table" then
-			list = newList
-		end
-		if opened then
-			rebuild()
-			updateMenuSize()
-		end
+		local newList = (b == nil) and a or b
+		list = type(newList) == "table" and newList or {}
+		rebuild()
 	end
 	self._Controls[persistKey] = api
 	return api
@@ -2634,356 +2262,155 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	local default = opt.Default
 	local cb = opt.Callback or function() end
 	local persistKey = self:_GetPersistKey(sectionBody, "MultiDropdown", name)
-
 	if self._UIState and self._UIState[persistKey] ~= nil then
 		default = self._UIState[persistKey]
 	end
 
-	local selected = {}
-	local selectedSet = {}
-	local function setSelected(arr)
-		selected = {}
-		selectedSet = {}
-		if type(arr) == "table" then
-			for _, v in ipairs(arr) do
-				local s = tostring(v)
-				if s ~= "" and not selectedSet[s] then
-					selectedSet[s] = true
-					table.insert(selected, s)
-				end
-			end
-		elseif type(arr) == "string" then
-			local ok, decoded = pcall(function()
-				return HttpService:JSONDecode(arr)
-			end)
-			if ok and type(decoded) == "table" then
-				for _, v in ipairs(decoded) do
-					local s = tostring(v)
-					if s ~= "" and not selectedSet[s] then
-						selectedSet[s] = true
-						table.insert(selected, s)
-					end
-				end
-			end
-		end
-	end
-
-	setSelected(default)
-
 	local row = Instance.new("Frame")
 	row.Name = "MultiDropdown"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 0.25
+	row.BackgroundTransparency = 0.2
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
+	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
 	row.ZIndex = 20
-	row.ClipsDescendants = false
-	pcall(function()
-		row:SetAttribute("UH_SearchText", tostring(name))
-	end)
-	AddCorner(row, 14)
-	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	row.ClipsDescendants = true
+	pcall(function() row:SetAttribute("UH_SearchText", tostring(name)) end)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = sectionBody
+
+	local btn = MakeButtonBase(row)
+	btn.ZIndex = 21
+	btn.Size = UDim2.fromScale(1, 1)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
-	lbl.Position = UDim2.fromOffset(14, 8)
+	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.Size = UDim2.new(1, -120, 1, 0)
+	lbl.TextYAlignment = Enum.TextYAlignment.Center
 
-	local selectBg = Instance.new("Frame")
-	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	selectBg.BackgroundTransparency = 0.92
-	selectBg.BorderSizePixel = 0
-	selectBg.Size = UDim2.new(1, -28, 0, 24)
-	selectBg.Position = UDim2.fromOffset(14, 26)
-	selectBg.ZIndex = 21
-	AddCorner(selectBg, 10)
-	AddStroke(selectBg, 1, THEME.StrokeSoft, 0.55)
-	selectBg.Parent = row
-
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Primary
-	glow.Transparency = 1
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = selectBg
-
-	local valueLbl = MakeText(selectBg, "Select...", 12, "")
+	local valueLbl = MakeText(row, "Select...", 12, "medium")
 	valueLbl.TextColor3 = THEME.SubText
 	valueLbl.ZIndex = 22
-	valueLbl.Size = UDim2.new(1, -28, 1, 0)
-	valueLbl.Position = UDim2.fromOffset(8, 0)
-	valueLbl.TextWrapped = true
-	valueLbl.TextTruncate = Enum.TextTruncate.AtEnd
+	valueLbl.TextXAlignment = Enum.TextXAlignment.Right
+	valueLbl.Size = UDim2.new(0, 100, 1, 0)
+	valueLbl.Position = UDim2.new(1, -14, 0, 0)
+	valueLbl.AnchorPoint = Vector2.new(1, 0)
 
-	local arrow = MakeText(selectBg, "▲", 14, "bold")
-	arrow.TextXAlignment = Enum.TextXAlignment.Center
-	arrow.ZIndex = 22
-	arrow.Size = UDim2.fromOffset(22, 22)
-	arrow.Position = UDim2.new(1, -22, 0.5, -11)
-	arrow.Rotation = 180
+	local optionsHolder = Instance.new("Frame")
+	optionsHolder.Name = "Options"
+	optionsHolder.BackgroundColor3 = THEME.Panel
+	optionsHolder.BackgroundTransparency = 0.05
+	optionsHolder.BorderSizePixel = 0
+	optionsHolder.Size = UDim2.new(1, 0, 0, 0)
+	optionsHolder.Position = UDim2.fromOffset(0, ScalePx(44))
+	optionsHolder.ZIndex = row.ZIndex + 10
+	optionsHolder.ClipsDescendants = true
+	AddCorner(optionsHolder, 12)
+	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.6)
+	optionsHolder.Parent = row
 
-	local click = MakeButtonBase(selectBg)
-	click.ZIndex = 23
-	click.Size = UDim2.fromScale(1, 1)
-	BindHoverFX(click, selectBg)
-	BindClickFX(click, selectBg)
+	local optList = Instance.new("UIListLayout")
+	optList.SortOrder = Enum.SortOrder.LayoutOrder
+	optList.Padding = UDim.new(0, 4)
+	optList.Parent = optionsHolder
 
+	local optPad = Instance.new("UIPadding")
+	optPad.PaddingTop = UDim.new(0, 6)
+	optPad.PaddingBottom = UDim.new(0, 6)
+	optPad.PaddingLeft = UDim.new(0, 6)
+	optPad.PaddingRight = UDim.new(0, 6)
+	optPad.Parent = optionsHolder
+
+	local selected = {}
+	local selectedSet = {}
 	local opened = false
-	local layer = _GetDropdownLayer(self)
-	local blocker = nil
-	local menu = nil
-	local menuScroll = nil
-	local menuList = nil
-	local menuPad = nil
-	local followConn = nil
-	local openToken = 0
-	local MENU_MAX_H = ScalePx(240)
 
-	local function clearMenuItems()
-		if not menuScroll then return end
-		for _, ch in ipairs(menuScroll:GetChildren()) do
-			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then
-				ch:Destroy()
-			end
-		end
-	end
-
-	local function updateMenuSize()
-		if not (menu and menu.Parent and menuScroll and menuList and menuPad) then return end
-		local contentH = menuList.AbsoluteContentSize.Y
-		local h = contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset
-		h = math.clamp(h, 0, MENU_MAX_H)
-		menu.Size = UDim2.fromOffset(selectBg.AbsoluteSize.X, h)
-		menuScroll.CanvasSize = UDim2.new(0, 0, 0, contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset)
-	end
-
-	local function positionMenu()
-		if not (menu and menu.Parent) then return end
-		local absPos = selectBg.AbsolutePosition
-		local absSize = selectBg.AbsoluteSize
-		menu.Position = UDim2.fromOffset(absPos.X, absPos.Y + absSize.Y + 6)
-	end
-
-	local function ensureMenu()
-		if not layer then return end
-		if menu and menu.Parent then return end
-
-		menu = Instance.new("Frame")
-		menu.Name = "DropdownMenu"
-		menu.BackgroundColor3 = THEME.Panel
-		menu.BackgroundTransparency = 0.06
-		menu.BorderSizePixel = 0
-		menu.ZIndex = layer.ZIndex + 10
-		menu.ClipsDescendants = true
-		AddCorner(menu, 14)
-		AddStroke(menu, 1, THEME.StrokeSoft, 0.5)
-		menu.Parent = layer
-
-		menuScroll = Instance.new("ScrollingFrame")
-		menuScroll.Name = "Scroll"
-		menuScroll.BackgroundTransparency = 1
-		menuScroll.BorderSizePixel = 0
-		menuScroll.Size = UDim2.fromScale(1, 1)
-		menuScroll.Position = UDim2.fromScale(0, 0)
-		menuScroll.ZIndex = menu.ZIndex + 1
-		menuScroll.ScrollBarThickness = 4
-		menuScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-		menuScroll.Parent = menu
-
-		menuPad = Instance.new("UIPadding")
-		menuPad.PaddingTop = UDim.new(0, 10)
-		menuPad.PaddingBottom = UDim.new(0, 10)
-		menuPad.PaddingLeft = UDim.new(0, 10)
-		menuPad.PaddingRight = UDim.new(0, 10)
-		menuPad.Parent = menuScroll
-
-		menuList = Instance.new("UIListLayout")
-		menuList.SortOrder = Enum.SortOrder.LayoutOrder
-		menuList.Padding = UDim.new(0, 8)
-		menuList.Parent = menuScroll
-	end
-
-	local function refreshValueText()
+	local function updateValueText()
 		if #selected == 0 then
 			valueLbl.Text = "Select..."
 			valueLbl.TextColor3 = THEME.SubText
-			return
+		else
+			valueLbl.Text = table.concat(selected, ", ")
+			valueLbl.TextColor3 = THEME.Text
 		end
-		valueLbl.Text = table.concat(selected, ", ")
-		valueLbl.TextColor3 = THEME.Text
 	end
 
-	local function persistAndCallback()
-		self._UIState[persistKey] = selected
-		task.spawn(function()
-			pcall(cb, selected)
-		end)
+	local function setOpen(state)
+		opened = state == true
+		local contentH = optList.AbsoluteContentSize.Y + 12
+		local targetH = opened and (ScalePx(44) + contentH) or ScalePx(44)
+		Tween(row, {Size = UDim2.new(1, 0, 0, targetH)}, 0.25)
+		Tween(optionsHolder, {Size = UDim2.new(1, 0, 0, opened and contentH or 0)}, 0.25)
 	end
 
 	local function rebuild()
-		ensureMenu()
-		if not (menuScroll and menuScroll.Parent) then return end
-
-		clearMenuItems()
-
-		if type(list) ~= "table" or #list == 0 then
-			list = {}
+		for _, ch in ipairs(optionsHolder:GetChildren()) do
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then ch:Destroy() end
 		end
-
 		for i, item in ipairs(list) do
 			local s = tostring(item)
-			local optRow = Instance.new("Frame")
-			optRow.Name = "Option_" .. tostring(i)
-			optRow.BackgroundColor3 = THEME.Panel2
-			optRow.BackgroundTransparency = 0.18
-			optRow.BorderSizePixel = 0
-			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-			optRow.ZIndex = menu.ZIndex + 2
-			AddCorner(optRow, 12)
-			AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
-			optRow.Parent = menuScroll
+			local optBtn = Instance.new("TextButton")
+			optBtn.BackgroundColor3 = THEME.Surface
+			optBtn.BackgroundTransparency = 1
+			optBtn.Size = UDim2.new(1, 0, 0, 30)
+			optBtn.Text = ""
+			AddCorner(optBtn, 8)
+			optBtn.Parent = optionsHolder
 
-			local optBtn = MakeButtonBase(optRow)
-			optBtn.ZIndex = optRow.ZIndex + 1
-			optBtn.Size = UDim2.fromScale(1, 1)
-			BindHoverFX(optBtn, optRow)
-			BindClickFX(optBtn, optRow)
+			local optLbl = MakeText(optBtn, s, 12, "medium")
+			optLbl.Size = UDim2.new(1, -30, 1, 0)
+			optLbl.Position = UDim2.fromOffset(6, 0)
+			optLbl.TextColor3 = selectedSet[s] and THEME.Primary or THEME.Text
 
-			local check = MakeText(optRow, "□", 14, "bold")
-			check.ZIndex = optBtn.ZIndex + 1
-			check.TextXAlignment = Enum.TextXAlignment.Center
-			check.Size = UDim2.fromOffset(18, 18)
-			check.Position = UDim2.fromOffset(6, ScalePx(8))
-
-			local t = MakeText(optRow, s, 12, "")
-			t.ZIndex = optBtn.ZIndex + 1
-			t.Size = UDim2.new(1, -34, 1, 0)
-			t.Position = UDim2.fromOffset(28, 0)
-
-			local function renderOption()
-				local on = selectedSet[s] == true
-				check.Text = on and "■" or "□"
-				check.TextColor3 = on and THEME.Primary or THEME.SubText
-			end
-			renderOption()
+			local check = MakeText(optBtn, selectedSet[s] and "●" or "○", 14, "bold")
+			check.TextColor3 = selectedSet[s] and THEME.Primary or THEME.SubText
+			check.Size = UDim2.fromOffset(20, 1, 0)
+			check.Position = UDim2.new(1, -6, 0.5, 0)
+			check.AnchorPoint = Vector2.new(1, 0.5)
 
 			optBtn.MouseButton1Click:Connect(function()
 				if selectedSet[s] then
 					selectedSet[s] = nil
-					for idx = #selected, 1, -1 do
-						if selected[idx] == s then
-							table.remove(selected, idx)
-						end
-					end
+					for idx, v in ipairs(selected) do if v == s then table.remove(selected, idx) break end end
 				else
 					selectedSet[s] = true
 					table.insert(selected, s)
 				end
-				renderOption()
-				refreshValueText()
-				persistAndCallback()
+				updateValueText()
+				rebuild()
+				self._UIState[persistKey] = selected
+				task.spawn(function() pcall(cb, selected) end)
 			end)
 		end
-
-		refreshValueText()
 	end
 
+	btn.MouseButton1Click:Connect(function() setOpen(not opened) end)
+	BindHoverFX(btn, row)
+	BindClickFX(btn, row)
 	rebuild()
-	refreshValueText()
-	persistAndCallback()
-
-	local function setOpen(state)
-		openToken += 1
-		local token = openToken
-		opened = state == true
-		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
-		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
-		if opened then
-			_CloseActiveDropdown(self)
-			ensureMenu()
-			rebuild()
-			positionMenu()
-			updateMenuSize()
-			if layer then
-				blocker = Instance.new("TextButton")
-				blocker.Name = "DropdownBlocker"
-				blocker.BackgroundTransparency = 1
-				blocker.Text = ""
-				blocker.AutoButtonColor = false
-				blocker.Size = UDim2.fromScale(1, 1)
-				blocker.Position = UDim2.fromScale(0, 0)
-				blocker.ZIndex = layer.ZIndex + 1
-				blocker.Parent = layer
-				blocker.MouseButton1Click:Connect(function()
-					setOpen(false)
-				end)
-			end
-			followConn = RunService.RenderStepped:Connect(function()
-				pcall(positionMenu)
-			end)
-			local function closeSelf()
-				setOpen(false)
-			end
-			self._ActiveDropdownClose = closeSelf
-			menu.BackgroundTransparency = 1
-			Tween(menu, {BackgroundTransparency = 0.06}, 0.18)
-		else
-			if followConn then
-				followConn:Disconnect()
-				followConn = nil
-			end
-			if blocker then
-				pcall(function() blocker:Destroy() end)
-				blocker = nil
-			end
-			if menu then
-				Tween(menu, {BackgroundTransparency = 1}, 0.14)
-				task.delay(0.15, function()
-					if token ~= openToken then return end
-					pcall(function()
-						if menu then menu:Destroy() end
-					end)
-					menu = nil
-					menuScroll = nil
-					menuList = nil
-					menuPad = nil
-				end)
-			end
-			if self._ActiveDropdownClose and self._ActiveDropdownClose == self._ActiveDropdownClose then
-				self._ActiveDropdownClose = nil
-			end
-		end
-	end
-
-	click.MouseButton1Click:Connect(function()
-		setOpen(not opened)
-	end)
+	updateValueText()
 
 	local api = {}
 	api.Frame = row
 	api.Get = function() return selected end
-	api.Set = function(a, b)
-		local v = (b == nil) and a or b
-		setSelected(v)
+	api.Set = function(v)
+		selected = {}
+		selectedSet = {}
+		if type(v) == "table" then
+			for _, item in ipairs(v) do
+				local s = tostring(item)
+				selectedSet[s] = true
+				table.insert(selected, s)
+			end
+		end
+		updateValueText()
 		rebuild()
-		refreshValueText()
-		persistAndCallback()
 	end
-	api.Refresh = function(a, b)
-		local newList = b
-		if b == nil then
-			newList = a
-		end
-		if type(newList) == "table" then
-			list = newList
-		end
-		if opened then
-			rebuild()
-			updateMenuSize()
-		end
+	api.Refresh = function(newList)
+		list = type(newList) == "table" and newList or {}
+		rebuild()
 	end
-
 	self._Controls[persistKey] = api
 	return api
 end
@@ -2997,209 +2424,124 @@ function UI:CreateConfigDropdown(parent, config)
 	local row = Instance.new("Frame")
 	row.Name = "ConfigDropdown"
 	row.BackgroundColor3 = THEME.Panel2
-	row.BackgroundTransparency = 0.25
+	row.BackgroundTransparency = 0.2
 	row.BorderSizePixel = 0
-	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
+	row.Size = UDim2.new(1, 0, 0, ScalePx(44))
 	row.ZIndex = 20
 	row.ClipsDescendants = true
-	AddCorner(row, 14)
-	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+	AddCorner(row, 12)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.6)
 	row.Parent = parent
+
+	local btn = MakeButtonBase(row)
+	btn.ZIndex = 21
+	btn.Size = UDim2.fromScale(1, 1)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
-	lbl.Position = UDim2.fromOffset(14, 8)
+	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.Size = UDim2.new(1, -120, 1, 0)
+	lbl.TextYAlignment = Enum.TextYAlignment.Center
 
-	local selectBg = Instance.new("Frame")
-	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	selectBg.BackgroundTransparency = 0.92
-	selectBg.BorderSizePixel = 0
-	selectBg.Size = UDim2.new(1, -28, 0, 24)
-	selectBg.Position = UDim2.fromOffset(14, 26)
-	selectBg.ZIndex = 21
-	AddCorner(selectBg, 10)
-	AddStroke(selectBg, 1, THEME.StrokeSoft, 0.55)
-	selectBg.Parent = row
-
-	local valueLbl = MakeText(selectBg, "Select...", 12, "")
+	local valueLbl = MakeText(row, "Select...", 12, "medium")
 	valueLbl.TextColor3 = THEME.SubText
 	valueLbl.ZIndex = 22
-	valueLbl.Size = UDim2.new(1, -28, 1, 0)
-	valueLbl.Position = UDim2.fromOffset(8, 0)
-
-	local arrow = MakeText(selectBg, "▲", 14, "bold")
-	arrow.TextXAlignment = Enum.TextXAlignment.Center
-	arrow.ZIndex = 22
-	arrow.Size = UDim2.fromOffset(22, 22)
-	arrow.Position = UDim2.new(1, -22, 0.5, -11)
-	arrow.Rotation = 180
-
-	local click = MakeButtonBase(selectBg)
-	click.ZIndex = 23
-	click.Size = UDim2.fromScale(1, 1)
-	BindHoverFX(click, selectBg)
-	BindClickFX(click, selectBg)
-
-	local BASE_H = ScalePx(54)
-	local OPEN_GAP = ScalePx(10)
+	valueLbl.TextXAlignment = Enum.TextXAlignment.Right
+	valueLbl.Size = UDim2.new(0, 100, 1, 0)
+	valueLbl.Position = UDim2.new(1, -14, 0, 0)
+	valueLbl.AnchorPoint = Vector2.new(1, 0)
 
 	local optionsHolder = Instance.new("Frame")
 	optionsHolder.Name = "Options"
 	optionsHolder.BackgroundColor3 = THEME.Panel
-	optionsHolder.BackgroundTransparency = 0.08
+	optionsHolder.BackgroundTransparency = 0.05
 	optionsHolder.BorderSizePixel = 0
-	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
-	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
+	optionsHolder.Size = UDim2.new(1, 0, 0, 0)
+	optionsHolder.Position = UDim2.fromOffset(0, ScalePx(44))
 	optionsHolder.ZIndex = row.ZIndex + 10
 	optionsHolder.ClipsDescendants = true
 	AddCorner(optionsHolder, 12)
-	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.55)
+	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.6)
 	optionsHolder.Parent = row
-
-	local optPad = Instance.new("UIPadding")
-	optPad.PaddingTop = UDim.new(0, 8)
-	optPad.PaddingBottom = UDim.new(0, 8)
-	optPad.PaddingLeft = UDim.new(0, 8)
-	optPad.PaddingRight = UDim.new(0, 8)
-	optPad.Parent = optionsHolder
 
 	local optList = Instance.new("UIListLayout")
 	optList.SortOrder = Enum.SortOrder.LayoutOrder
-	optList.Padding = UDim.new(0, 8)
+	optList.Padding = UDim.new(0, 4)
 	optList.Parent = optionsHolder
+
+	local optPad = Instance.new("UIPadding")
+	optPad.PaddingTop = UDim.new(0, 6)
+	optPad.PaddingBottom = UDim.new(0, 6)
+	optPad.PaddingLeft = UDim.new(0, 6)
+	optPad.PaddingRight = UDim.new(0, 6)
+	optPad.Parent = optionsHolder
 
 	local opened = false
 	local value = ""
-	local openToken = 0
 
 	local function setOpen(state)
-		openToken += 1
-		local token = openToken
 		opened = state == true
-		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
-		
-		local function updateSizes()
-			local contentH = optList.AbsoluteContentSize.Y
-			local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
-			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
-		end
-		
-		updateSizes()
-
-		if not opened then
-			task.delay(0.23, function()
-				if token ~= openToken then return end
-				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
-				row.Size = UDim2.new(1, 0, 0, BASE_H)
-			end)
-		end
+		local contentH = optList.AbsoluteContentSize.Y + 12
+		local targetH = opened and (ScalePx(44) + contentH) or ScalePx(44)
+		Tween(row, {Size = UDim2.new(1, 0, 0, targetH)}, 0.25)
+		Tween(optionsHolder, {Size = UDim2.new(1, 0, 0, opened and contentH or 0)}, 0.25)
 	end
 
-	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		if opened then
-			local contentH = optList.AbsoluteContentSize.Y
-			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
-			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
-			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
-		end
-	end)
-
 	local function rebuild()
-		if not optionsHolder or not optionsHolder.Parent then return end
-		
 		for _, ch in ipairs(optionsHolder:GetChildren()) do
-			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then 
-				ch:Destroy() 
-			end
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then ch:Destroy() end
 		end
-		
-		local itemCount = 0
 		if type(list) == "table" and #list > 0 then
 			for i, item in ipairs(list) do
-				itemCount = itemCount + 1
-				local optRow = Instance.new("Frame")
-				optRow.Name = "Option_" .. tostring(i)
-				optRow.BackgroundColor3 = THEME.Panel
-				optRow.BackgroundTransparency = 0.12
-				optRow.BorderSizePixel = 0
-				optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-				optRow.ZIndex = optionsHolder.ZIndex + 1
-				AddCorner(optRow, 10)
-				AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
-				optRow.Parent = optionsHolder
+				local s = tostring(item)
+				local optBtn = Instance.new("TextButton")
+				optBtn.BackgroundColor3 = THEME.Surface
+				optBtn.BackgroundTransparency = 1
+				optBtn.Size = UDim2.new(1, 0, 0, 30)
+				optBtn.Text = ""
+				AddCorner(optBtn, 8)
+				optBtn.Parent = optionsHolder
 
-				local optBtn = MakeButtonBase(optRow)
-				optBtn.ZIndex = optRow.ZIndex + 1
-				optBtn.Size = UDim2.fromScale(1, 1)
-				BindHoverFX(optBtn, optRow)
-				BindClickFX(optBtn, optRow)
+				local optLbl = MakeText(optBtn, s, 12, "medium")
+				optLbl.Size = UDim2.new(1, -12, 1, 0)
+				optLbl.Position = UDim2.fromOffset(6, 0)
+				optLbl.TextColor3 = (s == value) and THEME.Primary or THEME.Text
 
-				local t = MakeText(optRow, tostring(item), 12, "")
-				t.ZIndex = optBtn.ZIndex + 1
-				t.Size = UDim2.new(1, -18, 1, 0)
-				t.Position = UDim2.fromOffset(10, 0)
+				optBtn.MouseEnter:Connect(function() Tween(optBtn, {BackgroundTransparency = 0.8}, 0.2) end)
+				optBtn.MouseLeave:Connect(function() Tween(optBtn, {BackgroundTransparency = 1}, 0.2) end)
 
 				optBtn.MouseButton1Click:Connect(function()
-					value = item
-					valueLbl.Text = tostring(item)
+					value = s
+					valueLbl.Text = s
 					valueLbl.TextColor3 = THEME.Text
-					task.spawn(function()
-						pcall(cb, value)
-					end)
+					task.spawn(function() pcall(cb, value) end)
 					setOpen(false)
+					rebuild()
 				end)
 			end
 		else
-			itemCount = 1
-			local optRow = Instance.new("Frame")
-			optRow.Name = "NoConfigs"
-			optRow.BackgroundTransparency = 1
-			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-			optRow.Parent = optionsHolder
-			
-			local t = MakeText(optRow, "No configs found", 12, "")
-			t.TextColor3 = THEME.SubText
-			t.TextXAlignment = Enum.TextXAlignment.Center
-			t.Size = UDim2.fromScale(1, 1)
-			t.Parent = optRow
-		end
-		
-		optList:ApplyLayout()
-		
-		task.wait()
-		local contentH = optList.AbsoluteContentSize.Y
-		if opened then
-			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-			optionsHolder.Size = UDim2.new(1, -28, 0, h)
-			row.Size = UDim2.new(1, 0, 0, BASE_H + (h > 0 and (h + OPEN_GAP) or 0))
+			local emptyLbl = MakeText(optionsHolder, "No configs found", 12, "medium")
+			emptyLbl.TextColor3 = THEME.SubText
+			emptyLbl.TextXAlignment = Enum.TextXAlignment.Center
+			emptyLbl.Size = UDim2.new(1, 0, 0, 30)
 		end
 	end
 
+	btn.MouseButton1Click:Connect(function() setOpen(not opened) end)
+	BindHoverFX(btn, row)
+	BindClickFX(btn, row)
 	rebuild()
 
-	click.MouseButton1Click:Connect(function()
-		setOpen(not opened)
-	end)
-
 	local api = {}
-	api.Refresh = function(a, b)
-		local newList = b
-		if b == nil then
-			newList = a
-		end
-		list = (type(newList) == "table") and newList or {}
+	api.Refresh = function(newList)
+		list = type(newList) == "table" and newList or {}
 		rebuild()
 	end
-	api.Set = function(a, b)
-		local v = b
-		if b == nil then
-			v = a
-		end
+	api.Set = function(v)
 		value = tostring(v or "")
 		valueLbl.Text = (value ~= "") and value or "Select..."
 		valueLbl.TextColor3 = (value ~= "") and THEME.Text or THEME.SubText
+		rebuild()
 	end
 	return api
 end
