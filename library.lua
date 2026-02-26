@@ -346,6 +346,38 @@ UI._Alive = true
 UI._Open = true
 UI._TabSwitchToken = 0
 
+local function _GetDropdownLayer(ui)
+	if ui and ui._DropdownLayer and ui._DropdownLayer.Parent then
+		return ui._DropdownLayer
+	end
+	local sg = ui and ui.ScreenGui
+	if not (sg and sg.Parent) then
+		return nil
+	end
+	local layer = sg:FindFirstChild("UH_DropdownLayer")
+	if layer and layer:IsA("Frame") then
+		ui._DropdownLayer = layer
+		return layer
+	end
+	layer = Instance.new("Frame")
+	layer.Name = "UH_DropdownLayer"
+	layer.BackgroundTransparency = 1
+	layer.Size = UDim2.fromScale(1, 1)
+	layer.Position = UDim2.fromScale(0, 0)
+	layer.ZIndex = 1000
+	layer.Parent = sg
+	ui._DropdownLayer = layer
+	return layer
+end
+
+local function _CloseActiveDropdown(ui)
+	pcall(function()
+		if ui and type(ui._ActiveDropdownClose) == "function" then
+			ui._ActiveDropdownClose()
+		end
+	end)
+end
+
 UI._SearchToken = 0
 UI._Settings = UI._Settings or {}
 
@@ -2077,11 +2109,27 @@ function UI:CreateSlider(sectionBody, opt)
 	local default = tonumber(opt.Default) or min
 	local step = tonumber(opt.Step) or 1
 	local cb = opt.Callback or function() end
+	local function _DecimalsFromStep(s)
+		s = tonumber(s) or 1
+		if s <= 0 then return 0 end
+		local txt = tostring(s)
+		local dec = txt:match("%.(%d+)")
+		if dec then
+			return math.clamp(#dec, 0, 6)
+		end
+		return 0
+	end
 	local function _FormatNumber(n)
 		n = tonumber(n)
 		if n == nil then return "0" end
-		n = math.floor(n + 0.5)
-		return tostring(n)
+		local d = _DecimalsFromStep(step)
+		local p = 10 ^ d
+		n = math.floor((n * p) + 0.5) / p
+		local s = string.format("%." .. tostring(d) .. "f", n)
+		if d > 0 then
+			s = s:gsub("0+$", ""):gsub("%.$", "")
+		end
+		return s
 	end
 	local persistKey = self:_GetPersistKey(sectionBody, "Slider", name)
 	if self._UIState and type(self._UIState[persistKey]) == "number" then
@@ -2300,7 +2348,7 @@ function UI:CreateDropdown(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
 	row.ZIndex = 20
-	row.ClipsDescendants = true
+	row.ClipsDescendants = false
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
@@ -2350,46 +2398,87 @@ function UI:CreateDropdown(sectionBody, opt)
 	BindHoverFX(click, selectBg)
 	BindClickFX(click, selectBg)
 
-	local BASE_H = ScalePx(54)
-	local OPEN_GAP = ScalePx(10)
-
-	local optionsHolder = Instance.new("Frame")
-	optionsHolder.Name = "Options"
-	optionsHolder.BackgroundColor3 = THEME.Panel
-	optionsHolder.BackgroundTransparency = 0.08
-	optionsHolder.BorderSizePixel = 0
-	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
-	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
-	optionsHolder.ZIndex = row.ZIndex + 10
-	optionsHolder.ClipsDescendants = true
-	AddCorner(optionsHolder, 12)
-	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.55)
-	optionsHolder.Parent = row
-
-	local optPad = Instance.new("UIPadding")
-	optPad.PaddingTop = UDim.new(0, 8)
-	optPad.PaddingBottom = UDim.new(0, 8)
-	optPad.PaddingLeft = UDim.new(0, 8)
-	optPad.PaddingRight = UDim.new(0, 8)
-	optPad.Parent = optionsHolder
-
-	local optList = Instance.new("UIListLayout")
-	optList.SortOrder = Enum.SortOrder.LayoutOrder
-	optList.Padding = UDim.new(0, 8)
-	optList.Parent = optionsHolder
-
 	local opened = false
 	local value = default
+	local layer = _GetDropdownLayer(self)
+	local blocker = nil
+	local menu = nil
+	local menuScroll = nil
+	local menuList = nil
+	local menuPad = nil
+	local followConn = nil
 	local openToken = 0
+	local MENU_MAX_H = ScalePx(240)
 
-	local function rebuild()
-		if not optionsHolder or not optionsHolder.Parent then return end
-		
-		for _, ch in ipairs(optionsHolder:GetChildren()) do
-			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then 
-				ch:Destroy() 
+	local function clearMenuItems()
+		if not menuScroll then return end
+		for _, ch in ipairs(menuScroll:GetChildren()) do
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then
+				ch:Destroy()
 			end
 		end
+	end
+
+	local function updateMenuSize()
+		if not (menu and menu.Parent and menuScroll and menuList and menuPad) then return end
+		local contentH = menuList.AbsoluteContentSize.Y
+		local h = contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset
+		h = math.clamp(h, 0, MENU_MAX_H)
+		menu.Size = UDim2.fromOffset(selectBg.AbsoluteSize.X, h)
+		menuScroll.CanvasSize = UDim2.new(0, 0, 0, contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset)
+	end
+
+	local function positionMenu()
+		if not (menu and menu.Parent) then return end
+		local absPos = selectBg.AbsolutePosition
+		local absSize = selectBg.AbsoluteSize
+		menu.Position = UDim2.fromOffset(absPos.X, absPos.Y + absSize.Y + 6)
+	end
+
+	local function ensureMenu()
+		if not layer then return end
+		if menu and menu.Parent then return end
+
+		menu = Instance.new("Frame")
+		menu.Name = "DropdownMenu"
+		menu.BackgroundColor3 = THEME.Panel
+		menu.BackgroundTransparency = 0.06
+		menu.BorderSizePixel = 0
+		menu.ZIndex = layer.ZIndex + 10
+		menu.ClipsDescendants = true
+		AddCorner(menu, 14)
+		AddStroke(menu, 1, THEME.StrokeSoft, 0.5)
+		menu.Parent = layer
+
+		menuScroll = Instance.new("ScrollingFrame")
+		menuScroll.Name = "Scroll"
+		menuScroll.BackgroundTransparency = 1
+		menuScroll.BorderSizePixel = 0
+		menuScroll.Size = UDim2.fromScale(1, 1)
+		menuScroll.Position = UDim2.fromScale(0, 0)
+		menuScroll.ZIndex = menu.ZIndex + 1
+		menuScroll.ScrollBarThickness = 4
+		menuScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+		menuScroll.Parent = menu
+
+		menuPad = Instance.new("UIPadding")
+		menuPad.PaddingTop = UDim.new(0, 10)
+		menuPad.PaddingBottom = UDim.new(0, 10)
+		menuPad.PaddingLeft = UDim.new(0, 10)
+		menuPad.PaddingRight = UDim.new(0, 10)
+		menuPad.Parent = menuScroll
+
+		menuList = Instance.new("UIListLayout")
+		menuList.SortOrder = Enum.SortOrder.LayoutOrder
+		menuList.Padding = UDim.new(0, 8)
+		menuList.Parent = menuScroll
+	end
+
+	local function rebuild()
+		ensureMenu()
+		if not (menuScroll and menuScroll.Parent) then return end
+		
+		clearMenuItems()
 		
 		local itemCount = 0
 		if type(list) == "table" then
@@ -2397,14 +2486,14 @@ function UI:CreateDropdown(sectionBody, opt)
 				itemCount = itemCount + 1
 				local optRow = Instance.new("Frame")
 				optRow.Name = "Option_" .. tostring(i)
-				optRow.BackgroundColor3 = THEME.Panel
-				optRow.BackgroundTransparency = 0.12
+				optRow.BackgroundColor3 = THEME.Panel2
+				optRow.BackgroundTransparency = 0.18
 				optRow.BorderSizePixel = 0
 				optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-				optRow.ZIndex = optionsHolder.ZIndex + 1
-				AddCorner(optRow, 10)
+				optRow.ZIndex = menu.ZIndex + 2
+				AddCorner(optRow, 12)
 				AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
-				optRow.Parent = optionsHolder
+				optRow.Parent = menuScroll
 
 				local optBtn = MakeButtonBase(optRow)
 				optBtn.ZIndex = optRow.ZIndex + 1
@@ -2429,13 +2518,7 @@ function UI:CreateDropdown(sectionBody, opt)
 				end)
 			end
 		end
-		
-		if opened then
-			local contentH = optList.AbsoluteContentSize.Y
-			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-			optionsHolder.Size = UDim2.new(1, -28, 0, h)
-			row.Size = UDim2.new(1, 0, 0, BASE_H + (h > 0 and (h + OPEN_GAP) or 0))
-		end
+		updateMenuSize()
 	end
 
 	rebuild()
@@ -2446,28 +2529,67 @@ function UI:CreateDropdown(sectionBody, opt)
 		opened = state == true
 		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
 		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
-		local contentH = optList.AbsoluteContentSize.Y
-		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
-		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
 
-		if not opened then
-			task.delay(0.23, function()
-				if token ~= openToken then return end
-				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
-				row.Size = UDim2.new(1, 0, 0, BASE_H)
+		if opened then
+			_CloseActiveDropdown(self)
+			ensureMenu()
+			rebuild()
+			positionMenu()
+			updateMenuSize()
+
+			if layer then
+				blocker = Instance.new("TextButton")
+				blocker.Name = "DropdownBlocker"
+				blocker.BackgroundTransparency = 1
+				blocker.Text = ""
+				blocker.AutoButtonColor = false
+				blocker.Size = UDim2.fromScale(1, 1)
+				blocker.Position = UDim2.fromScale(0, 0)
+				blocker.ZIndex = layer.ZIndex + 1
+				blocker.Parent = layer
+				blocker.MouseButton1Click:Connect(function()
+					setOpen(false)
+				end)
+			end
+
+			followConn = RunService.RenderStepped:Connect(function()
+				pcall(positionMenu)
 			end)
+
+			local function closeSelf()
+				setOpen(false)
+			end
+			self._ActiveDropdownClose = closeSelf
+
+			menu.BackgroundTransparency = 1
+			Tween(menu, {BackgroundTransparency = 0.06}, 0.18)
+		else
+			if followConn then
+				followConn:Disconnect()
+				followConn = nil
+			end
+			if blocker then
+				pcall(function() blocker:Destroy() end)
+				blocker = nil
+			end
+			if menu then
+				Tween(menu, {BackgroundTransparency = 1}, 0.14)
+				task.delay(0.15, function()
+					if token ~= openToken then return end
+					pcall(function()
+						if menu then menu:Destroy() end
+					end)
+					menu = nil
+					menuScroll = nil
+					menuList = nil
+					menuPad = nil
+				end)
+			end
+			if self._ActiveDropdownClose and self._ActiveDropdownClose == self._ActiveDropdownClose then
+				self._ActiveDropdownClose = nil
+			end
 		end
 	end
-
-	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		if opened then
-			local contentH = optList.AbsoluteContentSize.Y
-			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
-			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
-			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
-		end
-	end)
 
 	click.MouseButton1Click:Connect(function()
 		setOpen(not opened)
@@ -2496,9 +2618,9 @@ function UI:CreateDropdown(sectionBody, opt)
 		if type(newList) == "table" then
 			list = newList
 		end
-		rebuild()
 		if opened then
-			setOpen(true)
+			rebuild()
+			updateMenuSize()
 		end
 	end
 	self._Controls[persistKey] = api
@@ -2555,7 +2677,7 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	row.BorderSizePixel = 0
 	row.Size = UDim2.new(1, 0, 0, ScalePx(54))
 	row.ZIndex = 20
-	row.ClipsDescendants = true
+	row.ClipsDescendants = false
 	pcall(function()
 		row:SetAttribute("UH_SearchText", tostring(name))
 	end)
@@ -2607,36 +2729,80 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	BindHoverFX(click, selectBg)
 	BindClickFX(click, selectBg)
 
-	local BASE_H = ScalePx(54)
-	local OPEN_GAP = ScalePx(10)
-
-	local optionsHolder = Instance.new("Frame")
-	optionsHolder.Name = "Options"
-	optionsHolder.BackgroundColor3 = THEME.Panel
-	optionsHolder.BackgroundTransparency = 0.08
-	optionsHolder.BorderSizePixel = 0
-	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
-	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
-	optionsHolder.ZIndex = row.ZIndex + 10
-	optionsHolder.ClipsDescendants = true
-	AddCorner(optionsHolder, 12)
-	AddStroke(optionsHolder, 1, THEME.StrokeSoft, 0.55)
-	optionsHolder.Parent = row
-
-	local optPad = Instance.new("UIPadding")
-	optPad.PaddingTop = UDim.new(0, 8)
-	optPad.PaddingBottom = UDim.new(0, 8)
-	optPad.PaddingLeft = UDim.new(0, 8)
-	optPad.PaddingRight = UDim.new(0, 8)
-	optPad.Parent = optionsHolder
-
-	local optList = Instance.new("UIListLayout")
-	optList.SortOrder = Enum.SortOrder.LayoutOrder
-	optList.Padding = UDim.new(0, 8)
-	optList.Parent = optionsHolder
-
 	local opened = false
+	local layer = _GetDropdownLayer(self)
+	local blocker = nil
+	local menu = nil
+	local menuScroll = nil
+	local menuList = nil
+	local menuPad = nil
+	local followConn = nil
 	local openToken = 0
+	local MENU_MAX_H = ScalePx(240)
+
+	local function clearMenuItems()
+		if not menuScroll then return end
+		for _, ch in ipairs(menuScroll:GetChildren()) do
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then
+				ch:Destroy()
+			end
+		end
+	end
+
+	local function updateMenuSize()
+		if not (menu and menu.Parent and menuScroll and menuList and menuPad) then return end
+		local contentH = menuList.AbsoluteContentSize.Y
+		local h = contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset
+		h = math.clamp(h, 0, MENU_MAX_H)
+		menu.Size = UDim2.fromOffset(selectBg.AbsoluteSize.X, h)
+		menuScroll.CanvasSize = UDim2.new(0, 0, 0, contentH + menuPad.PaddingTop.Offset + menuPad.PaddingBottom.Offset)
+	end
+
+	local function positionMenu()
+		if not (menu and menu.Parent) then return end
+		local absPos = selectBg.AbsolutePosition
+		local absSize = selectBg.AbsoluteSize
+		menu.Position = UDim2.fromOffset(absPos.X, absPos.Y + absSize.Y + 6)
+	end
+
+	local function ensureMenu()
+		if not layer then return end
+		if menu and menu.Parent then return end
+
+		menu = Instance.new("Frame")
+		menu.Name = "DropdownMenu"
+		menu.BackgroundColor3 = THEME.Panel
+		menu.BackgroundTransparency = 0.06
+		menu.BorderSizePixel = 0
+		menu.ZIndex = layer.ZIndex + 10
+		menu.ClipsDescendants = true
+		AddCorner(menu, 14)
+		AddStroke(menu, 1, THEME.StrokeSoft, 0.5)
+		menu.Parent = layer
+
+		menuScroll = Instance.new("ScrollingFrame")
+		menuScroll.Name = "Scroll"
+		menuScroll.BackgroundTransparency = 1
+		menuScroll.BorderSizePixel = 0
+		menuScroll.Size = UDim2.fromScale(1, 1)
+		menuScroll.Position = UDim2.fromScale(0, 0)
+		menuScroll.ZIndex = menu.ZIndex + 1
+		menuScroll.ScrollBarThickness = 4
+		menuScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+		menuScroll.Parent = menu
+
+		menuPad = Instance.new("UIPadding")
+		menuPad.PaddingTop = UDim.new(0, 10)
+		menuPad.PaddingBottom = UDim.new(0, 10)
+		menuPad.PaddingLeft = UDim.new(0, 10)
+		menuPad.PaddingRight = UDim.new(0, 10)
+		menuPad.Parent = menuScroll
+
+		menuList = Instance.new("UIListLayout")
+		menuList.SortOrder = Enum.SortOrder.LayoutOrder
+		menuList.Padding = UDim.new(0, 8)
+		menuList.Parent = menuScroll
+	end
 
 	local function refreshValueText()
 		if #selected == 0 then
@@ -2655,34 +2821,11 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 		end)
 	end
 
-	local function setOpen(state)
-		openToken += 1
-		local token = openToken
-		opened = state == true
-		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
-		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
-		local contentH = optList.AbsoluteContentSize.Y
-		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
-		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
-
-		if not opened then
-			task.delay(0.23, function()
-				if token ~= openToken then return end
-				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
-				row.Size = UDim2.new(1, 0, 0, BASE_H)
-			end)
-		end
-	end
-
 	local function rebuild()
-		if not optionsHolder or not optionsHolder.Parent then return end
+		ensureMenu()
+		if not (menuScroll and menuScroll.Parent) then return end
 
-		for _, ch in ipairs(optionsHolder:GetChildren()) do
-			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then
-				ch:Destroy()
-			end
-		end
+		clearMenuItems()
 
 		if type(list) ~= "table" or #list == 0 then
 			list = {}
@@ -2692,14 +2835,14 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 			local s = tostring(item)
 			local optRow = Instance.new("Frame")
 			optRow.Name = "Option_" .. tostring(i)
-			optRow.BackgroundColor3 = THEME.Panel
-			optRow.BackgroundTransparency = 0.12
+			optRow.BackgroundColor3 = THEME.Panel2
+			optRow.BackgroundTransparency = 0.18
 			optRow.BorderSizePixel = 0
 			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-			optRow.ZIndex = optionsHolder.ZIndex + 1
-			AddCorner(optRow, 10)
+			optRow.ZIndex = menu.ZIndex + 2
+			AddCorner(optRow, 12)
 			AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
-			optRow.Parent = optionsHolder
+			optRow.Parent = menuScroll
 
 			local optBtn = MakeButtonBase(optRow)
 			optBtn.ZIndex = optRow.ZIndex + 1
@@ -2750,14 +2893,68 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	refreshValueText()
 	persistAndCallback()
 
-	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	local function setOpen(state)
+		openToken += 1
+		local token = openToken
+		opened = state == true
+		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
+		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
 		if opened then
-			local contentH = optList.AbsoluteContentSize.Y
-			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
-			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
-			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
+			_CloseActiveDropdown(self)
+			ensureMenu()
+			rebuild()
+			positionMenu()
+			updateMenuSize()
+			if layer then
+				blocker = Instance.new("TextButton")
+				blocker.Name = "DropdownBlocker"
+				blocker.BackgroundTransparency = 1
+				blocker.Text = ""
+				blocker.AutoButtonColor = false
+				blocker.Size = UDim2.fromScale(1, 1)
+				blocker.Position = UDim2.fromScale(0, 0)
+				blocker.ZIndex = layer.ZIndex + 1
+				blocker.Parent = layer
+				blocker.MouseButton1Click:Connect(function()
+					setOpen(false)
+				end)
+			end
+			followConn = RunService.RenderStepped:Connect(function()
+				pcall(positionMenu)
+			end)
+			local function closeSelf()
+				setOpen(false)
+			end
+			self._ActiveDropdownClose = closeSelf
+			menu.BackgroundTransparency = 1
+			Tween(menu, {BackgroundTransparency = 0.06}, 0.18)
+		else
+			if followConn then
+				followConn:Disconnect()
+				followConn = nil
+			end
+			if blocker then
+				pcall(function() blocker:Destroy() end)
+				blocker = nil
+			end
+			if menu then
+				Tween(menu, {BackgroundTransparency = 1}, 0.14)
+				task.delay(0.15, function()
+					if token ~= openToken then return end
+					pcall(function()
+						if menu then menu:Destroy() end
+					end)
+					menu = nil
+					menuScroll = nil
+					menuList = nil
+					menuPad = nil
+				end)
+			end
+			if self._ActiveDropdownClose and self._ActiveDropdownClose == self._ActiveDropdownClose then
+				self._ActiveDropdownClose = nil
+			end
 		end
-	end)
+	end
 
 	click.MouseButton1Click:Connect(function()
 		setOpen(not opened)
@@ -2781,9 +2978,9 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 		if type(newList) == "table" then
 			list = newList
 		end
-		rebuild()
 		if opened then
-			setOpen(true)
+			rebuild()
+			updateMenuSize()
 		end
 	end
 
