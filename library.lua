@@ -2423,10 +2423,6 @@ function UI:CreateDropdown(sectionBody, opt)
 			end
 		end
 		
-		pcall(function()
-			optList:ApplyLayout()
-		end)
-		
 		if opened then
 			local contentH = optList.AbsoluteContentSize.Y
 			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
