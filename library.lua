@@ -488,6 +488,7 @@ end
 UI._Settings = {
 	MinimizeKeyCode = Enum.KeyCode.RightControl,
 	NotificationsEnabled = true,
+	NotificationPosition = "BottomRight",
 	AutoLoadEnabled = false,
 	AutoLoadName = "default",
 	Theme = "",
@@ -693,6 +694,9 @@ function UI:_LoadSettings()
 	if type(decoded.NotificationsEnabled) == "boolean" then
 		self._Settings.NotificationsEnabled = decoded.NotificationsEnabled
 	end
+	if type(decoded.NotificationPosition) == "string" then
+		self._Settings.NotificationPosition = decoded.NotificationPosition
+	end
 	self._Settings.AutoLoadEnabled = false
 	self._Settings.AutoLoadEnabled = false
 	if type(decoded.AutoLoadName) == "string" then
@@ -714,6 +718,7 @@ function UI:_SaveSettings()
 	local payload = {
 		MinimizeKeyCode = (self._Settings and self._Settings.MinimizeKeyCode and self._Settings.MinimizeKeyCode.Name) or "RightControl",
 		NotificationsEnabled = (self._Settings and self._Settings.NotificationsEnabled) ~= false,
+		NotificationPosition = (self._Settings and self._Settings.NotificationPosition) or "BottomRight",
 		AutoLoadEnabled = false,
 		AutoLoadName = (self._Settings and self._Settings.AutoLoadName) or "default",
 		Theme = (self._Settings and self._Settings.Theme) or "",
@@ -769,6 +774,9 @@ function UI:_LoadConfig(name)
 		if type(decoded.Settings.NotificationsEnabled) == "boolean" then
 			self._Settings.NotificationsEnabled = decoded.Settings.NotificationsEnabled
 		end
+		if type(decoded.Settings.NotificationPosition) == "string" then
+			self._Settings.NotificationPosition = decoded.Settings.NotificationPosition
+		end
 		if type(decoded.Settings.Opacity) == "number" then
 			loadedOpacity = decoded.Settings.Opacity
 			self._Settings.Opacity = decoded.Settings.Opacity
@@ -807,6 +815,7 @@ function UI:_SaveConfig(name)
 		Settings = {
 			MinimizeKeyCode = (self._Settings and self._Settings.MinimizeKeyCode and self._Settings.MinimizeKeyCode.Name) or "RightControl",
 			NotificationsEnabled = (self._Settings and self._Settings.NotificationsEnabled) ~= false,
+			NotificationPosition = (self._Settings and self._Settings.NotificationPosition) or "BottomRight",
 			Opacity = (self._Settings and self._Settings.Opacity) or 90,
 		},
 		UIState = self._UIState,
@@ -1021,8 +1030,19 @@ end
 
 function UI:Notify(title, body, duration)
 	if self._Settings and self._Settings.NotificationsEnabled == false then return end
-	if not self._NotifyStack then return end
+	if not self._NotifyStack and type(self._NotifyStacks) ~= "table" then return end
 	local dur = duration or 2.6
+	local stack = self._NotifyStack
+	if not stack and type(self._NotifyStacks) == "table" then
+		local key = (self._Settings and self._Settings.NotificationPosition) or "BottomRight"
+		stack = self._NotifyStacks[key] or self._NotifyStacks.BottomRight
+		self._NotifyStack = stack
+	end
+	if not stack then return end
+	local posKey = "BottomRight"
+	pcall(function()
+		posKey = stack:GetAttribute("UH_NotifyPos") or posKey
+	end)
 
 	local card = Instance.new("Frame")
 	card.Name = "Notification"
@@ -1030,13 +1050,19 @@ function UI:Notify(title, body, duration)
 	card.BackgroundTransparency = 0.08
 	card.BorderSizePixel = 0
 	card.Size = UDim2.fromOffset(320, 78)
-	card.Position = UDim2.new(1, 340, 1, 0)
+	local isRight = tostring(posKey):find("Right") ~= nil
+	local isBottom = tostring(posKey):find("Bottom") ~= nil
+	local yScale = isBottom and 1 or 0
+	local yInOff = isBottom and -8 or 8
+	local xOutOff = isRight and 340 or -340
+	local xInOff = isRight and -334 or 14
+	card.Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, 0)
 	card.ZIndex = 200
 	AddCorner(card, 14)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
 	AddShadow(card, 199)
 	AddGradient(card, THEME.Surface, THEME.Panel, 90)
-	card.Parent = self._NotifyStack
+	card.Parent = stack
 
 	local glow = Instance.new("UIStroke")
 	glow.Thickness = 2
@@ -1090,12 +1116,12 @@ function UI:Notify(title, body, duration)
 	scale.Scale = 0.96
 	card.BackgroundTransparency = 1
 	Tween(scale, {Scale = 1}, 0.35)
-	Tween(card, {Position = UDim2.new(1, -334, 1, -8), BackgroundTransparency = 0.08}, 0.35)
+	Tween(card, {Position = UDim2.new(isRight and 1 or 0, xInOff, yScale, yInOff), BackgroundTransparency = 0.08}, 0.35)
 
 	local function dismiss()
 		if not card.Parent then return end
 		Tween(scale, {Scale = 0.96}, 0.22)
-		Tween(card, {Position = UDim2.new(1, 340, 1, -8), BackgroundTransparency = 1}, 0.28)
+		Tween(card, {Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, yInOff), BackgroundTransparency = 1}, 0.28)
 		task.delay(0.32, function()
 			pcall(function() card:Destroy() end)
 		end)
@@ -1103,6 +1129,54 @@ function UI:Notify(title, body, duration)
 
 	close.MouseButton1Click:Connect(dismiss)
 	task.delay(dur, dismiss)
+end
+
+function UI:SetNotificationPosition(pos)
+	if type(self._NotifyStacks) ~= "table" then return false end
+	pos = tostring(pos or "")
+	pos = pos:gsub("%s+", "")
+	local map = {
+		TopLeft = "TopLeft",
+		BottomLeft = "BottomLeft",
+		TopRight = "TopRight",
+		BottomRight = "BottomRight",
+	}
+	local key = map[pos] or map[pos:lower():gsub("^%l", string.upper)]
+	if not key then
+		local needle = pos:lower()
+		for k, _ in pairs(map) do
+			if k:lower() == needle then
+				key = k
+				break
+			end
+		end
+	end
+	key = key or "BottomRight"
+	local target = self._NotifyStacks[key] or self._NotifyStacks.BottomRight
+	if not target then return false end
+
+	local prev = self._NotifyStack
+	self._NotifyStack = target
+	if self._Settings then
+		self._Settings.NotificationPosition = key
+	end
+	pcall(function()
+		if type(self._SaveSettings) == "function" then
+			self:_SaveSettings()
+		end
+	end)
+
+	pcall(function()
+		if prev and prev ~= target then
+			for _, child in ipairs(prev:GetChildren()) do
+				if child:IsA("Frame") and child.Name == "Notification" then
+					child.Parent = target
+				end
+			end
+		end
+	end)
+
+	return true
 end
 
 local function MakeDraggable(handle, target)
@@ -3605,21 +3679,35 @@ function UI:CreateWindow()
 	pages.ZIndex = 13
 	pages.Parent = rightSurface
 
-	local notifyStack = Instance.new("Frame")
-	notifyStack.Name = "NotifyStack"
-	notifyStack.BackgroundTransparency = 1
-	notifyStack.Size = UDim2.fromOffset(360, 260)
-	notifyStack.Position = UDim2.new(1, -18, 1, -18)
-	notifyStack.AnchorPoint = Vector2.new(1, 1)
-	notifyStack.ZIndex = 200
-	notifyStack.Parent = sg
+	local function makeNotifyStack(name, anchorPoint, position, hAlign, vAlign, posKey)
+		local st = Instance.new("Frame")
+		st.Name = name
+		st.BackgroundTransparency = 1
+		st.Size = UDim2.fromOffset(360, 260)
+		st.Position = position
+		st.AnchorPoint = anchorPoint
+		st.ZIndex = 200
+		pcall(function()
+			st:SetAttribute("UH_NotifyPos", posKey)
+		end)
+		st.Parent = sg
 
-	local nList = Instance.new("UIListLayout")
-	nList.SortOrder = Enum.SortOrder.LayoutOrder
-	nList.Padding = UDim.new(0, 10)
-	nList.HorizontalAlignment = Enum.HorizontalAlignment.Right
-	nList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	nList.Parent = notifyStack
+		local nList = Instance.new("UIListLayout")
+		nList.SortOrder = Enum.SortOrder.LayoutOrder
+		nList.Padding = UDim.new(0, 10)
+		nList.HorizontalAlignment = hAlign
+		nList.VerticalAlignment = vAlign
+		nList.Parent = st
+
+		return st
+	end
+
+	local notifyStacks = {
+		TopLeft = makeNotifyStack("NotifyStackTopLeft", Vector2.new(0, 0), UDim2.new(0, 18, 0, 18), Enum.HorizontalAlignment.Left, Enum.VerticalAlignment.Top, "TopLeft"),
+		BottomLeft = makeNotifyStack("NotifyStackBottomLeft", Vector2.new(0, 1), UDim2.new(0, 18, 1, -18), Enum.HorizontalAlignment.Left, Enum.VerticalAlignment.Bottom, "BottomLeft"),
+		TopRight = makeNotifyStack("NotifyStackTopRight", Vector2.new(1, 0), UDim2.new(1, -18, 0, 18), Enum.HorizontalAlignment.Right, Enum.VerticalAlignment.Top, "TopRight"),
+		BottomRight = makeNotifyStack("NotifyStackBottomRight", Vector2.new(1, 1), UDim2.new(1, -18, 1, -18), Enum.HorizontalAlignment.Right, Enum.VerticalAlignment.Bottom, "BottomRight"),
+	}
 
 	self.ScreenGui = sg
 	self._Shade = shade
@@ -3630,7 +3718,16 @@ function UI:CreateWindow()
 	self._RightSurface = rightSurface
 	self._TabsHolder = tabsHolder
 	self._Pages = pages
-	self._NotifyStack = notifyStack
+	self._NotifyStacks = notifyStacks
+	self._NotifyStack = nil
+	pcall(function()
+		local saved = (self._Settings and self._Settings.NotificationPosition) or "BottomRight"
+		if type(self.SetNotificationPosition) == "function" then
+			self:SetNotificationPosition(saved)
+		else
+			self._NotifyStack = notifyStacks[saved] or notifyStacks.BottomRight
+		end
+	end)
 	pcall(function()
 		if type(self._Settings) == "table" and type(self._Settings.Theme) == "string" and self._Settings.Theme ~= "" then
 			self:SetTheme(self._Settings.Theme)
