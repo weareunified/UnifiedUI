@@ -2077,6 +2077,28 @@ function UI:CreateSlider(sectionBody, opt)
 	local default = tonumber(opt.Default) or min
 	local step = tonumber(opt.Step) or 1
 	local cb = opt.Callback or function() end
+	local function _DecimalsFromStep(s)
+		s = tonumber(s) or 1
+		if s <= 0 then return 0 end
+		local txt = tostring(s)
+		local dec = txt:match("%.(%d+)")
+		if dec then
+			return math.clamp(#dec, 0, 6)
+		end
+		return 0
+	end
+	local function _FormatNumber(n)
+		n = tonumber(n)
+		if n == nil then return "0" end
+		local d = _DecimalsFromStep(step)
+		local p = 10 ^ d
+		n = math.floor((n * p) + 0.5) / p
+		local s = string.format("%." .. tostring(d) .. "f", n)
+		if d > 0 then
+			s = s:gsub("0+$", ""):gsub("%.$", "")
+		end
+		return s
+	end
 	local persistKey = self:_GetPersistKey(sectionBody, "Slider", name)
 	if self._UIState and type(self._UIState[persistKey]) == "number" then
 		default = tonumber(self._UIState[persistKey]) or default
@@ -2101,7 +2123,7 @@ function UI:CreateSlider(sectionBody, opt)
 	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
 
-	local valLbl = MakeText(row, tostring(default), 12, "")
+	local valLbl = MakeText(row, _FormatNumber(default), 12, "")
 	valLbl.TextColor3 = THEME.SubText
 	valLbl.TextXAlignment = Enum.TextXAlignment.Right
 	valLbl.ZIndex = 22
@@ -2134,7 +2156,7 @@ function UI:CreateSlider(sectionBody, opt)
 	AddStroke(bar, 1, THEME.StrokeSoft, 0.6)
 	bar.Parent = row
 
-	local endLbl = MakeText(row, tostring(default), 11, "semibold")
+	local endLbl = MakeText(row, _FormatNumber(default), 11, "semibold")
 	endLbl.Name = "ValueDisplay"
 	endLbl.TextColor3 = THEME.Primary
 	endLbl.TextXAlignment = Enum.TextXAlignment.Center
@@ -2190,8 +2212,9 @@ function UI:CreateSlider(sectionBody, opt)
 	local function render(anim)
 		local alpha = (value - min) / (max - min)
 		alpha = math.clamp(alpha, 0, 1)
-		valBox.Text = tostring(value)
-		endLbl.Text = tostring(value)
+		local formatted = _FormatNumber(value)
+		valBox.Text = formatted
+		endLbl.Text = formatted
 		if anim then
 			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.22)
 			Tween(knob, {Position = UDim2.new(alpha, 0, 0.5, 0)}, 0.22)
