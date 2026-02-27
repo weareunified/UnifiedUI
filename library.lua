@@ -224,7 +224,7 @@ local function MakeText(parent, text, size, weight)
 		lbl:SetAttribute("UH_OrigText", tostring(text or ""))
 	end)
 	lbl.Font = (weight == "bold") and Enum.Font.GothamBold or (weight == "semibold" and Enum.Font.GothamSemibold or Enum.Font.GothamMedium)
-	lbl.TextSize = (size or 14) * TEXT_SCALE
+	lbl.TextSize = math.floor((((size or 14) * TEXT_SCALE) + 0.5))
 	lbl.TextColor3 = THEME.Text
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	lbl.TextYAlignment = Enum.TextYAlignment.Center
