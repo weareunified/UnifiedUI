@@ -3374,7 +3374,12 @@ function UI:Unload()
 	end)
 end
 
-function UI:CreateWindow()
+function UI:CreateWindow(config)
+	local windowTitle = "Unified.wtf | UI | dsc.gg/unifiedhub"
+	if type(config) == "table" and type(config.Title) == "string" then
+		windowTitle = config.Title
+	end
+
 	local sg = Instance.new("ScreenGui")
 	sg.Name = "UnifiedHub"
 	sg.ResetOnSpawn = false
@@ -3460,7 +3465,7 @@ function UI:CreateWindow()
 	titleWrap.ZIndex = 12
 	titleWrap.Parent = top
 
-	local title = MakeText(titleWrap, "Unified.wtf | UI | dsc.gg/unifiedhub", 16, "bold")
+	local title = MakeText(titleWrap, windowTitle, 16, "bold")
 	title.ZIndex = 13
 	title.Size = UDim2.new(1, -140, 1, 0)
 	title.Position = UDim2.fromOffset(0, 0)
