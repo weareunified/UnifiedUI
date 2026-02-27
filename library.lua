@@ -3327,6 +3327,53 @@ function UI:SetOpen(state)
 	end
 end
 
+function UI:Unload()
+	if self._Alive == false then
+		pcall(function()
+			if self.ScreenGui then
+				self.ScreenGui:Destroy()
+			end
+		end)
+		self.ScreenGui = nil
+		return
+	end
+
+	self._Alive = false
+	self._Open = false
+	pcall(function()
+		self._TabSwitchToken += 1
+		self._SearchToken += 1
+	end)
+
+	pcall(function()
+		if self.ScreenGui then
+			self.ScreenGui:Destroy()
+		end
+	end)
+
+	self.ScreenGui = nil
+	self._Shade = nil
+	self._Container = nil
+	self._Main = nil
+	self._Sidebar = nil
+	self._Right = nil
+	self._RightSurface = nil
+	self._TabsHolder = nil
+	table.clear(self._Pages or {})
+	self._Pages = nil
+	self._NotifyStacks = nil
+	self._NotifyStack = nil
+	self._SearchBox = nil
+	self._CurrentTab = nil
+	self._MaximizeButton = nil
+
+	pcall(function()
+		if _G and _G.UnifiedUI == self then
+			_G.UnifiedUI = nil
+		end
+	end)
+end
+
 function UI:CreateWindow()
 	local sg = Instance.new("ScreenGui")
 	sg.Name = "UnifiedHub"
@@ -3460,9 +3507,9 @@ function UI:CreateWindow()
 	end)
 
 	closeBtn.MouseButton1Click:Connect(function()
-		if not self._Alive then return end
-		self._Alive = false
-		pcall(function() sg:Destroy() end)
+		pcall(function()
+			self:Unload()
+		end)
 	end)
 
 	if isMobile then
