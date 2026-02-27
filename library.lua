@@ -2971,6 +2971,7 @@ function UI:CreateWindow()
 		maximizeBtn.Parent = sg
 		pcall(function()
 			ContentProvider:PreloadAsync({maximizeBtn})
+		end)
 	local main = Instance.new("Frame")
 	main.Name = "Main"
 	main.BackgroundColor3 = THEME.BG
