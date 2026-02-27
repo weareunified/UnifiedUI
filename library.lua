@@ -2972,6 +2972,7 @@ function UI:CreateWindow()
 		pcall(function()
 			ContentProvider:PreloadAsync({maximizeBtn})
 		end)
+	end
 	local main = Instance.new("Frame")
 	main.Name = "Main"
 	main.BackgroundColor3 = THEME.BG
