@@ -3889,10 +3889,6 @@ function UI:CreateWindow(config)
 		end
 	end)
 
-	task.delay(0.4, function()
-		UI:Notify("Unified.wtf", "UI loaded (placeholders only)", 2.2)
-	end)
-
 	return self
 end
 
