@@ -1918,7 +1918,7 @@ function UI:CreateBindToggle(sectionBody, opt)
 	local TRACK_W = 40
 	local TRACK_H = 18
 	local KNOB = 14
-	local GAP = 8
+	local GAP = 4
 
 	local track = Instance.new("Frame")
 	track.Name = "Track"
