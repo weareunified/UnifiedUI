@@ -1255,8 +1255,11 @@ end
 
 function UI:CreateTab(opt)
 	opt = opt or {}
-	local name = opt.Name or "Tab"
+	local name = tostring((opt.Name ~= nil) and opt.Name or "Tab")
 	local icon = opt.Icon
+	if type(icon) ~= "string" then
+		icon = nil
+	end
 	
 	local page = Instance.new("ScrollingFrame")
 	page.Name = name .. "Page"
@@ -1847,6 +1850,269 @@ function UI:CreateBind(sectionBody, opt)
 
 	self._Controls[persistKey] = api
 	self._BindControls[persistKey] = api
+	return api
+end
+
+function UI:CreateBindToggle(sectionBody, opt)
+	opt = opt or {}
+	local name = opt.Name or "BindToggle"
+	local defaultToggle = opt.Default == true
+	local defaultBind = opt.BindDefault
+	local onChanged = opt.Callback or function() end
+	local onBindChanged = opt.Changed
+	local persistKeyToggle = self:_GetPersistKey(sectionBody, "BindToggle", name .. "_Toggle")
+	local persistKeyBind = self:_GetPersistKey(sectionBody, "BindToggle", name .. "_Bind")
+
+	if self._UIState and type(self._UIState[persistKeyToggle]) == "boolean" then
+		defaultToggle = self._UIState[persistKeyToggle] == true
+	end
+	if self._UIState and self._UIState[persistKeyBind] ~= nil then
+		local saved = self._UIState[persistKeyBind]
+		if not (type(saved) == "string" and saved == "") then
+			defaultBind = saved
+		end
+	end
+
+	local keyCode = nil
+	pcall(function()
+		if typeof(defaultBind) == "EnumItem" and defaultBind.EnumType == Enum.KeyCode then
+			keyCode = defaultBind
+		elseif type(defaultBind) == "string" and Enum.KeyCode[defaultBind] then
+			keyCode = Enum.KeyCode[defaultBind]
+		end
+	end)
+
+	local row = Instance.new("Frame")
+	row.Name = "BindToggle"
+	row.BackgroundColor3 = THEME.Panel2
+	row.BackgroundTransparency = 1
+	row.BorderSizePixel = 0
+	row.Size = UDim2.new(1, 0, 0, ScalePx(46))
+	row.ZIndex = 20
+	pcall(function()
+		row:SetAttribute("UH_SearchText", tostring(name))
+	end)
+	AddCorner(row, 14)
+	row.Parent = sectionBody
+
+	local btn = MakeButtonBase(row)
+	btn.ZIndex = 21
+	btn.Size = UDim2.fromScale(1, 1)
+	BindHoverFX(btn, row)
+	BindClickFX(btn, row)
+
+	local lbl = MakeText(row, name, 13, "semibold")
+	lbl.ZIndex = 22
+	lbl.Position = UDim2.fromOffset(14, 0)
+	lbl.TextWrapped = true
+	lbl.TextYAlignment = Enum.TextYAlignment.Center
+	lbl.ClipsDescendants = true
+	if IS_MOBILE then
+		lbl.Position = UDim2.fromOffset(14, ScalePx(6))
+		lbl.TextYAlignment = Enum.TextYAlignment.Top
+		lbl.TextSize = math.max(10, math.floor(lbl.TextSize * 0.92))
+	end
+
+	local keyBtn = Instance.new("Frame")
+	keyBtn.Name = "Key"
+	keyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	keyBtn.BackgroundTransparency = 0.92
+	keyBtn.BorderSizePixel = 0
+	keyBtn.Size = UDim2.fromOffset(92, ScalePx(28))
+	keyBtn.Position = UDim2.new(1, -14, 0.5, 0)
+	keyBtn.AnchorPoint = Vector2.new(1, 0.5)
+	keyBtn.ZIndex = 21
+	AddCorner(keyBtn, 10)
+	AddStroke(keyBtn, 1, THEME.StrokeSoft, 0.55)
+	keyBtn.Parent = row
+
+	local bindGlow = Instance.new("UIStroke")
+	bindGlow.Thickness = 2
+	bindGlow.Color = THEME.Primary
+	bindGlow.Transparency = 1
+	bindGlow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	bindGlow.Parent = keyBtn
+
+	local keyLbl = MakeText(keyBtn, "None", 12, "")
+	keyLbl.ZIndex = 22
+	keyLbl.TextXAlignment = Enum.TextXAlignment.Center
+	keyLbl.Size = UDim2.fromScale(1, 1)
+	keyLbl.Position = UDim2.fromOffset(0, 0)
+
+	local keyClick = MakeButtonBase(keyBtn)
+	keyClick.ZIndex = 23
+	keyClick.Size = UDim2.fromScale(1, 1)
+	BindHoverFX(keyClick, keyBtn)
+	BindClickFX(keyClick, keyBtn)
+
+	local track = Instance.new("Frame")
+	track.Name = "Track"
+	track.BackgroundColor3 = THEME.StrokeSoft
+	track.BackgroundTransparency = 0.55
+	track.BorderSizePixel = 0
+	track.Size = UDim2.fromOffset(46, 22)
+	track.Position = UDim2.new(1, -(14 + 92 + 10 + 46), 0.5, -11)
+	track.ZIndex = 22
+	AddCorner(track, 999)
+	local trackStroke = Instance.new("UIStroke")
+	trackStroke.Thickness = 1
+	trackStroke.Color = THEME.StrokeSoft
+	trackStroke.Transparency = 0.45
+	trackStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	trackStroke.Parent = track
+
+	local trackGrad = Instance.new("UIGradient")
+	trackGrad.Rotation = 90
+	trackGrad.Parent = track
+	track.Parent = row
+
+	local knob = Instance.new("Frame")
+	knob.Name = "Knob"
+	knob.BackgroundColor3 = THEME.Text
+	knob.BackgroundTransparency = 0
+	knob.BorderSizePixel = 0
+	knob.Size = UDim2.fromOffset(16, 16)
+	knob.Position = UDim2.fromOffset(3, 3)
+	knob.ZIndex = 23
+	AddCorner(knob, 999)
+	knob.Parent = track
+
+	local toggleGlow = Instance.new("UIStroke")
+	toggleGlow.Thickness = 2
+	toggleGlow.Color = THEME.Text
+	toggleGlow.Transparency = 1
+	toggleGlow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	toggleGlow.Parent = track
+
+	local function updateRowHeight()
+		local minH = ScalePx(46)
+		local padV = ScalePx(12)
+		local needed = math.max(minH, math.floor(lbl.TextBounds.Y + padV + 0.5))
+		row.Size = UDim2.new(1, 0, 0, needed)
+		keyBtn.Position = UDim2.new(1, -14, 0.5, 0)
+		track.Position = UDim2.new(1, -(14 + 92 + 10 + 46), 0.5, -math.floor(track.Size.Y.Offset / 2))
+	end
+	lbl:GetPropertyChangedSignal("TextBounds"):Connect(updateRowHeight)
+	updateRowHeight()
+
+	local awaiting = false
+	local value = defaultToggle
+
+	local function renderBind()
+		if awaiting then
+			keyLbl.Text = "..."
+			keyLbl.TextColor3 = THEME.SubText
+			return
+		end
+		if typeof(keyCode) == "EnumItem" and keyCode.EnumType == Enum.KeyCode and keyCode ~= Enum.KeyCode.Unknown then
+			keyLbl.Text = tostring(keyCode.Name)
+			keyLbl.TextColor3 = THEME.Text
+		else
+			keyLbl.Text = "None"
+			keyLbl.TextColor3 = THEME.SubText
+		end
+	end
+
+	local function setKey(kc)
+		keyCode = kc
+		awaiting = false
+		renderBind()
+		self._UIState[persistKeyBind] = (typeof(keyCode) == "EnumItem" and keyCode.Name) or ""
+		if type(onBindChanged) == "function" then
+			pcall(onBindChanged, keyCode)
+		end
+	end
+
+	keyClick.MouseButton1Click:Connect(function()
+		awaiting = true
+		renderBind()
+		Tween(bindGlow, {Transparency = 0.35}, 0.12)
+		self._AwaitingBind = {
+			Key = persistKeyBind,
+			Set = setKey,
+			Glow = bindGlow,
+		}
+	end)
+
+	local function renderToggle(anim)
+		local on = value
+		local tcol = THEME.Text
+		local kpos = on and UDim2.fromOffset(27, 3) or UDim2.fromOffset(3, 3)
+		local bgCol = on and THEME.Primary or THEME.StrokeSoft
+		local bgTr = on and 0.22 or 0.58
+		local stCol = on and THEME.Primary or THEME.StrokeSoft
+		local stTr = on and 0.12 or 0.50
+		local function clamp01(x)
+			return math.max(0, math.min(1, x))
+		end
+		local function shade(c, f)
+			return Color3.new(clamp01(c.R * f), clamp01(c.G * f), clamp01(c.B * f))
+		end
+		local topCol = shade(bgCol, on and 1.10 or 1.06)
+		local botCol = shade(bgCol, on and 0.92 or 0.88)
+		if anim then
+			Tween(knob, {Position = kpos, BackgroundColor3 = tcol}, 0.28)
+			Tween(toggleGlow, {Transparency = on and 0.6 or 1}, 0.28)
+			Tween(track, {BackgroundColor3 = bgCol, BackgroundTransparency = bgTr}, 0.28)
+			Tween(trackStroke, {Color = stCol, Transparency = stTr}, 0.28)
+			trackGrad.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, topCol),
+				ColorSequenceKeypoint.new(1, botCol),
+			})
+		else
+			knob.Position = kpos
+			knob.BackgroundColor3 = tcol
+			toggleGlow.Transparency = on and 0.6 or 1
+			track.BackgroundColor3 = bgCol
+			track.BackgroundTransparency = bgTr
+			trackStroke.Color = stCol
+			trackStroke.Transparency = stTr
+			trackGrad.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, topCol),
+				ColorSequenceKeypoint.new(1, botCol),
+			})
+		end
+	end
+
+	local function setToggle(v, anim)
+		value = (v == true)
+		renderToggle(anim)
+		self._UIState[persistKeyToggle] = value
+		pcall(onChanged, value)
+	end
+
+	btn.MouseButton1Click:Connect(function()
+		setToggle(not value, true)
+	end)
+
+	renderBind()
+	renderToggle(false)
+
+	local api = {}
+	api.Frame = row
+	api.Get = function() return value end
+	api.Set = function(a, b)
+		local v = (b == nil) and a or b
+		setToggle(v == true, true)
+	end
+	api.GetKey = function() return keyCode end
+	api.SetKey = function(a, b)
+		local v = (b == nil) and a or b
+		local kc = nil
+		if typeof(v) == "EnumItem" and v.EnumType == Enum.KeyCode then
+			kc = v
+		elseif type(v) == "string" and Enum.KeyCode[v] then
+			kc = Enum.KeyCode[v]
+		end
+		setKey(kc)
+	end
+	api.Trigger = function()
+		setToggle(not value, true)
+	end
+	api._KeyCode = function() return keyCode end
+
+	self._Controls[persistKeyToggle] = api
+	self._BindControls[persistKeyBind] = api
 	return api
 end
 
