@@ -1918,7 +1918,25 @@ function UI:CreateBindToggle(sectionBody, opt)
 	local TRACK_W = 40
 	local TRACK_H = 18
 	local KNOB = 14
-	local GAP = 1
+	local GAP = 0
+
+	local rightHolder = Instance.new("Frame")
+	rightHolder.Name = "Right"
+	rightHolder.BackgroundTransparency = 1
+	rightHolder.BorderSizePixel = 0
+	rightHolder.Size = UDim2.fromOffset(KEY_W + TRACK_W, math.max(KEY_H, TRACK_H))
+	rightHolder.AnchorPoint = Vector2.new(1, 0.5)
+	rightHolder.Position = UDim2.new(1, -14, 0.5, 0)
+	rightHolder.ZIndex = 22
+	rightHolder.Parent = row
+
+	local rightList = Instance.new("UIListLayout")
+	rightList.FillDirection = Enum.FillDirection.Horizontal
+	rightList.SortOrder = Enum.SortOrder.LayoutOrder
+	rightList.Padding = UDim.new(0, GAP)
+	rightList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	rightList.VerticalAlignment = Enum.VerticalAlignment.Center
+	rightList.Parent = rightHolder
 
 	local track = Instance.new("Frame")
 	track.Name = "Track"
@@ -1926,7 +1944,7 @@ function UI:CreateBindToggle(sectionBody, opt)
 	track.BackgroundTransparency = 0.55
 	track.BorderSizePixel = 0
 	track.Size = UDim2.fromOffset(TRACK_W, TRACK_H)
-	track.Position = UDim2.new(1, -(14 + TRACK_W), 0.5, -math.floor(TRACK_H / 2))
+	track.LayoutOrder = 2
 	track.ZIndex = 22
 	AddCorner(track, 999)
 	local trackStroke = Instance.new("UIStroke")
@@ -1938,7 +1956,7 @@ function UI:CreateBindToggle(sectionBody, opt)
 	local trackGrad = Instance.new("UIGradient")
 	trackGrad.Rotation = 90
 	trackGrad.Parent = track
-	track.Parent = row
+	track.Parent = rightHolder
 
 	local keyBtn = Instance.new("Frame")
 	keyBtn.Name = "Key"
@@ -1946,12 +1964,11 @@ function UI:CreateBindToggle(sectionBody, opt)
 	keyBtn.BackgroundTransparency = 0.92
 	keyBtn.BorderSizePixel = 0
 	keyBtn.Size = UDim2.fromOffset(KEY_W, KEY_H)
-	keyBtn.Position = UDim2.new(1, -(14 + TRACK_W + GAP), 0.5, 0)
-	keyBtn.AnchorPoint = Vector2.new(1, 0.5)
+	keyBtn.LayoutOrder = 1
 	keyBtn.ZIndex = 21
 	AddCorner(keyBtn, 10)
 	AddStroke(keyBtn, 1, THEME.StrokeSoft, 0.55)
-	keyBtn.Parent = row
+	keyBtn.Parent = rightHolder
 
 	local bindGlow = Instance.new("UIStroke")
 	bindGlow.Thickness = 2
@@ -1997,7 +2014,7 @@ function UI:CreateBindToggle(sectionBody, opt)
 	toggleGlow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	toggleGlow.Parent = track
 
-	local rightReserved = 14 + TRACK_W + GAP + 14
+	local rightReserved = 14 + KEY_W + TRACK_W + 14
 	if IS_MOBILE then
 		lbl.Size = UDim2.new(1, -(14 + rightReserved), 1, -ScalePx(12))
 	else
@@ -2009,8 +2026,6 @@ function UI:CreateBindToggle(sectionBody, opt)
 		local padV = ScalePx(12)
 		local needed = math.max(minH, math.floor(lbl.TextBounds.Y + padV + 0.5))
 		row.Size = UDim2.new(1, 0, 0, needed)
-		track.Position = UDim2.new(1, -(14 + TRACK_W), 0.5, -math.floor(track.Size.Y.Offset / 2))
-		keyBtn.Position = UDim2.new(1, -(14 + TRACK_W + GAP), 0.5, 0)
 	end
 
 	lbl:GetPropertyChangedSignal("TextBounds"):Connect(updateRowHeight)
