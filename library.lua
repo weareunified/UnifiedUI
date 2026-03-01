@@ -1919,7 +1919,7 @@ function UI:CreateBindToggle(sectionBody, opt)
 	keyBtn.BackgroundTransparency = 0.92
 	keyBtn.BorderSizePixel = 0
 	keyBtn.Size = UDim2.fromOffset(92, ScalePx(28))
-	keyBtn.Position = UDim2.new(1, -14, 0.5, 0)
+	keyBtn.Position = UDim2.new(1, -(14 + 46 + 10 + 92), 0.5, 0)
 	keyBtn.AnchorPoint = Vector2.new(1, 0.5)
 	keyBtn.ZIndex = 21
 	AddCorner(keyBtn, 10)
@@ -1951,7 +1951,7 @@ function UI:CreateBindToggle(sectionBody, opt)
 	track.BackgroundTransparency = 0.55
 	track.BorderSizePixel = 0
 	track.Size = UDim2.fromOffset(46, 22)
-	track.Position = UDim2.new(1, -(14 + 92 + 10 + 46), 0.5, -11)
+	track.Position = UDim2.new(1, -60, 0.5, -11)
 	track.ZIndex = 22
 	AddCorner(track, 999)
 	local trackStroke = Instance.new("UIStroke")
@@ -1989,8 +1989,8 @@ function UI:CreateBindToggle(sectionBody, opt)
 		local padV = ScalePx(12)
 		local needed = math.max(minH, math.floor(lbl.TextBounds.Y + padV + 0.5))
 		row.Size = UDim2.new(1, 0, 0, needed)
-		keyBtn.Position = UDim2.new(1, -14, 0.5, 0)
-		track.Position = UDim2.new(1, -(14 + 92 + 10 + 46), 0.5, -math.floor(track.Size.Y.Offset / 2))
+		track.Position = UDim2.new(1, -60, 0.5, -math.floor(track.Size.Y.Offset / 2))
+		keyBtn.Position = UDim2.new(1, -(14 + 46 + 10 + 92), 0.5, 0)
 	end
 	lbl:GetPropertyChangedSignal("TextBounds"):Connect(updateRowHeight)
 	updateRowHeight()
