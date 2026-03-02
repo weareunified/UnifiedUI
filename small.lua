@@ -582,9 +582,10 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 
 	local listFrame = Instance.new("Frame")
 	listFrame.Visible = false
-	listFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	listFrame.BackgroundTransparency = 0.94
+	listFrame.BackgroundColor3 = THEME.Background
+	listFrame.BackgroundTransparency = 0.12
 	listFrame.BorderSizePixel = 0
+	listFrame.ClipsDescendants = true
 	listFrame.Size = UDim2.new(0, 0, 0, 0)
 	listFrame.ZIndex = 200
 	listFrame.Parent = listParent
