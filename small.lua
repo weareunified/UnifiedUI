@@ -686,22 +686,23 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	end)
 
 	for i, opt in ipairs(options) do
+		local choice = opt
 		local o = Instance.new("TextButton")
 		o.Size = UDim2.new(1, 0, 0, 26)
 		o.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		o.BackgroundTransparency = 1
 		o.BorderSizePixel = 0
-		o.Text = tostring(opt)
+		o.Text = tostring(choice)
 		o.TextColor3 = THEME.Text
 		o.Font = Enum.Font.Gotham
 		o.TextSize = 14
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
 		o.ZIndex = 301
-		o:SetAttribute("_Opt", opt)
+		o:SetAttribute("_Opt", choice)
 		o.Parent = content
 		o.MouseButton1Click:Connect(function()
-			setValue(opt)
+			setValue(choice)
 			renderSelected()
 			closeList()
 		end)
@@ -933,22 +934,23 @@ function Lib:MultiDropdown(text, options, default, callback, parentOverride)
 	end)
 
 	for i, opt in ipairs(options) do
+		local choice = opt
 		local o = Instance.new("TextButton")
 		o.Size = UDim2.new(1, 0, 0, 26)
 		o.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		o.BackgroundTransparency = 1
 		o.BorderSizePixel = 0
-		o.Text = tostring(opt)
+		o.Text = tostring(choice)
 		o.TextColor3 = THEME.Text
 		o.Font = Enum.Font.Gotham
 		o.TextSize = 14
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
 		o.ZIndex = 301
-		o:SetAttribute("_Opt", opt)
+		o:SetAttribute("_Opt", choice)
 		o.Parent = content
 		o.MouseButton1Click:Connect(function()
-			local k = tostring(opt)
+			local k = tostring(choice)
 			selected[k] = not selected[k]
 			emit()
 			renderSelected()
