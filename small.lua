@@ -639,6 +639,18 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 		end
 	end
 
+	local optionButtons = {}
+	local function renderSelected()
+		for _, b in pairs(optionButtons) do
+			if b and b.Parent then
+				local opt = b:GetAttribute("_Opt")
+				local isSel = (opt == selected)
+				b.Text = (isSel and "✓ " or "") .. tostring(opt)
+				b.TextColor3 = isSel and THEME.Primary or THEME.Text
+			end
+		end
+	end
+
 	local function updateListPos(setSize)
 		local pAbs = getParentAbs()
 		local ap = row.AbsolutePosition
@@ -686,11 +698,14 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
 		o.ZIndex = 301
+		o:SetAttribute("_Opt", opt)
 		o.Parent = content
 		o.MouseButton1Click:Connect(function()
 			setValue(opt)
+			renderSelected()
 			closeList()
 		end)
+		optionButtons[i] = o
 	end
 
 	btn.MouseButton1Click:Connect(function()
@@ -726,6 +741,7 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	end)
 
 	setValue(selected)
+	renderSelected()
 
 	local api = {}
 	api.Frame = row
@@ -870,6 +886,18 @@ function Lib:MultiDropdown(text, options, default, callback, parentOverride)
 		end
 	end
 
+	local optionButtons = {}
+	local function renderSelected()
+		for _, b in pairs(optionButtons) do
+			if b and b.Parent then
+				local opt = b:GetAttribute("_Opt")
+				local isSel = selected[tostring(opt)] == true
+				b.Text = (isSel and "✓ " or "") .. tostring(opt)
+				b.TextColor3 = isSel and THEME.Primary or THEME.Text
+			end
+		end
+	end
+
 	local function updateListPos(setSize)
 		local pAbs = getParentAbs()
 		local ap = row.AbsolutePosition
@@ -917,12 +945,15 @@ function Lib:MultiDropdown(text, options, default, callback, parentOverride)
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
 		o.ZIndex = 301
+		o:SetAttribute("_Opt", opt)
 		o.Parent = content
 		o.MouseButton1Click:Connect(function()
 			local k = tostring(opt)
 			selected[k] = not selected[k]
 			emit()
+			renderSelected()
 		end)
+		optionButtons[i] = o
 	end
 
 	btn.MouseButton1Click:Connect(function()
