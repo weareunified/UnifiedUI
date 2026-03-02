@@ -443,6 +443,7 @@ function Lib:Bind(text, defaultKeyCode, callback, parentOverride)
 	lbl.TextSize = 16
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	lbl.Parent = row
+	lbl.ZIndex = 52
 
 	local keyBtn = Instance.new("TextButton")
 	keyBtn.Size = UDim2.new(0, 120, 0, 28)
@@ -579,6 +580,7 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	caret.ZIndex = 52
 
 	local listParent = row:FindFirstAncestorOfClass("ScreenGui") or row
+	local overlay = nil
 
 	local listFrame = Instance.new("Frame")
 	listFrame.Visible = false
@@ -587,10 +589,18 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	listFrame.BorderSizePixel = 0
 	listFrame.ClipsDescendants = true
 	listFrame.Size = UDim2.new(0, 0, 0, 0)
-	listFrame.ZIndex = 200
+	listFrame.ZIndex = 300
 	listFrame.Parent = listParent
 	AddCorner(listFrame, 8)
 	AddStroke(listFrame, 1, THEME.StrokeSoft, 0.65)
+
+	local listBgBtn = Instance.new("TextButton")
+	listBgBtn.BackgroundTransparency = 1
+	listBgBtn.Text = ""
+	listBgBtn.AutoButtonColor = false
+	listBgBtn.Size = UDim2.fromScale(1, 1)
+	listBgBtn.ZIndex = 300
+	listBgBtn.Parent = listFrame
 
 	local listLayout = Instance.new("UIListLayout")
 	listLayout.Padding = UDim.new(0, 6)
@@ -644,9 +654,17 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 		task.delay(CLOSE_T + 0.01, function()
 			if open then return end
 			listFrame.Visible = false
+			if overlay then
+				overlay:Destroy()
+				overlay = nil
+			end
 			if rsConn then rsConn:Disconnect() rsConn = nil end
 		end)
 	end
+
+	listBgBtn.MouseButton1Click:Connect(function()
+		closeList()
+	end)
 
 	for i, opt in ipairs(options) do
 		local o = Instance.new("TextButton")
@@ -660,7 +678,7 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 		o.TextSize = 14
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
-		o.ZIndex = 201
+		o.ZIndex = 301
 		o.Parent = listFrame
 		o.MouseButton1Click:Connect(function()
 			setValue(opt)
@@ -672,6 +690,20 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 		open = not open
 		caret.Text = open and "^" or "v"
 		if open then
+			if listParent and listParent:IsA("ScreenGui") then
+				overlay = Instance.new("TextButton")
+				overlay.Name = "DropdownOverlay"
+				overlay.BackgroundTransparency = 1
+				overlay.Text = ""
+				overlay.AutoButtonColor = false
+				overlay.Size = UDim2.fromScale(1, 1)
+				overlay.ZIndex = 1
+				overlay.Parent = listParent
+				overlay.MouseButton1Click:Connect(function()
+					closeList()
+				end)
+			end
+
 			listFrame.Visible = true
 			local w, h = updateListPos(true)
 			TweenService:Create(listFrame, TweenInfo.new(OPEN_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(w, h)}):Play()
@@ -699,15 +731,241 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	return api
 end
 
-UI.ScreenGui = ScreenGui
-UI._Main = Main
-UI._Container = Container
-
-function UI:SetOpen(open)
-	self._Open = (open == true)
-	if self._Main then
-		self._Main.Visible = self._Open
+function Lib:MultiDropdown(text, options, default, callback, parentOverride)
+	local parentTarget = parentOverride or Container
+	options = options or {}
+	local selected = {}
+	if type(default) == "table" then
+		for _, v in ipairs(default) do
+			selected[tostring(v)] = true
+		end
 	end
+
+	local ROW_H = 45
+	local LIST_TOP_PAD = 6
+	local LIST_SIDE_PAD = 7
+	local OPEN_T = 0.16
+	local CLOSE_T = 0.12
+
+	local row = Instance.new("Frame")
+	row.Size = UDim2.new(0.95, 0, 0, ROW_H)
+	row.BackgroundColor3 = THEME.Element
+	row.BackgroundTransparency = 0.25
+	row.BorderSizePixel = 0
+	row.Parent = parentTarget
+	row.ZIndex = 50
+	AddCorner(row, 8)
+	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
+
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, 0, 1, 0)
+	btn.BackgroundTransparency = 1
+	btn.Text = ""
+	btn.AutoButtonColor = false
+	btn.Parent = row
+	btn.ZIndex = 51
+
+	local lbl = Instance.new("TextLabel")
+	lbl.Text = "  " .. tostring(text)
+	lbl.Size = UDim2.new(0.6, 0, 1, 0)
+	lbl.BackgroundTransparency = 1
+	lbl.Font = Enum.Font.GothamSemibold
+	lbl.TextColor3 = THEME.Text
+	lbl.TextSize = 16
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	lbl.Parent = row
+	lbl.ZIndex = 52
+
+	local val = Instance.new("TextLabel")
+	val.Size = UDim2.new(0.4, -32, 1, 0)
+	val.Position = UDim2.new(0.6, 0, 0, 0)
+	val.BackgroundTransparency = 1
+	val.Font = Enum.Font.Gotham
+	val.TextColor3 = THEME.TextDark
+	val.TextSize = 14
+	val.TextXAlignment = Enum.TextXAlignment.Right
+	val.Parent = row
+	val.ZIndex = 52
+
+	local caret = Instance.new("TextLabel")
+	caret.Size = UDim2.fromOffset(18, 18)
+	caret.Position = UDim2.new(1, -24, 0, (ROW_H / 2) - 9)
+	caret.BackgroundTransparency = 1
+	caret.Font = Enum.Font.GothamBold
+	caret.TextColor3 = THEME.Text
+	caret.TextSize = 14
+	caret.Text = "v"
+	caret.Parent = row
+	caret.ZIndex = 52
+
+	local listParent = row:FindFirstAncestorOfClass("ScreenGui") or row
+	local overlay = nil
+
+	local listFrame = Instance.new("Frame")
+	listFrame.Visible = false
+	listFrame.BackgroundColor3 = THEME.Background
+	listFrame.BackgroundTransparency = 0.12
+	listFrame.BorderSizePixel = 0
+	listFrame.ClipsDescendants = true
+	listFrame.Size = UDim2.new(0, 0, 0, 0)
+	listFrame.ZIndex = 300
+	listFrame.Parent = listParent
+	AddCorner(listFrame, 8)
+	AddStroke(listFrame, 1, THEME.StrokeSoft, 0.65)
+
+	local listBgBtn = Instance.new("TextButton")
+	listBgBtn.BackgroundTransparency = 1
+	listBgBtn.Text = ""
+	listBgBtn.AutoButtonColor = false
+	listBgBtn.Size = UDim2.fromScale(1, 1)
+	listBgBtn.ZIndex = 300
+	listBgBtn.Parent = listFrame
+
+	local listLayout = Instance.new("UIListLayout")
+	listLayout.Padding = UDim.new(0, 6)
+	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	listLayout.Parent = listFrame
+
+	local pad = Instance.new("UIPadding")
+	pad.PaddingTop = UDim.new(0, 8)
+	pad.PaddingBottom = UDim.new(0, 8)
+	pad.PaddingLeft = UDim.new(0, 8)
+	pad.PaddingRight = UDim.new(0, 8)
+	pad.Parent = listFrame
+
+	local open = false
+	local rsConn
+
+	local function getParentAbs()
+		if listFrame.Parent and listFrame.Parent:IsA("GuiObject") then
+			return listFrame.Parent.AbsolutePosition
+		end
+		return Vector2.new(0, 0)
+	end
+
+	local function emit()
+		local out = {}
+		for _, v in ipairs(options) do
+			if selected[tostring(v)] then
+				table.insert(out, v)
+			end
+		end
+		val.Text = table.concat(out, ", ")
+		if callback then
+			callback(out)
+		end
+	end
+
+	local function updateListPos(setSize)
+		local pAbs = getParentAbs()
+		local ap = row.AbsolutePosition
+		local size = row.AbsoluteSize
+		local h = listLayout.AbsoluteContentSize.Y + 16
+		local w = math.floor(size.X - (LIST_SIDE_PAD * 2))
+		listFrame.Position = UDim2.fromOffset((ap.X - pAbs.X) + LIST_SIDE_PAD, (ap.Y - pAbs.Y) + size.Y + LIST_TOP_PAD)
+		if setSize then
+			listFrame.Size = open and UDim2.fromOffset(w, h) or UDim2.fromOffset(w, 0)
+		end
+		return w, h
+	end
+
+	local function closeList()
+		if not open then return end
+		open = false
+		caret.Text = "v"
+		local w = updateListPos(false)
+		TweenService:Create(listFrame, TweenInfo.new(CLOSE_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(w, 0)}):Play()
+		task.delay(CLOSE_T + 0.01, function()
+			if open then return end
+			listFrame.Visible = false
+			if overlay then
+				overlay:Destroy()
+				overlay = nil
+			end
+			if rsConn then rsConn:Disconnect() rsConn = nil end
+		end)
+	end
+
+	listBgBtn.MouseButton1Click:Connect(function()
+		closeList()
+	end)
+
+	for i, opt in ipairs(options) do
+		local o = Instance.new("TextButton")
+		o.Size = UDim2.new(1, 0, 0, 26)
+		o.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		o.BackgroundTransparency = 1
+		o.BorderSizePixel = 0
+		o.Text = tostring(opt)
+		o.TextColor3 = THEME.Text
+		o.Font = Enum.Font.Gotham
+		o.TextSize = 14
+		o.AutoButtonColor = true
+		o.LayoutOrder = i
+		o.ZIndex = 301
+		o.Parent = listFrame
+		o.MouseButton1Click:Connect(function()
+			local k = tostring(opt)
+			selected[k] = not selected[k]
+			emit()
+		end)
+	end
+
+	btn.MouseButton1Click:Connect(function()
+		open = not open
+		caret.Text = open and "^" or "v"
+		if open then
+			if listParent and listParent:IsA("ScreenGui") then
+				overlay = Instance.new("TextButton")
+				overlay.Name = "MultiDropdownOverlay"
+				overlay.BackgroundTransparency = 1
+				overlay.Text = ""
+				overlay.AutoButtonColor = false
+				overlay.Size = UDim2.fromScale(1, 1)
+				overlay.ZIndex = 1
+				overlay.Parent = listParent
+				overlay.MouseButton1Click:Connect(function()
+					closeList()
+				end)
+			end
+
+			listFrame.Visible = true
+			local w, h = updateListPos(true)
+			TweenService:Create(listFrame, TweenInfo.new(OPEN_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(w, h)}):Play()
+			if rsConn then rsConn:Disconnect() end
+			rsConn = RunService.RenderStepped:Connect(function()
+				if open then
+					updateListPos(false)
+				end
+			end)
+		else
+			closeList()
+		end
+	end)
+
+	emit()
+
+	local api = {}
+	api.Frame = row
+	function api:Set(values)
+		selected = {}
+		if type(values) == "table" then
+			for _, v in ipairs(values) do
+				selected[tostring(v)] = true
+			end
+		end
+		emit()
+	end
+	function api:Get()
+		local out = {}
+		for _, v in ipairs(options) do
+			if selected[tostring(v)] then
+				table.insert(out, v)
+			end
+		end
+		return out
+	end
+	return api
 end
 
 function UI:CreateWindow(config)
@@ -776,6 +1034,11 @@ end
 function UI:CreateDropdown(sectionBody, opt)
 	opt = opt or {}
 	return Lib:Dropdown(opt.Name or "Dropdown", opt.List or {}, opt.Default, opt.Callback, sectionBody)
+end
+
+function UI:CreateMultiDropdown(sectionBody, opt)
+	opt = opt or {}
+	return Lib:MultiDropdown(opt.Name or "Multi Dropdown", opt.List or {}, opt.Default, opt.Callback, sectionBody)
 end
 
 function UI:CreateBind(sectionBody, opt)
