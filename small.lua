@@ -602,17 +602,24 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	listBgBtn.ZIndex = 300
 	listBgBtn.Parent = listFrame
 
+	local content = Instance.new("Frame")
+	content.BackgroundTransparency = 1
+	content.BorderSizePixel = 0
+	content.Size = UDim2.fromScale(1, 1)
+	content.ZIndex = 301
+	content.Parent = listFrame
+
 	local listLayout = Instance.new("UIListLayout")
 	listLayout.Padding = UDim.new(0, 6)
 	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	listLayout.Parent = listFrame
+	listLayout.Parent = content
 
 	local pad = Instance.new("UIPadding")
 	pad.PaddingTop = UDim.new(0, 8)
 	pad.PaddingBottom = UDim.new(0, 8)
 	pad.PaddingLeft = UDim.new(0, 8)
 	pad.PaddingRight = UDim.new(0, 8)
-	pad.Parent = listFrame
+	pad.Parent = content
 
 	local open = false
 	local rsConn
@@ -679,7 +686,7 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
 		o.ZIndex = 301
-		o.Parent = listFrame
+		o.Parent = content
 		o.MouseButton1Click:Connect(function()
 			setValue(opt)
 			closeList()
@@ -821,17 +828,24 @@ function Lib:MultiDropdown(text, options, default, callback, parentOverride)
 	listBgBtn.ZIndex = 300
 	listBgBtn.Parent = listFrame
 
+	local content = Instance.new("Frame")
+	content.BackgroundTransparency = 1
+	content.BorderSizePixel = 0
+	content.Size = UDim2.fromScale(1, 1)
+	content.ZIndex = 301
+	content.Parent = listFrame
+
 	local listLayout = Instance.new("UIListLayout")
 	listLayout.Padding = UDim.new(0, 6)
 	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	listLayout.Parent = listFrame
+	listLayout.Parent = content
 
 	local pad = Instance.new("UIPadding")
 	pad.PaddingTop = UDim.new(0, 8)
 	pad.PaddingBottom = UDim.new(0, 8)
 	pad.PaddingLeft = UDim.new(0, 8)
 	pad.PaddingRight = UDim.new(0, 8)
-	pad.Parent = listFrame
+	pad.Parent = content
 
 	local open = false
 	local rsConn
@@ -903,7 +917,7 @@ function Lib:MultiDropdown(text, options, default, callback, parentOverride)
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
 		o.ZIndex = 301
-		o.Parent = listFrame
+		o.Parent = content
 		o.MouseButton1Click:Connect(function()
 			local k = tostring(opt)
 			selected[k] = not selected[k]
