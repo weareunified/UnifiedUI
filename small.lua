@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 -- // CONFIGURATION
 local HUB_NAME = "Unified Hub | dsc.gg/unifiedhub"
@@ -518,13 +519,11 @@ end
 function Lib:Dropdown(text, options, default, callback, parentOverride)
 	local parentTarget = parentOverride or Container
 	options = options or {}
-	local open = false
-	local selected = default or options[1]
+	local selected = default or options[1] or ""
 
 	local ROW_H = 45
 	local LIST_TOP_PAD = 6
 	local LIST_SIDE_PAD = 7
-	local token = 0
 	local OPEN_T = 0.16
 	local CLOSE_T = 0.12
 
@@ -533,20 +532,21 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	row.BackgroundColor3 = THEME.Element
 	row.BackgroundTransparency = 0.25
 	row.BorderSizePixel = 0
-	row.ClipsDescendants = true
 	row.Parent = parentTarget
+	row.ZIndex = 50
 	AddCorner(row, 8)
 	AddStroke(row, 1, THEME.StrokeSoft, 0.5)
 
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, 0, 0, ROW_H)
+	btn.Size = UDim2.new(1, 0, 1, 0)
 	btn.BackgroundTransparency = 1
 	btn.Text = ""
 	btn.AutoButtonColor = false
 	btn.Parent = row
+	btn.ZIndex = 51
 
 	local lbl = Instance.new("TextLabel")
-	lbl.Text = "  " .. text
+	lbl.Text = "  " .. tostring(text)
 	lbl.Size = UDim2.new(0.6, 0, 1, 0)
 	lbl.BackgroundTransparency = 1
 	lbl.Font = Enum.Font.GothamSemibold
@@ -554,9 +554,10 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	lbl.TextSize = 16
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	lbl.Parent = row
+	lbl.ZIndex = 52
 
 	local val = Instance.new("TextLabel")
-	val.Size = UDim2.new(0.4, -20, 0, ROW_H)
+	val.Size = UDim2.new(0.4, -32, 1, 0)
 	val.Position = UDim2.new(0.6, 0, 0, 0)
 	val.BackgroundTransparency = 1
 	val.Font = Enum.Font.Gotham
@@ -564,6 +565,7 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	val.TextSize = 14
 	val.TextXAlignment = Enum.TextXAlignment.Right
 	val.Parent = row
+	val.ZIndex = 52
 
 	local caret = Instance.new("TextLabel")
 	caret.Size = UDim2.fromOffset(18, 18)
@@ -574,15 +576,18 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	caret.TextSize = 14
 	caret.Text = "v"
 	caret.Parent = row
+	caret.ZIndex = 52
+
+	local listParent = row:FindFirstAncestorOfClass("ScreenGui") or row
 
 	local listFrame = Instance.new("Frame")
 	listFrame.Visible = false
 	listFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	listFrame.BackgroundTransparency = 0.94
 	listFrame.BorderSizePixel = 0
-	listFrame.Size = UDim2.new(1, -(LIST_SIDE_PAD * 2), 0, 0)
-	listFrame.Position = UDim2.fromOffset(LIST_SIDE_PAD, ROW_H + LIST_TOP_PAD)
-	listFrame.Parent = row
+	listFrame.Size = UDim2.new(0, 0, 0, 0)
+	listFrame.ZIndex = 200
+	listFrame.Parent = listParent
 	AddCorner(listFrame, 8)
 	AddStroke(listFrame, 1, THEME.StrokeSoft, 0.65)
 
@@ -598,10 +603,48 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 	pad.PaddingRight = UDim.new(0, 8)
 	pad.Parent = listFrame
 
+	local open = false
+	local rsConn
+
+	local function getParentAbs()
+		if listFrame.Parent and listFrame.Parent:IsA("GuiObject") then
+			return listFrame.Parent.AbsolutePosition
+		end
+		return Vector2.new(0, 0)
+	end
+
 	local function setValue(v)
 		selected = v
 		val.Text = tostring(v)
-		if callback then callback(v) end
+		if callback then
+			callback(v)
+		end
+	end
+
+	local function updateListPos(setSize)
+		local pAbs = getParentAbs()
+		local ap = row.AbsolutePosition
+		local size = row.AbsoluteSize
+		local h = listLayout.AbsoluteContentSize.Y + 16
+		local w = math.floor(size.X - (LIST_SIDE_PAD * 2))
+		listFrame.Position = UDim2.fromOffset((ap.X - pAbs.X) + LIST_SIDE_PAD, (ap.Y - pAbs.Y) + size.Y + LIST_TOP_PAD)
+		if setSize then
+			listFrame.Size = open and UDim2.fromOffset(w, h) or UDim2.fromOffset(w, 0)
+		end
+		return w, h
+	end
+
+	local function closeList()
+		if not open then return end
+		open = false
+		caret.Text = "v"
+		local w = updateListPos(false)
+		TweenService:Create(listFrame, TweenInfo.new(CLOSE_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(w, 0)}):Play()
+		task.delay(CLOSE_T + 0.01, function()
+			if open then return end
+			listFrame.Visible = false
+			if rsConn then rsConn:Disconnect() rsConn = nil end
+		end)
 	end
 
 	for i, opt in ipairs(options) do
@@ -616,43 +659,33 @@ function Lib:Dropdown(text, options, default, callback, parentOverride)
 		o.TextSize = 14
 		o.AutoButtonColor = true
 		o.LayoutOrder = i
+		o.ZIndex = 201
 		o.Parent = listFrame
 		o.MouseButton1Click:Connect(function()
 			setValue(opt)
-			token += 1
-			local t = token
-			open = false
-			caret.Text = "v"
-			TweenService:Create(listFrame, TweenInfo.new(CLOSE_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(1, -(LIST_SIDE_PAD * 2), 0, 0)}):Play()
-			TweenService:Create(row, TweenInfo.new(CLOSE_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0.95, 0, 0, ROW_H)}):Play()
-			task.delay(CLOSE_T + 0.01, function()
-				if token ~= t then return end
-				listFrame.Visible = false
-			end)
+			closeList()
 		end)
 	end
 
 	btn.MouseButton1Click:Connect(function()
-		token += 1
-		local t = token
 		open = not open
 		caret.Text = open and "^" or "v"
 		if open then
-			local h = listLayout.AbsoluteContentSize.Y + 16
 			listFrame.Visible = true
-			TweenService:Create(listFrame, TweenInfo.new(OPEN_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(1, -(LIST_SIDE_PAD * 2), 0, h)}):Play()
-			TweenService:Create(row, TweenInfo.new(OPEN_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0.95, 0, 0, ROW_H + h + LIST_TOP_PAD)}):Play()
-		else
-			TweenService:Create(listFrame, TweenInfo.new(CLOSE_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(1, -(LIST_SIDE_PAD * 2), 0, 0)}):Play()
-			TweenService:Create(row, TweenInfo.new(CLOSE_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0.95, 0, 0, ROW_H)}):Play()
-			task.delay(CLOSE_T + 0.01, function()
-				if token ~= t then return end
-				listFrame.Visible = false
+			local w, h = updateListPos(true)
+			TweenService:Create(listFrame, TweenInfo.new(OPEN_T, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(w, h)}):Play()
+			if rsConn then rsConn:Disconnect() end
+			rsConn = RunService.RenderStepped:Connect(function()
+				if open then
+					updateListPos(false)
+				end
 			end)
+		else
+			closeList()
 		end
 	end)
 
-	setValue(selected or "")
+	setValue(selected)
 
 	local api = {}
 	api.Frame = row
