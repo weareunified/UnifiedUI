@@ -80,19 +80,17 @@ TabBar.Name = "TabBar"
 TabBar.Size = UDim2.new(1, -20, 0, 35)
 TabBar.Position = UDim2.fromOffset(10, 55)
 TabBar.BackgroundTransparency = 1
+TabBar.ZIndex = 10
 TabBar.Parent = Main
 
-local TabList = Instance.new("ScrollingFrame")
+local TabList = Instance.new("Frame")
+TabList.Name = "TabList"
 TabList.Size = UDim2.fromScale(1, 1)
 TabList.BackgroundTransparency = 1
-TabList.ScrollBarThickness = 0
-TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
-TabList.AutomaticCanvasSize = Enum.AutomaticSize.X
-TabList.ScrollingDirection = Enum.ScrollingDirection.Horizontal
 TabList.Parent = TabBar
 
 local TabLayout = Instance.new("UIListLayout")
-TabLayout.Padding = UDim.new(0, 8)
+TabLayout.Padding = UDim.new(0, 15)
 TabLayout.FillDirection = Enum.FillDirection.Horizontal
 TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
@@ -186,20 +184,34 @@ function UI:CreateTab(opt)
 	opt = opt or {}
 	local tabName = opt.Name or "Tab"
 	
+	local tabCount = 0
+	for _ in pairs(Tabs) do tabCount += 1 end
+
+	if tabCount > 0 then
+		local sep = Instance.new("TextLabel")
+		sep.Text = "/"
+		sep.Font = Enum.Font.GothamBold
+		sep.TextSize = 14
+		sep.TextColor3 = THEME.TextDark
+		sep.BackgroundTransparency = 1
+		sep.Size = UDim2.new(0, 10, 1, 0)
+		sep.Parent = TabList
+	end
+
 	local tabBtn = Instance.new("TextButton")
 	tabBtn.Size = UDim2.new(0, 100, 1, 0)
 	tabBtn.BackgroundColor3 = THEME.Element
 	tabBtn.BackgroundTransparency = 1
 	tabBtn.Text = tabName
 	tabBtn.Font = Enum.Font.GothamSemibold
-	tabBtn.TextSize = 13
+	tabBtn.TextSize = 14
 	tabBtn.TextColor3 = THEME.TextDark
 	tabBtn.Parent = TabList
 	AddCorner(tabBtn, 6)
 	
 	-- Automatic width adjustment
-	local textSize = game:GetService("TextService"):GetTextSize(tabName, 13, Enum.Font.GothamSemibold, Vector2.new(1000, 1000))
-	tabBtn.Size = UDim2.new(0, textSize.X + 30, 1, 0)
+	local textSize = game:GetService("TextService"):GetTextSize(tabName, 14, Enum.Font.GothamSemibold, Vector2.new(1000, 1000))
+	tabBtn.Size = UDim2.new(0, textSize.X + 10, 1, 0)
 	
 	local container = Instance.new("ScrollingFrame")
 	container.Size = UDim2.new(1, 0, 1, 0)
@@ -261,6 +273,7 @@ function UI:SelectTab(name)
 	for n, t in pairs(Tabs) do
 		if n == name then
 			t.Container.Visible = true
+			t.Container.CanvasPosition = Vector2.zero
 			TweenService:Create(t.Button, TweenInfo.new(0.2), {BackgroundTransparency = 0.25, TextColor3 = THEME.Text}):Play()
 			CurrentTab = name
 		else
