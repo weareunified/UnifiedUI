@@ -94,6 +94,7 @@ TabList.Parent = TabBar
 local TabLayout = Instance.new("UIListLayout")
 TabLayout.Padding = UDim.new(0, 8)
 TabLayout.FillDirection = Enum.FillDirection.Horizontal
+TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 TabLayout.Parent = TabList
 
@@ -198,7 +199,7 @@ function UI:CreateTab(opt)
 	
 	-- Automatic width adjustment
 	local textSize = game:GetService("TextService"):GetTextSize(tabName, 13, Enum.Font.GothamSemibold, Vector2.new(1000, 1000))
-	tabBtn.Size = UDim2.new(0, textSize.X + 20, 1, 0)
+	tabBtn.Size = UDim2.new(0, textSize.X + 30, 1, 0)
 	
 	local container = Instance.new("ScrollingFrame")
 	container.Size = UDim2.new(1, 0, 1, 0)
