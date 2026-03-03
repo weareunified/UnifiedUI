@@ -60,11 +60,11 @@ local function AddGradient(inst, c1, c2, rot)
 end
 
 -- // MAIN FRAME
-local MAIN_W = 600
+local MAIN_W = 460
 local Main = Instance.new("Frame")
 Main.Name = "Main"
-Main.Size = UDim2.fromOffset(MAIN_W, 400)
-Main.Position = UDim2.new(0.5, -math.floor(MAIN_W / 2), 0.5, -200)
+Main.Size = UDim2.fromOffset(MAIN_W, 550)
+Main.Position = UDim2.new(0.5, -math.floor(MAIN_W / 2), 0.5, -275)
 Main.BackgroundColor3 = THEME.Background
 Main.BackgroundTransparency = 0.08
 Main.BorderSizePixel = 0
@@ -74,46 +74,39 @@ AddCorner(Main, 12)
 AddStroke(Main, 1, THEME.StrokeSoft, 0.35)
 AddGradient(Main, Color3.fromRGB(18, 18, 26), Color3.fromRGB(14, 14, 18), 90)
 
--- // SIDEBAR (TABS)
-local Sidebar = Instance.new("Frame")
-Sidebar.Name = "Sidebar"
-Sidebar.Size = UDim2.new(0, 160, 1, -50)
-Sidebar.Position = UDim2.fromOffset(0, 50)
-Sidebar.BackgroundTransparency = 1
-Sidebar.Parent = Main
-
-local SideStroke = Instance.new("Frame")
-SideStroke.Size = UDim2.new(0, 1, 1, -20)
-SideStroke.Position = UDim2.new(1, 0, 0, 10)
-SideStroke.BackgroundColor3 = THEME.StrokeSoft
-SideStroke.BackgroundTransparency = 0.6
-SideStroke.BorderSizePixel = 0
-SideStroke.Parent = Sidebar
+-- // TABS BAR (TOP)
+local TabBar = Instance.new("Frame")
+TabBar.Name = "TabBar"
+TabBar.Size = UDim2.new(1, -20, 0, 35)
+TabBar.Position = UDim2.fromOffset(10, 55)
+TabBar.BackgroundTransparency = 1
+TabBar.Parent = Main
 
 local TabList = Instance.new("ScrollingFrame")
-TabList.Size = UDim2.new(1, -10, 1, -20)
-TabList.Position = UDim2.fromOffset(5, 10)
+TabList.Size = UDim2.fromScale(1, 1)
 TabList.BackgroundTransparency = 1
 TabList.ScrollBarThickness = 0
 TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
-TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-TabList.Parent = Sidebar
+TabList.AutomaticCanvasSize = Enum.AutomaticSize.X
+TabList.ScrollingDirection = Enum.ScrollingDirection.Horizontal
+TabList.Parent = TabBar
 
 local TabLayout = Instance.new("UIListLayout")
-TabLayout.Padding = UDim.new(0, 5)
-TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+TabLayout.Padding = UDim.new(0, 8)
+TabLayout.FillDirection = Enum.FillDirection.Horizontal
+TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 TabLayout.Parent = TabList
 
 -- // CONTAINER
 local ContainerHolder = Instance.new("Frame")
 ContainerHolder.Name = "ContainerHolder"
-ContainerHolder.Size = UDim2.new(1, -170, 1, -60)
-ContainerHolder.Position = UDim2.fromOffset(165, 55)
+ContainerHolder.Size = UDim2.new(1, -20, 1, -110)
+ContainerHolder.Position = UDim2.fromOffset(10, 100)
 ContainerHolder.BackgroundTransparency = 1
 ContainerHolder.Parent = Main
 
 local function ToggleMinimize()
-	local target = (Main.Size.Y.Offset > 60) and UDim2.fromOffset(MAIN_W, 50) or UDim2.fromOffset(MAIN_W, 400)
+	local target = (Main.Size.Y.Offset > 60) and UDim2.fromOffset(MAIN_W, 50) or UDim2.fromOffset(MAIN_W, 550)
 	TweenService:Create(Main, TweenInfo.new(0.4), {Size = target}):Play()
 end
 
@@ -193,15 +186,19 @@ function UI:CreateTab(opt)
 	local tabName = opt.Name or "Tab"
 	
 	local tabBtn = Instance.new("TextButton")
-	tabBtn.Size = UDim2.new(0.9, 0, 0, 35)
+	tabBtn.Size = UDim2.new(0, 100, 1, 0)
 	tabBtn.BackgroundColor3 = THEME.Element
 	tabBtn.BackgroundTransparency = 1
 	tabBtn.Text = tabName
 	tabBtn.Font = Enum.Font.GothamSemibold
-	tabBtn.TextSize = 14
+	tabBtn.TextSize = 13
 	tabBtn.TextColor3 = THEME.TextDark
 	tabBtn.Parent = TabList
 	AddCorner(tabBtn, 6)
+	
+	-- Automatic width adjustment
+	local textSize = game:GetService("TextService"):GetTextSize(tabName, 13, Enum.Font.GothamSemibold, Vector2.new(1000, 1000))
+	tabBtn.Size = UDim2.new(0, textSize.X + 20, 1, 0)
 	
 	local container = Instance.new("ScrollingFrame")
 	container.Size = UDim2.new(1, 0, 1, 0)
