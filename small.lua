@@ -184,20 +184,6 @@ function UI:CreateTab(opt)
 	opt = opt or {}
 	local tabName = opt.Name or "Tab"
 	
-	local tabCount = 0
-	for _ in pairs(Tabs) do tabCount += 1 end
-
-	if tabCount > 0 then
-		local sep = Instance.new("TextLabel")
-		sep.Text = "/"
-		sep.Font = Enum.Font.GothamBold
-		sep.TextSize = 14
-		sep.TextColor3 = THEME.TextDark
-		sep.BackgroundTransparency = 1
-		sep.Size = UDim2.new(0, 10, 1, 0)
-		sep.Parent = TabList
-	end
-
 	local tabBtn = Instance.new("TextButton")
 	tabBtn.Size = UDim2.new(0, 100, 1, 0)
 	tabBtn.BackgroundColor3 = THEME.Element
