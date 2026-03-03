@@ -60,11 +60,11 @@ local function AddGradient(inst, c1, c2, rot)
 end
 
 -- // MAIN FRAME
-local MAIN_W = 460
+local MAIN_W = 600
 local Main = Instance.new("Frame")
 Main.Name = "Main"
-Main.Size = UDim2.fromOffset(MAIN_W, 550)
-Main.Position = UDim2.new(0.5, -math.floor(MAIN_W / 2), 0.5, -275)
+Main.Size = UDim2.fromOffset(MAIN_W, 400)
+Main.Position = UDim2.new(0.5, -math.floor(MAIN_W / 2), 0.5, -200)
 Main.BackgroundColor3 = THEME.Background
 Main.BackgroundTransparency = 0.08
 Main.BorderSizePixel = 0
@@ -74,8 +74,46 @@ AddCorner(Main, 12)
 AddStroke(Main, 1, THEME.StrokeSoft, 0.35)
 AddGradient(Main, Color3.fromRGB(18, 18, 26), Color3.fromRGB(14, 14, 18), 90)
 
+-- // SIDEBAR (TABS)
+local Sidebar = Instance.new("Frame")
+Sidebar.Name = "Sidebar"
+Sidebar.Size = UDim2.new(0, 160, 1, -50)
+Sidebar.Position = UDim2.fromOffset(0, 50)
+Sidebar.BackgroundTransparency = 1
+Sidebar.Parent = Main
+
+local SideStroke = Instance.new("Frame")
+SideStroke.Size = UDim2.new(0, 1, 1, -20)
+SideStroke.Position = UDim2.new(1, 0, 0, 10)
+SideStroke.BackgroundColor3 = THEME.StrokeSoft
+SideStroke.BackgroundTransparency = 0.6
+SideStroke.BorderSizePixel = 0
+SideStroke.Parent = Sidebar
+
+local TabList = Instance.new("ScrollingFrame")
+TabList.Size = UDim2.new(1, -10, 1, -20)
+TabList.Position = UDim2.fromOffset(5, 10)
+TabList.BackgroundTransparency = 1
+TabList.ScrollBarThickness = 0
+TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
+TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+TabList.Parent = Sidebar
+
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.Padding = UDim.new(0, 5)
+TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+TabLayout.Parent = TabList
+
+-- // CONTAINER
+local ContainerHolder = Instance.new("Frame")
+ContainerHolder.Name = "ContainerHolder"
+ContainerHolder.Size = UDim2.new(1, -170, 1, -60)
+ContainerHolder.Position = UDim2.fromOffset(165, 55)
+ContainerHolder.BackgroundTransparency = 1
+ContainerHolder.Parent = Main
+
 local function ToggleMinimize()
-	local target = (Main.Size.Y.Offset > 60) and UDim2.fromOffset(MAIN_W, 50) or UDim2.fromOffset(MAIN_W, 550)
+	local target = (Main.Size.Y.Offset > 60) and UDim2.fromOffset(MAIN_W, 50) or UDim2.fromOffset(MAIN_W, 400)
 	TweenService:Create(Main, TweenInfo.new(0.4), {Size = target}):Play()
 end
 
@@ -146,20 +184,93 @@ end)
 
 CreateHeaderBtn("×", -35, Color3.fromRGB(170, 60, 70), function() ScreenGui:Destroy() end)
 
--- // CONTAINER
-local Container = Instance.new("ScrollingFrame")
-Container.Size = UDim2.new(1, -20, 1, -70)
-Container.Position = UDim2.fromOffset(10, 60)
-Container.BackgroundTransparency = 1
-Container.ScrollBarThickness = 2
-Container.ScrollBarImageColor3 = THEME.Primary
-Container.ScrollBarImageTransparency = 0.55
-Container.Parent = Main
+-- // TABS
+local Tabs = {}
+local CurrentTab = nil
 
-local Layout = Instance.new("UIListLayout")
-Layout.Padding = UDim.new(0, 8)
-Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-Layout.Parent = Container
+function UI:CreateTab(opt)
+	opt = opt or {}
+	local tabName = opt.Name or "Tab"
+	
+	local tabBtn = Instance.new("TextButton")
+	tabBtn.Size = UDim2.new(0.9, 0, 0, 35)
+	tabBtn.BackgroundColor3 = THEME.Element
+	tabBtn.BackgroundTransparency = 1
+	tabBtn.Text = tabName
+	tabBtn.Font = Enum.Font.GothamSemibold
+	tabBtn.TextSize = 14
+	tabBtn.TextColor3 = THEME.TextDark
+	tabBtn.Parent = TabList
+	AddCorner(tabBtn, 6)
+	
+	local container = Instance.new("ScrollingFrame")
+	container.Size = UDim2.new(1, 0, 1, 0)
+	container.BackgroundTransparency = 1
+	container.ScrollBarThickness = 2
+	container.ScrollBarImageColor3 = THEME.Primary
+	container.ScrollBarImageTransparency = 0.55
+	container.Visible = false
+	container.Parent = ContainerHolder
+	
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0, 8)
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	layout.Parent = container
+	
+	local tab = {
+		Name = tabName,
+		Button = tabBtn,
+		Container = container
+	}
+	
+	tabBtn.MouseButton1Click:Connect(function()
+		self:SelectTab(tabName)
+	end)
+	
+	Tabs[tabName] = tab
+	
+	if not CurrentTab then
+		self:SelectTab(tabName)
+	end
+	
+	function tab:CreateSection(sectionTitle)
+		local header = Instance.new("TextLabel")
+		header.BackgroundTransparency = 1
+		header.Text = tostring(sectionTitle or "Section")
+		header.Font = Enum.Font.GothamBold
+		header.TextSize = 14
+		header.TextColor3 = THEME.Text
+		header.TextXAlignment = Enum.TextXAlignment.Left
+		header.Size = UDim2.new(0.95, 0, 0, 24)
+		header.Parent = container
+
+		local sec = {}
+		sec.Body = container
+		sec.Header = header
+		return sec
+	end
+	
+	function tab:CreateLockedSection(sectionTitle)
+		return tab:CreateSection(sectionTitle)
+	end
+	
+	return tab
+end
+
+function UI:SelectTab(name)
+	if CurrentTab == name then return end
+	
+	for n, t in pairs(Tabs) do
+		if n == name then
+			t.Container.Visible = true
+			TweenService:Create(t.Button, TweenInfo.new(0.2), {BackgroundTransparency = 0.25, TextColor3 = THEME.Text}):Play()
+			CurrentTab = name
+		else
+			t.Container.Visible = false
+			TweenService:Create(t.Button, TweenInfo.new(0.2), {BackgroundTransparency = 1, TextColor3 = THEME.TextDark}):Play()
+		end
+	end
+end
 
 -- // COMPONENT LIBRARY
 local Lib = {}
@@ -1022,35 +1133,6 @@ function UI:CreateWindow(config)
 	end
 	self:SetOpen(true)
 	return self
-end
-
-function UI:CreateTab(opt)
-	opt = opt or {}
-	local tab = {}
-	function tab:CreateSection(sectionTitle)
-		local header = Instance.new("TextLabel")
-		header.BackgroundTransparency = 1
-		header.Text = tostring(sectionTitle or "Section")
-		header.Font = Enum.Font.GothamBold
-		header.TextSize = 15
-		header.TextColor3 = THEME.Text
-		header.TextXAlignment = Enum.TextXAlignment.Left
-		header.Size = UDim2.new(0.95, 0, 0, 24)
-		header.Parent = Container
-
-		local sec = {}
-		sec.Body = Container
-		sec.Header = header
-		return sec
-	end
-	function tab:CreateLockedSection(sectionTitle)
-		return tab:CreateSection(sectionTitle)
-	end
-	return tab
-end
-
-function UI:SelectTab(_)
-	return
 end
 
 function UI:CreateButton(sectionBody, opt)
