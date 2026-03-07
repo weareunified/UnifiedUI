@@ -2426,34 +2426,8 @@ function UI:CreateSlider(sectionBody, opt)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -120, 0, 18)
+	lbl.Size = UDim2.new(1, -28, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
-
-	local valLbl = MakeText(row, _FormatNumber(default), 12, "")
-	valLbl.TextColor3 = THEME.SubText
-	valLbl.TextXAlignment = Enum.TextXAlignment.Right
-	valLbl.ZIndex = 22
-	valLbl.Size = UDim2.fromOffset(90, 18)
-	valLbl.Position = UDim2.new(1, -104, 0, 8)
-
-	local valBox = Instance.new("TextBox")
-	valBox.BackgroundTransparency = 1
-	valBox.Text = valLbl.Text
-	valBox.TextColor3 = valLbl.TextColor3
-	valBox.TextSize = valLbl.TextSize
-	valBox.Font = valLbl.Font
-	valBox.ClearTextOnFocus = false
-	valBox.TextXAlignment = Enum.TextXAlignment.Right
-	valBox.TextYAlignment = Enum.TextYAlignment.Center
-	valBox.RichText = false
-	valBox.ZIndex = valLbl.ZIndex + 1
-	valBox.Size = valLbl.Size
-	valBox.Position = valLbl.Position
-	valBox.Parent = row
-	valBox.Visible = false
-	valBox.Active = false
-	valBox.TextEditable = false
-	valLbl.Visible = false
 
 	local bar = Instance.new("Frame")
 	bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2522,9 +2496,7 @@ function UI:CreateSlider(sectionBody, opt)
 	local function render(anim)
 		local alpha = (value - min) / (max - min)
 		alpha = math.clamp(alpha, 0, 1)
-		local formatted = _FormatNumber(value)
-		valBox.Text = formatted
-		endLbl.Text = formatted
+		endLbl.Text = _FormatNumber(value)
 		if anim then
 			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.22)
 			Tween(knob, {Position = UDim2.new(alpha, 0, 0.5, 0)}, 0.22)
@@ -2532,21 +2504,6 @@ function UI:CreateSlider(sectionBody, opt)
 			fill.Size = UDim2.new(alpha, 0, 1, 0)
 			knob.Position = UDim2.new(alpha, 0, 0.5, 0)
 		end
-	end
-
-	if valBox and valBox.FocusLost then
-		valBox.FocusLost:Connect(function()
-			local n = tonumber(valBox.Text)
-			if n == nil then
-				render(false)
-				return
-			end
-			value = clampStep(n)
-			render(true)
-			task.spawn(function()
-				pcall(cb, value)
-			end)
-		end)
 	end
 
 	local function setFromX(x, fire)
