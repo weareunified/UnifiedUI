@@ -492,7 +492,7 @@ UI._Settings = {
 	AutoLoadEnabled = false,
 	AutoLoadName = "default",
 	Theme = "",
-	Opacity = 100,
+	Opacity = 90,
 	FadeSpeed = 0.35,
 }
 UI._AwaitingKeybind = false
@@ -722,7 +722,7 @@ function UI:_SaveSettings()
 		AutoLoadEnabled = false,
 		AutoLoadName = (self._Settings and self._Settings.AutoLoadName) or "default",
 		Theme = (self._Settings and self._Settings.Theme) or "",
-		Opacity = (self._Settings and self._Settings.Opacity) or 100,
+		Opacity = (self._Settings and self._Settings.Opacity) or 90,
 		UIState = self._UIState,
 	}
 	local ok, encoded = pcall(function()
@@ -816,7 +816,7 @@ function UI:_SaveConfig(name)
 			MinimizeKeyCode = (self._Settings and self._Settings.MinimizeKeyCode and self._Settings.MinimizeKeyCode.Name) or "RightControl",
 			NotificationsEnabled = (self._Settings and self._Settings.NotificationsEnabled) ~= false,
 			NotificationPosition = (self._Settings and self._Settings.NotificationPosition) or "BottomRight",
-			Opacity = (self._Settings and self._Settings.Opacity) or 100,
+			Opacity = (self._Settings and self._Settings.Opacity) or 90,
 		},
 		UIState = self._UIState,
 	}
@@ -1543,15 +1543,58 @@ function UI:CreateLockedSection(page, title)
 	overlay.Font = Enum.Font.GothamBold
 	overlay.TextSize = math.floor((18 * TEXT_SCALE) + 0.5)
 	overlay.Parent = section
-	AddCorner(overlay, 12)
-
-	local api = {}
-	api.Frame = sec.Frame
-	api.Body = sec.Body
-	api.SetLocked = function(_, locked)
-		overlay.Visible = locked ~= false
+		
+		overlay.MouseButton1Click:Connect(function()
+			UI:Notify("Premium", "This section is locked! Redeem a key in the Premium tab.", 3)
+		end)
+		
+		return sec
 	end
-	return api
+
+	table.insert(Tabs, tabBtn)
+	
+	local sidebar = self._Main:FindFirstChild("Sidebar")
+	local tabList = sidebar and sidebar:FindFirstChild("TabList")
+	
+	if tabList then
+		local surface = Instance.new("Frame")
+		surface.Name = name .. "Tab"
+		surface.BackgroundColor3 = THEME.Primary
+		surface.BackgroundTransparency = 1
+		surface.Size = UDim2.new(1, -12, 0, 32)
+		surface.ZIndex = 32
+		AddCorner(surface, 8)
+		surface.Parent = tabList
+
+		local btn = MakeButtonBase(surface)
+		btn.ZIndex = 35
+		btn.Size = UDim2.fromScale(1, 1)
+		
+		if icon then
+			local iconLabel = Instance.new("ImageLabel")
+			iconLabel.Name = "Icon"
+			iconLabel.BackgroundTransparency = 1
+			iconLabel.Image = icon
+			iconLabel.Size = UDim2.fromOffset(18, 18)
+			iconLabel.Position = UDim2.fromOffset(8, 7)
+			iconLabel.ZIndex = 34
+			iconLabel.Parent = surface
+		end
+
+		local textLbl = MakeText(surface, name, 12, "semibold")
+		textLbl.ZIndex = 34
+		textLbl.Size = UDim2.new(1, icon and -34 or -16, 1, 0)
+		textLbl.Position = UDim2.fromOffset(icon and 30 or 12, 0)
+		textLbl.Parent = surface
+
+		btn.MouseButton1Click:Connect(function()
+			self:SelectTab(name)
+		end)
+		
+		tabBtn.Surface = surface
+	end
+
+	return tabBtn
 end
 
 function UI:CreateToggle(sectionBody, opt)
@@ -2451,13 +2494,22 @@ function UI:CreateSlider(sectionBody, opt)
 	AddStroke(bar, 1, THEME.StrokeSoft, 0.6)
 	bar.Parent = row
 
-	local endLbl = MakeText(row, _FormatNumber(default), 11, "semibold")
+	local endLbl = Instance.new("TextBox")
 	endLbl.Name = "ValueDisplay"
+	endLbl.BackgroundTransparency = 1
+	endLbl.BorderSizePixel = 0
+	endLbl.ClearTextOnFocus = false
+	endLbl.Text = _FormatNumber(default)
+	endLbl.PlaceholderText = ""
 	endLbl.TextColor3 = THEME.Primary
 	endLbl.TextXAlignment = Enum.TextXAlignment.Center
+	endLbl.TextYAlignment = Enum.TextYAlignment.Center
+	endLbl.Font = Enum.Font.GothamSemibold
+	endLbl.TextSize = math.floor((11 * TEXT_SCALE) + 0.5)
 	endLbl.Size = UDim2.fromOffset(36, 18)
 	endLbl.Position = UDim2.new(1, -44, 0, 32)
 	endLbl.ZIndex = 22
+	endLbl.Parent = row
 
 	local fill = Instance.new("Frame")
 	fill.BackgroundColor3 = THEME.Primary
