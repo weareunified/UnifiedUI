@@ -492,7 +492,7 @@ UI._Settings = {
 	AutoLoadEnabled = false,
 	AutoLoadName = "default",
 	Theme = "",
-	Opacity = 90,
+	Opacity = 100,
 	FadeSpeed = 0.35,
 }
 UI._AwaitingKeybind = false
@@ -722,7 +722,7 @@ function UI:_SaveSettings()
 		AutoLoadEnabled = false,
 		AutoLoadName = (self._Settings and self._Settings.AutoLoadName) or "default",
 		Theme = (self._Settings and self._Settings.Theme) or "",
-		Opacity = (self._Settings and self._Settings.Opacity) or 90,
+		Opacity = (self._Settings and self._Settings.Opacity) or 100,
 		UIState = self._UIState,
 	}
 	local ok, encoded = pcall(function()
@@ -816,7 +816,7 @@ function UI:_SaveConfig(name)
 			MinimizeKeyCode = (self._Settings and self._Settings.MinimizeKeyCode and self._Settings.MinimizeKeyCode.Name) or "RightControl",
 			NotificationsEnabled = (self._Settings and self._Settings.NotificationsEnabled) ~= false,
 			NotificationPosition = (self._Settings and self._Settings.NotificationPosition) or "BottomRight",
-			Opacity = (self._Settings and self._Settings.Opacity) or 90,
+			Opacity = (self._Settings and self._Settings.Opacity) or 100,
 		},
 		UIState = self._UIState,
 	}
@@ -1280,13 +1280,6 @@ function UI:CreateTab(opt)
 	pageList.Padding = UDim.new(0, 12)
 	pageList.Parent = page
 
-	local pagePad = Instance.new("UIPadding")
-	pagePad.PaddingTop = UDim.new(0, 2)
-	pagePad.PaddingBottom = UDim.new(0, 20)
-	pagePad.PaddingLeft = UDim.new(0, 2)
-	pagePad.PaddingRight = UDim.new(0, 2)
-	pagePad.Parent = page
-
 	AutoCanvas(page, pageList)
 
 	local tabBtn = {
@@ -1297,7 +1290,8 @@ function UI:CreateTab(opt)
 	function tabBtn:CreateSection(title)
 		local section = Instance.new("Frame")
 		section.Name = title or "Section"
-		section.BackgroundColor3 = THEME.Panel
+		section.BackgroundColor3 = THEME.Surface
+		section.BackgroundTransparency = 0.05
 		section.BorderSizePixel = 0
 		section.Size = UDim2.new(1, 0, 0, ScalePx(54))
 		section.ZIndex = 10
@@ -1306,13 +1300,14 @@ function UI:CreateTab(opt)
 		end)
 		AddCorner(section, 12)
 		AddGradient(section, THEME.Surface, THEME.Panel, 90)
+		AddShadow(section, 9)
 		section.Parent = page
 
 		local header = Instance.new("Frame")
 		header.Name = "Header"
 		header.BackgroundTransparency = 1
-		header.Size = UDim2.new(1, -28, 0, ScalePx(34))
-		header.Position = UDim2.fromOffset(14, 0)
+		header.Size = UDim2.new(1, -18, 0, ScalePx(42))
+		header.Position = UDim2.fromOffset(9, ScalePx(8))
 		header.ZIndex = 11
 		header.Parent = section
 
@@ -1321,49 +1316,50 @@ function UI:CreateTab(opt)
 		t.Size = UDim2.new(1, 0, 1, 0)
 		t.Position = UDim2.fromOffset(0, 0)
 
-		local sectionBody = Instance.new("Frame")
-		sectionBody.Name = "Body"
-		sectionBody.BackgroundTransparency = 1
-		sectionBody.ClipsDescendants = true
-		sectionBody.Size = UDim2.new(1, 0, 0, 0)
-		sectionBody.Position = UDim2.fromOffset(0, ScalePx(34))
-		sectionBody.ZIndex = 11
-		sectionBody.Parent = section
+		local body
+		body = Instance.new("Frame")
+		body.Name = "Body"
+		body.BackgroundTransparency = 1
+		body.Size = UDim2.new(1, -18, 0, 0)
+		body.AutomaticSize = Enum.AutomaticSize.Y
+		body.Position = UDim2.fromOffset(9, ScalePx(50))
+		body.ZIndex = 11
+		body.ClipsDescendants = false
+		body.Parent = section
 
-		local bodyList = Instance.new("UIListLayout")
-		bodyList.SortOrder = Enum.SortOrder.LayoutOrder
-		bodyList.Padding = UDim.new(0, 8)
-		bodyList.Parent = sectionBody
+		local list = Instance.new("UIListLayout")
+		list.Padding = UDim.new(0, ScalePx(10))
+		list.SortOrder = Enum.SortOrder.LayoutOrder
+		list.Parent = body
 
-		local bodyPad = Instance.new("UIPadding")
-		bodyPad.PaddingTop = UDim.new(0, 0)
-		bodyPad.PaddingBottom = UDim.new(0, 14)
-		bodyPad.PaddingLeft = UDim.new(0, 0)
-		bodyPad.PaddingRight = UDim.new(0, 0)
-		bodyPad.Parent = sectionBody
+		local pad = Instance.new("UIPadding")
+		pad.PaddingTop = UDim.new(0, ScalePx(2))
+		pad.PaddingBottom = UDim.new(0, ScalePx(10))
+		pad.PaddingLeft = UDim.new(0, ScalePx(2))
+		pad.PaddingRight = UDim.new(0, ScalePx(2))
+		pad.Parent = body
 
-		bodyList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-			local h = bodyList.AbsoluteContentSize.Y + bodyPad.PaddingBottom.Offset
-			sectionBody.Size = UDim2.new(1, 0, 0, h)
-			section.Size = UDim2.new(1, 0, 0, h + ScalePx(34))
-		end)
-
-		return {
-			Body = sectionBody,
-			Section = section
-		}
+		local SectionAPI = {}
+		SectionAPI.Frame = section
+		SectionAPI.Body = body
+		return SectionAPI
 	end
 
 	function tabBtn:CreateLockedSection(title)
 		local s = self:CreateSection(title)
-		local header = s.Section:FindFirstChild("Header")
+		local section = s.Frame
+
+		local header = section:FindFirstChild("Header")
 		if header then
 			local pill = Instance.new("Frame")
 			pill.Name = "LockedPill"
-			pill.BackgroundColor3 = THEME.BG
+			pill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			pill.BackgroundTransparency = 0.88
+			pill.BorderSizePixel = 0
+			pill.AnchorPoint = Vector2.new(1, 0.5)
+			pill.Position = UDim2.new(1, 0, 0.5, 0)
 			pill.Size = UDim2.fromOffset(60, 18)
-			pill.Position = UDim2.new(1, -65, 0.5, -9)
-			pill.ZIndex = header.ZIndex + 1
+			pill.ZIndex = header.ZIndex + 3
 			AddCorner(pill, 8)
 			AddStroke(pill, 1, THEME.StrokeSoft, 0.6)
 			pill.Parent = header
@@ -1373,16 +1369,24 @@ function UI:CreateTab(opt)
 			ptxt.TextColor3 = THEME.SubText
 			ptxt.TextXAlignment = Enum.TextXAlignment.Center
 			ptxt.Size = UDim2.fromScale(1, 1)
-			ptxt.Parent = pill
+			ptxt.Position = UDim2.fromOffset(0, 0)
 		end
 		
 		local overlay = Instance.new("TextButton")
 		overlay.Name = "LockedOverlay"
-		overlay.BackgroundTransparency = 1
+		overlay.AutoButtonColor = false
+		overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		overlay.BackgroundTransparency = 0.55
+		overlay.BorderSizePixel = 0
 		overlay.Size = UDim2.fromScale(1, 1)
-		overlay.ZIndex = 50
-		overlay.Text = ""
-		overlay.Parent = s.Section
+		overlay.Position = UDim2.fromScale(0, 0)
+		overlay.ZIndex = section.ZIndex + 200
+		overlay.Text = "LOCKED"
+		overlay.TextColor3 = THEME.Text
+		overlay.TextTransparency = 0.15
+		overlay.Font = Enum.Font.GothamBold
+		overlay.TextSize = math.floor((18 * TEXT_SCALE) + 0.5)
+		overlay.Parent = section
 		
 		overlay.MouseButton1Click:Connect(function()
 			UI:Notify("Premium", "This section is locked! Redeem a key in the Premium tab.", 3)
@@ -2436,21 +2440,6 @@ function UI:CreateSlider(sectionBody, opt)
 	valLbl.Size = UDim2.fromOffset(90, 18)
 	valLbl.Position = UDim2.new(1, -104, 0, 8)
 
-	local valBox = Instance.new("TextBox")
-	valBox.BackgroundTransparency = 1
-	valBox.Text = valLbl.Text
-	valBox.TextColor3 = valLbl.TextColor3
-	valBox.TextSize = valLbl.TextSize
-	valBox.Font = valLbl.Font
-	valBox.ClearTextOnFocus = false
-	valBox.TextXAlignment = Enum.TextXAlignment.Right
-	valBox.TextYAlignment = Enum.TextYAlignment.Center
-	valBox.RichText = false
-	valBox.ZIndex = valLbl.ZIndex + 1
-	valBox.Size = valLbl.Size
-	valBox.Position = valLbl.Position
-	valLbl.Visible = false
-
 	local bar = Instance.new("Frame")
 	bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	bar.BackgroundTransparency = 0.92
@@ -2519,7 +2508,7 @@ function UI:CreateSlider(sectionBody, opt)
 		local alpha = (value - min) / (max - min)
 		alpha = math.clamp(alpha, 0, 1)
 		local formatted = _FormatNumber(value)
-		valBox.Text = formatted
+		valLbl.Text = formatted
 		endLbl.Text = formatted
 		if anim then
 			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.22)
@@ -2637,7 +2626,7 @@ function UI:CreateDropdown(sectionBody, opt)
 
 	local selectBg = Instance.new("Frame")
 	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	selectBg.BackgroundTransparency = 0.92
+	selectBg.BackgroundTransparency = 0.88
 	selectBg.BorderSizePixel = 0
 	selectBg.Size = UDim2.new(1, -28, 0, 24)
 	selectBg.Position = UDim2.fromOffset(14, 26)
@@ -2678,7 +2667,7 @@ function UI:CreateDropdown(sectionBody, opt)
 	local optionsHolder = Instance.new("Frame")
 	optionsHolder.Name = "Options"
 	optionsHolder.BackgroundColor3 = THEME.Panel
-	optionsHolder.BackgroundTransparency = 0.08
+	optionsHolder.BackgroundTransparency = 0.04
 	optionsHolder.BorderSizePixel = 0
 	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
 	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
@@ -2689,78 +2678,20 @@ function UI:CreateDropdown(sectionBody, opt)
 	optionsHolder.Parent = row
 
 	local optPad = Instance.new("UIPadding")
-	optPad.PaddingTop = UDim.new(0, 8)
-	optPad.PaddingBottom = UDim.new(0, 8)
-	optPad.PaddingLeft = UDim.new(0, 8)
-	optPad.PaddingRight = UDim.new(0, 8)
+	optPad.PaddingTop = UDim.new(0, 6)
+	optPad.PaddingBottom = UDim.new(0, 6)
+	optPad.PaddingLeft = UDim.new(0, 6)
+	optPad.PaddingRight = UDim.new(0, 6)
 	optPad.Parent = optionsHolder
 
 	local optList = Instance.new("UIListLayout")
 	optList.SortOrder = Enum.SortOrder.LayoutOrder
-	optList.Padding = UDim.new(0, 8)
+	optList.Padding = UDim.new(0, 6)
 	optList.Parent = optionsHolder
 
 	local opened = false
 	local value = default
 	local openToken = 0
-
-	local function rebuild()
-		if not optionsHolder or not optionsHolder.Parent then return end
-		
-		for _, ch in ipairs(optionsHolder:GetChildren()) do
-			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then 
-				ch:Destroy() 
-			end
-		end
-		
-		local itemCount = 0
-		if type(list) == "table" then
-			for i, item in ipairs(list) do
-				itemCount = itemCount + 1
-				local optRow = Instance.new("Frame")
-				optRow.Name = "Option_" .. tostring(i)
-				optRow.BackgroundColor3 = THEME.Panel
-				optRow.BackgroundTransparency = 0.12
-				optRow.BorderSizePixel = 0
-				optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
-				optRow.ZIndex = optionsHolder.ZIndex + 1
-				AddCorner(optRow, 10)
-				AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
-				optRow.Parent = optionsHolder
-
-				local optBtn = MakeButtonBase(optRow)
-				optBtn.ZIndex = optRow.ZIndex + 1
-				optBtn.Size = UDim2.fromScale(1, 1)
-				BindHoverFX(optBtn, optRow)
-				BindClickFX(optBtn, optRow)
-
-				local t = MakeText(optRow, tostring(item), 12, "")
-				t.ZIndex = optBtn.ZIndex + 1
-				t.Size = UDim2.new(1, -18, 1, 0)
-				t.Position = UDim2.fromOffset(10, 0)
-
-				optBtn.MouseButton1Click:Connect(function()
-					value = item
-					valueLbl.Text = tostring(item)
-					valueLbl.TextColor3 = THEME.Text
-					self._UIState[persistKey] = _StripRichText(value)
-					task.spawn(function()
-						pcall(cb, _StripRichText(value))
-					end)
-					setOpen(false)
-				end)
-			end
-		end
-		
-		if opened then
-			local contentH = optList.AbsoluteContentSize.Y
-			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-			optionsHolder.Size = UDim2.new(1, -28, 0, h)
-			row.Size = UDim2.new(1, 0, 0, BASE_H + (h > 0 and (h + OPEN_GAP) or 0))
-		end
-	end
-
-	rebuild()
 
 	local function setOpen(state)
 		openToken += 1
@@ -2794,6 +2725,71 @@ function UI:CreateDropdown(sectionBody, opt)
 	click.MouseButton1Click:Connect(function()
 		setOpen(not opened)
 	end)
+
+	local function rebuild()
+		if not optionsHolder or not optionsHolder.Parent then return end
+
+		for _, ch in ipairs(optionsHolder:GetChildren()) do
+			if ch:IsA("GuiObject") and not ch:IsA("UIListLayout") and not ch:IsA("UIPadding") then
+				ch:Destroy()
+			end
+		end
+
+		if type(list) ~= "table" or #list == 0 then
+			list = {}
+		end
+
+		for i, item in ipairs(list) do
+			local s = tostring(item)
+			local optRow = Instance.new("Frame")
+			optRow.Name = "Option_" .. tostring(i)
+			optRow.BackgroundColor3 = THEME.Panel
+			optRow.BackgroundTransparency = 0.18
+			optRow.BorderSizePixel = 0
+			optRow.Size = UDim2.new(1, 0, 0, ScalePx(32))
+			optRow.ZIndex = optionsHolder.ZIndex + 1
+			AddCorner(optRow, 9)
+			AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
+			optRow.Parent = optionsHolder
+
+			local optBtn = MakeButtonBase(optRow)
+			optBtn.ZIndex = optRow.ZIndex + 1
+			optBtn.Size = UDim2.fromScale(1, 1)
+			BindHoverFX(optBtn, optRow)
+			BindClickFX(optBtn, optRow)
+			optBtn.MouseEnter:Connect(function()
+				Tween(optRow, {BackgroundTransparency = 0.10}, 0.18)
+			end)
+			optBtn.MouseLeave:Connect(function()
+				Tween(optRow, {BackgroundTransparency = 0.18}, 0.18)
+			end)
+
+			local t = MakeText(optRow, s, 12, "")
+			t.ZIndex = optBtn.ZIndex + 1
+			t.Size = UDim2.new(1, -18, 1, 0)
+			t.Position = UDim2.fromOffset(10, 0)
+
+			optBtn.MouseButton1Click:Connect(function()
+				value = item
+				valueLbl.Text = tostring(item)
+				valueLbl.TextColor3 = THEME.Text
+				self._UIState[persistKey] = _StripRichText(value)
+				task.spawn(function()
+					pcall(cb, _StripRichText(value))
+				end)
+				setOpen(false)
+			end)
+		end
+
+		if opened then
+			local contentH = optList.AbsoluteContentSize.Y
+			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
+			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
+			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
+		end
+	end
+
+	rebuild()
 
 	local api = {}
 	api.Frame = row
@@ -2892,7 +2888,7 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 
 	local selectBg = Instance.new("Frame")
 	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	selectBg.BackgroundTransparency = 0.92
+	selectBg.BackgroundTransparency = 0.88
 	selectBg.BorderSizePixel = 0
 	selectBg.Size = UDim2.new(1, -28, 0, 24)
 	selectBg.Position = UDim2.fromOffset(14, 26)
@@ -2900,13 +2896,6 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	AddCorner(selectBg, 10)
 	AddStroke(selectBg, 1, THEME.StrokeSoft, 0.55)
 	selectBg.Parent = row
-
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Primary
-	glow.Transparency = 1
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = selectBg
 
 	local valueLbl = MakeText(selectBg, "Select...", 12, "")
 	valueLbl.TextColor3 = THEME.SubText
@@ -2935,7 +2924,7 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	local optionsHolder = Instance.new("Frame")
 	optionsHolder.Name = "Options"
 	optionsHolder.BackgroundColor3 = THEME.Panel
-	optionsHolder.BackgroundTransparency = 0.08
+	optionsHolder.BackgroundTransparency = 0.04
 	optionsHolder.BorderSizePixel = 0
 	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
 	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
@@ -2946,15 +2935,15 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	optionsHolder.Parent = row
 
 	local optPad = Instance.new("UIPadding")
-	optPad.PaddingTop = UDim.new(0, 8)
-	optPad.PaddingBottom = UDim.new(0, 8)
-	optPad.PaddingLeft = UDim.new(0, 8)
-	optPad.PaddingRight = UDim.new(0, 8)
+	optPad.PaddingTop = UDim.new(0, 6)
+	optPad.PaddingBottom = UDim.new(0, 6)
+	optPad.PaddingLeft = UDim.new(0, 6)
+	optPad.PaddingRight = UDim.new(0, 6)
 	optPad.Parent = optionsHolder
 
 	local optList = Instance.new("UIListLayout")
 	optList.SortOrder = Enum.SortOrder.LayoutOrder
-	optList.Padding = UDim.new(0, 8)
+	optList.Padding = UDim.new(0, 6)
 	optList.Parent = optionsHolder
 
 	local opened = false
@@ -2997,6 +2986,19 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 		end
 	end
 
+	optList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		if opened then
+			local contentH = optList.AbsoluteContentSize.Y
+			local h = contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4
+			Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.18)
+			Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + h + OPEN_GAP)}, 0.18)
+		end
+	end)
+
+	click.MouseButton1Click:Connect(function()
+		setOpen(not opened)
+	end)
+
 	local function rebuild()
 		if not optionsHolder or not optionsHolder.Parent then return end
 
@@ -3015,11 +3017,11 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 			local optRow = Instance.new("Frame")
 			optRow.Name = "Option_" .. tostring(i)
 			optRow.BackgroundColor3 = THEME.Panel
-			optRow.BackgroundTransparency = 0.12
+			optRow.BackgroundTransparency = 0.18
 			optRow.BorderSizePixel = 0
-			optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
+			optRow.Size = UDim2.new(1, 0, 0, ScalePx(32))
 			optRow.ZIndex = optionsHolder.ZIndex + 1
-			AddCorner(optRow, 10)
+			AddCorner(optRow, 9)
 			AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
 			optRow.Parent = optionsHolder
 
@@ -3028,6 +3030,12 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 			optBtn.Size = UDim2.fromScale(1, 1)
 			BindHoverFX(optBtn, optRow)
 			BindClickFX(optBtn, optRow)
+			optBtn.MouseEnter:Connect(function()
+				Tween(optRow, {BackgroundTransparency = 0.10}, 0.18)
+			end)
+			optBtn.MouseLeave:Connect(function()
+				Tween(optRow, {BackgroundTransparency = 0.18}, 0.18)
+			end)
 
 			local check = MakeText(optRow, "□", 14, "bold")
 			check.ZIndex = optBtn.ZIndex + 1
@@ -3138,7 +3146,7 @@ function UI:CreateConfigDropdown(parent, config)
 
 	local selectBg = Instance.new("Frame")
 	selectBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	selectBg.BackgroundTransparency = 0.92
+	selectBg.BackgroundTransparency = 0.88
 	selectBg.BorderSizePixel = 0
 	selectBg.Size = UDim2.new(1, -28, 0, 24)
 	selectBg.Position = UDim2.fromOffset(14, 26)
@@ -3172,7 +3180,7 @@ function UI:CreateConfigDropdown(parent, config)
 	local optionsHolder = Instance.new("Frame")
 	optionsHolder.Name = "Options"
 	optionsHolder.BackgroundColor3 = THEME.Panel
-	optionsHolder.BackgroundTransparency = 0.08
+	optionsHolder.BackgroundTransparency = 0.04
 	optionsHolder.BorderSizePixel = 0
 	optionsHolder.Size = UDim2.new(1, -28, 0, 0)
 	optionsHolder.Position = UDim2.fromOffset(14, 26 + 24 + ScalePx(6))
@@ -3183,15 +3191,15 @@ function UI:CreateConfigDropdown(parent, config)
 	optionsHolder.Parent = row
 
 	local optPad = Instance.new("UIPadding")
-	optPad.PaddingTop = UDim.new(0, 8)
-	optPad.PaddingBottom = UDim.new(0, 8)
-	optPad.PaddingLeft = UDim.new(0, 8)
-	optPad.PaddingRight = UDim.new(0, 8)
+	optPad.PaddingTop = UDim.new(0, 6)
+	optPad.PaddingBottom = UDim.new(0, 6)
+	optPad.PaddingLeft = UDim.new(0, 6)
+	optPad.PaddingRight = UDim.new(0, 6)
 	optPad.Parent = optionsHolder
 
 	local optList = Instance.new("UIListLayout")
 	optList.SortOrder = Enum.SortOrder.LayoutOrder
-	optList.Padding = UDim.new(0, 8)
+	optList.Padding = UDim.new(0, 6)
 	optList.Parent = optionsHolder
 
 	local opened = false
@@ -3247,11 +3255,11 @@ function UI:CreateConfigDropdown(parent, config)
 				local optRow = Instance.new("Frame")
 				optRow.Name = "Option_" .. tostring(i)
 				optRow.BackgroundColor3 = THEME.Panel
-				optRow.BackgroundTransparency = 0.12
+				optRow.BackgroundTransparency = 0.18
 				optRow.BorderSizePixel = 0
-				optRow.Size = UDim2.new(1, 0, 0, ScalePx(34))
+				optRow.Size = UDim2.new(1, 0, 0, ScalePx(32))
 				optRow.ZIndex = optionsHolder.ZIndex + 1
-				AddCorner(optRow, 10)
+				AddCorner(optRow, 9)
 				AddStroke(optRow, 1, THEME.StrokeSoft, 0.55)
 				optRow.Parent = optionsHolder
 
@@ -3260,6 +3268,12 @@ function UI:CreateConfigDropdown(parent, config)
 				optBtn.Size = UDim2.fromScale(1, 1)
 				BindHoverFX(optBtn, optRow)
 				BindClickFX(optBtn, optRow)
+				optBtn.MouseEnter:Connect(function()
+					Tween(optRow, {BackgroundTransparency = 0.10}, 0.18)
+				end)
+				optBtn.MouseLeave:Connect(function()
+					Tween(optRow, {BackgroundTransparency = 0.18}, 0.18)
+				end)
 
 				local t = MakeText(optRow, tostring(item), 12, "")
 				t.ZIndex = optBtn.ZIndex + 1
