@@ -2447,6 +2447,7 @@ function UI:CreateSlider(sectionBody, opt)
 	endLbl.Size = UDim2.fromOffset(36, 18)
 	endLbl.Position = UDim2.new(1, -44, 0, 32)
 	endLbl.ZIndex = 22
+	endLbl.Visible = false
 
 	local fill = Instance.new("Frame")
 	fill.BackgroundColor3 = THEME.Primary
@@ -2496,7 +2497,6 @@ function UI:CreateSlider(sectionBody, opt)
 	local function render(anim)
 		local alpha = (value - min) / (max - min)
 		alpha = math.clamp(alpha, 0, 1)
-		endLbl.Text = _FormatNumber(value)
 		if anim then
 			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.22)
 			Tween(knob, {Position = UDim2.new(alpha, 0, 0.5, 0)}, 0.22)
