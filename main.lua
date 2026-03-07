@@ -2450,6 +2450,9 @@ function UI:CreateSlider(sectionBody, opt)
 	valBox.Size = valLbl.Size
 	valBox.Position = valLbl.Position
 	valBox.Parent = row
+	valBox.Visible = false
+	valBox.Active = false
+	valBox.TextEditable = false
 	valLbl.Visible = false
 
 	local bar = Instance.new("Frame")
