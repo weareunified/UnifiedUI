@@ -2710,6 +2710,7 @@ function UI:CreateDropdown(sectionBody, opt)
 				t.ZIndex = optBtn.ZIndex + 1
 				t.Size = UDim2.new(1, -18, 1, 0)
 				t.Position = UDim2.fromOffset(10, 0)
+t.Parent = optRow
 
 				optBtn.MouseButton1Click:Connect(function()
 					value = item
@@ -3237,6 +3238,7 @@ function UI:CreateConfigDropdown(parent, config)
 				t.ZIndex = optBtn.ZIndex + 1
 				t.Size = UDim2.new(1, -18, 1, 0)
 				t.Position = UDim2.fromOffset(10, 0)
+t.Parent = optRow
 
 				optBtn.MouseButton1Click:Connect(function()
 					value = item
