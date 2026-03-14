@@ -2315,8 +2315,16 @@ function UI:CreateTextbox(sectionBody, opt)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
+	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
+
+	local sideLbl = MakeText(row, _FormatNumber(default), 12, "semibold")
+	sideLbl.Name = "SideValue"
+	sideLbl.TextColor3 = THEME.Primary
+	sideLbl.TextXAlignment = Enum.TextXAlignment.Right
+	sideLbl.ZIndex = 22
+	sideLbl.Size = UDim2.fromOffset(90, 18)
+	sideLbl.Position = UDim2.new(1, -104, 0, 8)
 
 	local boxBg = Instance.new("Frame")
 	boxBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2426,7 +2434,7 @@ function UI:CreateSlider(sectionBody, opt)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
+	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
 
 	local bar = Instance.new("Frame")
@@ -2440,14 +2448,14 @@ function UI:CreateSlider(sectionBody, opt)
 	AddStroke(bar, 1, THEME.StrokeSoft, 0.6)
 	bar.Parent = row
 
-	local endLbl = MakeText(row, _FormatNumber(default), 11, "semibold")
-	endLbl.Name = "ValueDisplay"
-	endLbl.TextColor3 = THEME.Primary
-	endLbl.TextXAlignment = Enum.TextXAlignment.Center
-	endLbl.Size = UDim2.fromOffset(36, 18)
-	endLbl.Position = UDim2.new(1, -44, 0, 32)
-	endLbl.ZIndex = 22
-	endLbl.Visible = false
+	local sideLbl = MakeText(row, _FormatNumber(default), 11, "semibold")
+	sideLbl.Name = "ValueDisplay"
+	sideLbl.TextColor3 = THEME.Primary
+	sideLbl.TextXAlignment = Enum.TextXAlignment.Right
+	sideLbl.Size = UDim2.fromOffset(40, 18)
+	sideLbl.Position = UDim2.new(1, -54, 0, 8)
+	sideLbl.ZIndex = 22
+	sideLbl.Parent = row
 
 	local fill = Instance.new("Frame")
 	fill.BackgroundColor3 = THEME.Primary
@@ -2497,6 +2505,7 @@ function UI:CreateSlider(sectionBody, opt)
 	local function render(anim)
 		local alpha = (value - min) / (max - min)
 		alpha = math.clamp(alpha, 0, 1)
+		sideLbl.Text = _FormatNumber(value)
 		if anim then
 			Tween(fill, {Size = UDim2.new(alpha, 0, 1, 0)}, 0.22)
 			Tween(knob, {Position = UDim2.new(alpha, 0, 0.5, 0)}, 0.22)
@@ -2595,7 +2604,7 @@ function UI:CreateDropdown(sectionBody, opt)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
+	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
 
 	local selectBg = Instance.new("Frame")
@@ -2850,7 +2859,7 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
+	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
 
 	local selectBg = Instance.new("Frame")
@@ -3096,7 +3105,7 @@ function UI:CreateConfigDropdown(parent, config)
 
 	local lbl = MakeText(row, name, 13, "semibold")
 	lbl.ZIndex = 22
-	lbl.Size = UDim2.new(1, -28, 0, 18)
+	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
 
 	local selectBg = Instance.new("Frame")
