@@ -278,12 +278,6 @@ local function SetVisibleRecursive(gui, visible)
 	end
 end
 
-function UI:Close()
-	pcall(function()
-		self:Unload()
-	end)
-end
-
 local function Ripple(parent, x, y, color)
 	local r = Instance.new("Frame")
 	r.Name = "Ripple"
