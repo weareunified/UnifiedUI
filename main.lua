@@ -107,7 +107,7 @@ local THEME_PRESETS = {
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Crimson = {
-		Primary = Color3.fromRGB(239, 68, 68),
+		Primary = Color3.fromRGB(255, 45, 45),
 		BG = Color3.fromRGB(12, 8, 8),
 		Panel = Color3.fromRGB(20, 14, 14),
 		Panel2 = Color3.fromRGB(26, 20, 20),
@@ -519,6 +519,12 @@ function UI:SetTheme(theme)
 	pcall(function()
 		if type(self._SaveSettings) == "function" then
 			self:_SaveSettings()
+		end
+	end)
+
+	pcall(function()
+		if type(updateBackgroundGlow) == "function" then
+			updateBackgroundGlow()
 		end
 	end)
 
@@ -3794,13 +3800,53 @@ function UI:CreateWindow(config)
 
 	local shade = Instance.new("Frame")
 	shade.Name = "Shade"
-	shade.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	shade.BackgroundColor3 = Color3.new(0, 0, 0)
 	shade.BackgroundTransparency = 1
-	shade.BorderSizePixel = 0
 	shade.Size = UDim2.fromScale(1, 1)
 	shade.ZIndex = 1
-	shade.Visible = false
 	shade.Parent = sg
+
+	local bgEffect = Instance.new("Frame")
+	bgEffect.Name = "BackgroundEffect"
+	bgEffect.BackgroundTransparency = 1
+	bgEffect.Size = UDim2.fromScale(1, 1)
+	bgEffect.ZIndex = 2
+	bgEffect.ClipsDescendants = true
+	bgEffect.Parent = sg
+
+	local function CreateGlowShape(pos, size, color)
+		local g = Instance.new("ImageLabel")
+		g.BackgroundTransparency = 1
+		g.Image = "rbxassetid://6015667320"
+		g.ImageColor3 = color
+		g.ImageTransparency = 0.85
+		g.Position = pos
+		g.Size = size
+		g.ZIndex = 2
+		g.Parent = bgEffect
+
+		task.spawn(function()
+			while g.Parent do
+				local targetPos = UDim2.new(
+					pos.X.Scale + math.random(-5, 5)/100, pos.X.Offset + math.random(-20, 20),
+					pos.Y.Scale + math.random(-5, 5)/100, pos.Y.Offset + math.random(-20, 20)
+				)
+				Tween(g, {Position = targetPos, ImageTransparency = 0.7 + math.random(0, 15)/100}, math.random(3, 6))
+				task.wait(math.random(4, 7))
+			end
+		end)
+	end
+
+	CreateGlowShape(UDim2.new(0.1, 0, 0.2, 0), UDim2.fromOffset(400, 400), THEME.Primary)
+	CreateGlowShape(UDim2.new(0.8, 0, 0.7, 0), UDim2.fromOffset(500, 500), THEME.Primary)
+	CreateGlowShape(UDim2.new(0.4, 0, 0.5, 0), UDim2.fromOffset(300, 300), THEME.Panel2)
+
+	local function updateBackgroundGlow()
+		bgEffect:ClearAllChildren()
+		CreateGlowShape(UDim2.new(0.1, 0, 0.2, 0), UDim2.fromOffset(400, 400), THEME.Primary)
+		CreateGlowShape(UDim2.new(0.8, 0, 0.7, 0), UDim2.fromOffset(500, 500), THEME.Primary)
+		CreateGlowShape(UDim2.new(0.4, 0, 0.5, 0), UDim2.fromOffset(300, 300), THEME.Panel2)
+	end
 
 	local container = Instance.new("CanvasGroup")
 	container.Name = "Container"
