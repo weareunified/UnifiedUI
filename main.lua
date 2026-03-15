@@ -134,10 +134,6 @@ local THEME_PRESETS = {
 
 	local THEME = THEME_PRESETS.Default
 
-	function UI:GetTheme()
-		return THEME
-	end
-
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end)
 
 local function GetUIParent()
@@ -364,6 +360,10 @@ end
 
 local UI = {}
 local Tabs = {}
+
+function UI:GetTheme()
+	return THEME
+end
 
 UI._Alive = true
 UI._Open = true
