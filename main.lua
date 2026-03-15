@@ -348,13 +348,53 @@ UI._TabSwitchToken = 0
 
 UI._ProgressiveBuild = true
 UI._BuildYieldSteps = 1
-UI._BuildYieldSeconds = 0.2
+UI._BuildYieldSeconds = nil
+UI._AutoBuildYieldSeconds = true
+UI._TunedBuildYieldSeconds = nil
+
+function UI:_AutoTuneBuildYieldSeconds()
+	-- Auto tune based on current Heartbeat delta time.
+	-- Goal:
+	-- - Low FPS: don't add extra waiting (yield by frames only).
+	-- - High FPS: add a small delay so the UI visibly loads in pieces.
+	local sum = 0
+	local n = 0
+	for _ = 1, 12 do
+		local dt = RunService.Heartbeat:Wait()
+		if type(dt) == "number" and dt > 0 then
+			sum += dt
+			n += 1
+		end
+	end
+	local avg = (n > 0) and (sum / n) or (1 / 60)
+	local fps = (avg > 0) and (1 / avg) or 60
+
+	-- Tuned values:
+	-- - <40 fps: no artificial delay
+	-- - 40-80 fps: small delay
+	-- - >80 fps: more visible progressive delay
+	if fps < 40 then
+		self._TunedBuildYieldSeconds = 0
+	elseif fps < 80 then
+		self._TunedBuildYieldSeconds = 0.05
+	else
+		self._TunedBuildYieldSeconds = 0.12
+	end
+
+	return self._TunedBuildYieldSeconds
+end
 
 function UI:_YieldBuild(steps)
 	if not self._ProgressiveBuild then
 		return
 	end
 	local seconds = tonumber(self._BuildYieldSeconds)
+	if seconds == nil and self._AutoBuildYieldSeconds then
+		seconds = tonumber(self._TunedBuildYieldSeconds)
+		if seconds == nil then
+			seconds = tonumber(self:_AutoTuneBuildYieldSeconds())
+		end
+	end
 	if seconds and seconds > 0 then
 		task.wait(math.clamp(seconds, 0, 2))
 		return
@@ -3700,7 +3740,11 @@ function UI:CreateWindow(config)
 			self._BuildYieldSteps = tonumber(config.BuildYieldSteps) or self._BuildYieldSteps
 		end
 		if config.BuildYieldSeconds ~= nil then
-			self._BuildYieldSeconds = tonumber(config.BuildYieldSeconds) or self._BuildYieldSeconds
+			self._BuildYieldSeconds = tonumber(config.BuildYieldSeconds)
+			self._AutoBuildYieldSeconds = false
+		end
+		if config.AutoBuildYieldSeconds ~= nil then
+			self._AutoBuildYieldSeconds = (config.AutoBuildYieldSeconds == true)
 		end
 	end
 
