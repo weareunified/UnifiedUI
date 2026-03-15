@@ -2256,10 +2256,12 @@ function UI:CreateBindToggle(sectionBody, opt)
 	api.SetKey = function(a, b)
 		local v = (b == nil) and a or b
 		local kc = nil
-		if typeof(v) == "EnumItem" and v.EnumType == Enum.KeyCode then
+		if typeof(v) == "EnumItem" and (v.EnumType == Enum.KeyCode or v.EnumType == Enum.UserInputType) then
 			kc = v
 		elseif type(v) == "string" and Enum.KeyCode[v] then
 			kc = Enum.KeyCode[v]
+		elseif type(v) == "string" and Enum.UserInputType[v] then
+			kc = Enum.UserInputType[v]
 		end
 		setKey(kc)
 	end
