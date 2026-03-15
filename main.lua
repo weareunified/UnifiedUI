@@ -1089,74 +1089,70 @@ local function _TryServerhop(preferPing)
 end
 
 function UI:Notify(title, body, duration)
-	if self._Settings and self._Settings.NotificationsEnabled == false then return end
-	
 	local playerGui = LOCAL_PLAYER and LOCAL_PLAYER:FindFirstChildOfClass("PlayerGui")
-	local stack = self._NotifyStack or (playerGui and (playerGui:FindFirstChild("UnifiedUI") or playerGui:FindFirstChildOfClass("ScreenGui")))
+	local sg = self.ScreenGui or (playerGui and (playerGui:FindFirstChild("UnifiedUI") or playerGui:FindFirstChildOfClass("ScreenGui")))
 	
-	if not stack then return end
+	if not sg then return end
 	
 	local card = Instance.new("Frame")
-	card.Name = "Notification"
-	card.BackgroundColor3 = THEME.Panel or Color3.fromRGB(30, 30, 30)
-	card.BackgroundTransparency = 0.1
+	card.Name = "NotifyCard"
+	card.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 	card.BorderSizePixel = 0
-	card.Size = UDim2.fromOffset(300, 70)
+	card.Size = UDim2.fromOffset(280, 65)
 	card.Position = UDim2.new(1, -20, 1, -20)
 	card.AnchorPoint = Vector2.new(1, 1)
-	card.ZIndex = 20000
-	card.Visible = true
+	card.ZIndex = 200000
 	
 	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 10)
+	c.CornerRadius = UDim.new(0, 9)
 	c.Parent = card
 	
 	local s = Instance.new("UIStroke")
-	s.Thickness = 1
+	s.Thickness = 1.5
 	s.Color = THEME.Primary or Color3.fromRGB(255, 255, 255)
-	s.Transparency = 0.5
+	s.Transparency = 0.4
 	s.Parent = card
 	
 	local t1 = Instance.new("TextLabel")
-	t1.Name = "Title"
 	t1.BackgroundTransparency = 1
 	t1.Font = Enum.Font.GothamBold
 	t1.TextSize = 14
-	t1.TextColor3 = THEME.Text or Color3.fromRGB(255, 255, 255)
+	t1.TextColor3 = Color3.new(1, 1, 1)
 	t1.TextXAlignment = Enum.TextXAlignment.Left
 	t1.Text = tostring(title or "Notification")
 	t1.Position = UDim2.fromOffset(12, 10)
 	t1.Size = UDim2.new(1, -24, 0, 18)
-	t1.ZIndex = 20001
+	t1.ZIndex = 200001
 	t1.Parent = card
 
 	local t2 = Instance.new("TextLabel")
-	t2.Name = "Body"
 	t2.BackgroundTransparency = 1
-	t2.Font = Enum.Font.GothamMedium
+	t2.Font = Enum.Font.Gotham
 	t2.TextSize = 12
-	t2.TextColor3 = THEME.SubText or Color3.fromRGB(200, 200, 200)
+	t2.TextColor3 = Color3.new(0.85, 0.85, 0.85)
 	t2.TextXAlignment = Enum.TextXAlignment.Left
 	t2.TextYAlignment = Enum.TextYAlignment.Top
 	t2.Text = tostring(body or "")
 	t2.TextWrapped = true
 	t2.Position = UDim2.fromOffset(12, 30)
-	t2.Size = UDim2.new(1, -24, 0, 30)
-	t2.ZIndex = 20001
+	t2.Size = UDim2.new(1, -24, 0, 28)
+	t2.ZIndex = 200001
 	t2.Parent = card
 
-	card.Parent = stack
+	card.Parent = sg
 	
-	task.delay(duration or 3, function()
+	-- Slide in
+	card.Position = UDim2.new(1, 300, 1, -20)
+	TweenService:Create(card, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(1, -20, 1, -20)}):Play()
+	
+	task.delay(duration or 3.5, function()
 		if card and card.Parent then
-			pcall(function()
-				local tw = TweenService:Create(card, TweenInfo.new(0.5), {BackgroundTransparency = 1})
-				TweenService:Create(t1, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-				TweenService:Create(t2, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-				tw:Play()
-				tw.Completed:Connect(function()
-					card:Destroy()
-				end)
+			local tw = TweenService:Create(card, TweenInfo.new(0.4), {Position = UDim2.new(1, 320, 1, -20), BackgroundTransparency = 1})
+			TweenService:Create(t1, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+			TweenService:Create(t2, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+			tw:Play()
+			tw.Completed:Connect(function()
+				card:Destroy()
 			end)
 		end
 	end)
