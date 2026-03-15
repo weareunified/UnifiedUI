@@ -1828,10 +1828,12 @@ function UI:CreateBind(sectionBody, opt)
 
 	local keyCode = nil
 	pcall(function()
-		if typeof(default) == "EnumItem" and default.EnumType == Enum.KeyCode then
+		if typeof(default) == "EnumItem" and (default.EnumType == Enum.KeyCode or default.EnumType == Enum.UserInputType) then
 			keyCode = default
 		elseif type(default) == "string" and Enum.KeyCode[default] then
 			keyCode = Enum.KeyCode[default]
+		elseif type(default) == "string" and Enum.UserInputType[default] then
+			keyCode = Enum.UserInputType[default]
 		end
 	end)
 
@@ -1889,15 +1891,18 @@ function UI:CreateBind(sectionBody, opt)
 
 	local awaiting = false
 
-	local function render()
+	local function renderBind()
 		if awaiting then
-			keyLbl.Text = "Press a key..."
-			keyLbl.TextColor3 = THEME.SubText
-			return
-		end
-		if typeof(keyCode) == "EnumItem" and keyCode.EnumType == Enum.KeyCode and keyCode ~= Enum.KeyCode.Unknown then
-			keyLbl.Text = tostring(keyCode.Name)
-			keyLbl.TextColor3 = THEME.Text
+			keyLbl.Text = "Press..."
+			keyLbl.TextColor3 = THEME.Primary
+		elseif keyCode then
+			if keyCode.EnumType == Enum.KeyCode then
+				keyLbl.Text = tostring(keyCode.Name)
+				keyLbl.TextColor3 = THEME.Text
+			elseif keyCode.EnumType == Enum.UserInputType then
+				keyLbl.Text = tostring(keyCode.Name):gsub("MouseButton", "Mouse Button")
+				keyLbl.TextColor3 = THEME.Text
+			end
 		else
 			keyLbl.Text = "None"
 			keyLbl.TextColor3 = THEME.SubText
@@ -1907,7 +1912,7 @@ function UI:CreateBind(sectionBody, opt)
 	local function setKey(kc)
 		keyCode = kc
 		awaiting = false
-		render()
+		renderBind()
 		self._UIState[persistKey] = (typeof(keyCode) == "EnumItem" and keyCode.Name) or ""
 		if type(onChanged) == "function" then
 			pcall(onChanged, keyCode)
@@ -1916,7 +1921,7 @@ function UI:CreateBind(sectionBody, opt)
 
 	click.MouseButton1Click:Connect(function()
 		awaiting = true
-		render()
+		renderBind()
 		Tween(glow, {Transparency = 0.35}, 0.12)
 		self._AwaitingBind = {
 			Key = persistKey,
@@ -1925,7 +1930,7 @@ function UI:CreateBind(sectionBody, opt)
 		}
 	end)
 
-	render()
+	renderBind()
 
 	local api = {}
 	api.Frame = row
@@ -1933,10 +1938,12 @@ function UI:CreateBind(sectionBody, opt)
 	api.Set = function(a, b)
 		local v = (b == nil) and a or b
 		local kc = nil
-		if typeof(v) == "EnumItem" and v.EnumType == Enum.KeyCode then
+		if typeof(v) == "EnumItem" and (v.EnumType == Enum.KeyCode or v.EnumType == Enum.UserInputType) then
 			kc = v
 		elseif type(v) == "string" and Enum.KeyCode[v] then
 			kc = Enum.KeyCode[v]
+		elseif type(v) == "string" and Enum.UserInputType[v] then
+			kc = Enum.UserInputType[v]
 		end
 		setKey(kc)
 	end
@@ -1972,10 +1979,12 @@ function UI:CreateBindToggle(sectionBody, opt)
 
 	local keyCode = nil
 	pcall(function()
-		if typeof(defaultBind) == "EnumItem" and defaultBind.EnumType == Enum.KeyCode then
+		if typeof(defaultBind) == "EnumItem" and (defaultBind.EnumType == Enum.KeyCode or defaultBind.EnumType == Enum.UserInputType) then
 			keyCode = defaultBind
 		elseif type(defaultBind) == "string" and Enum.KeyCode[defaultBind] then
 			keyCode = Enum.KeyCode[defaultBind]
+		elseif type(defaultBind) == "string" and Enum.UserInputType[defaultBind] then
+			keyCode = Enum.UserInputType[defaultBind]
 		end
 	end)
 
@@ -2140,6 +2149,17 @@ function UI:CreateBindToggle(sectionBody, opt)
 		if typeof(keyCode) == "EnumItem" and keyCode.EnumType == Enum.KeyCode and keyCode ~= Enum.KeyCode.Unknown then
 			keyLbl.Text = tostring(keyCode.Name)
 			keyLbl.TextColor3 = THEME.Text
+			return
+		end
+		if typeof(keyCode) == "EnumItem" and keyCode.EnumType == Enum.UserInputType then
+			local nm = tostring(keyCode.Name)
+			if nm:find("MouseButton", 1, true) then
+				keyLbl.Text = nm:gsub("MouseButton", "MouseButton")
+			else
+				keyLbl.Text = nm
+			end
+			keyLbl.TextColor3 = THEME.Text
+			return
 		else
 			keyLbl.Text = "None"
 			keyLbl.TextColor3 = THEME.SubText
@@ -4290,7 +4310,12 @@ function UI:CreateWindow(config)
 	self:_UpdateRightLayout(false)
 
 	UserInputService.InputBegan:Connect(function(input, gpe)
-		if gpe then return end
+		-- Mouse buttons often arrive as gameProcessed (camera/UI). Allow them.
+		if gpe and not (input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.MouseButton2
+			or input.UserInputType == Enum.UserInputType.MouseButton3) then
+			return
+		end
 		if UserInputService:GetFocusedTextBox() then return end
 		if not self._Alive then return end
 
@@ -4312,10 +4337,13 @@ function UI:CreateWindow(config)
 		if UI._AwaitingBind ~= nil then
 			local pending = UI._AwaitingBind
 			local kc = input.KeyCode
+			local ut = input.UserInputType
 			UI._AwaitingBind = nil
 			if pending and type(pending.Set) == "function" then
 				if kc == Enum.KeyCode.Escape then
 					pcall(pending.Set, nil)
+				elseif ut == Enum.UserInputType.MouseButton1 or ut == Enum.UserInputType.MouseButton2 or ut == Enum.UserInputType.MouseButton3 then
+					pcall(pending.Set, ut)
 				elseif kc and kc ~= Enum.KeyCode.Unknown then
 					pcall(pending.Set, kc)
 				end
@@ -4338,7 +4366,7 @@ function UI:CreateWindow(config)
 			for _, api in pairs(binds) do
 				if api and type(api._KeyCode) == "function" then
 					local kc = api._KeyCode()
-					if kc and input.KeyCode == kc then
+					if kc and ((kc.EnumType == Enum.KeyCode and input.KeyCode == kc) or (kc.EnumType == Enum.UserInputType and input.UserInputType == kc)) then
 						if type(api.Trigger) == "function" then
 							task.spawn(api.Trigger)
 						end
