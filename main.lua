@@ -347,10 +347,10 @@ UI._Open = true
 UI._TabSwitchToken = 0
 
 UI._ProgressiveBuild = false
-UI._BuildYieldSteps = 10
-UI._BuildYieldSeconds = 0.2
-UI._AutoBuildYieldSeconds = true
-UI._TunedBuildYieldSeconds = 0.2
+UI._BuildYieldSteps = 0
+UI._BuildYieldSeconds = 0
+UI._AutoBuildYieldSeconds = false
+UI._TunedBuildYieldSeconds = 0
 
 function UI:_AutoTuneBuildYieldSeconds()
 	-- Auto tune based on current Heartbeat delta time.
@@ -385,25 +385,7 @@ function UI:_AutoTuneBuildYieldSeconds()
 end
 
 function UI:_YieldBuild(steps)
-	if not self._ProgressiveBuild then
-		return
-	end
-	local seconds = tonumber(self._BuildYieldSeconds)
-	if seconds == nil and self._AutoBuildYieldSeconds then
-		seconds = tonumber(self._TunedBuildYieldSeconds)
-		if seconds == nil then
-			seconds = tonumber(self:_AutoTuneBuildYieldSeconds())
-		end
-	end
-	if seconds and seconds > 0 then
-		task.wait(math.clamp(seconds, 0, 2))
-		return
-	end
-	steps = tonumber(steps) or self._BuildYieldSteps or 1
-	steps = math.clamp(steps, 1, 30)
-	for _ = 1, steps do
-		RunService.Heartbeat:Wait()
-	end
+	return
 end
 
 UI._SearchToken = 0
@@ -2884,13 +2866,8 @@ function UI:CreateDropdown(sectionBody, opt)
 		end
 	end
 	self._Controls[persistKey] = api
-	
-	-- Force immediate rebuild and avoid yield if progressive build is disabled
 	rebuild()
-	if self._ProgressiveBuild then
-		self:_YieldBuild()
-	end
-	
+	self:_YieldBuild()
 	return api
 end
 
@@ -3177,14 +3154,9 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	end
 
 	self._Controls[persistKey] = api
-	
-	-- Force immediate rebuild and avoid yield if progressive build is disabled
 	rebuild()
 	refreshValueText()
-	if self._ProgressiveBuild then
-		self:_YieldBuild()
-	end
-	
+	self:_YieldBuild()
 	return api
 end
 
@@ -3402,12 +3374,7 @@ t.Parent = optRow
 		valueLbl.Text = (value ~= "") and value or "Select..."
 		valueLbl.TextColor3 = (value ~= "") and THEME.Text or THEME.SubText
 	end
-	
-	rebuild()
-	if self._ProgressiveBuild then
-		self:_YieldBuild()
-	end
-	
+	self:_YieldBuild()
 	return api
 end
 
