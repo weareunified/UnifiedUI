@@ -346,11 +346,11 @@ UI._Alive = true
 UI._Open = true
 UI._TabSwitchToken = 0
 
-UI._ProgressiveBuild = true
-UI._BuildYieldSteps = 1
-UI._BuildYieldSeconds = nil
+UI._ProgressiveBuild = false
+UI._BuildYieldSteps = 10
+UI._BuildYieldSeconds = 0.2
 UI._AutoBuildYieldSeconds = true
-UI._TunedBuildYieldSeconds = nil
+UI._TunedBuildYieldSeconds = 0.2
 
 function UI:_AutoTuneBuildYieldSeconds()
 	-- Auto tune based on current Heartbeat delta time.
@@ -2884,8 +2884,13 @@ function UI:CreateDropdown(sectionBody, opt)
 		end
 	end
 	self._Controls[persistKey] = api
+	
+	-- Force immediate rebuild and avoid yield if progressive build is disabled
 	rebuild()
-	self:_YieldBuild()
+	if self._ProgressiveBuild then
+		self:_YieldBuild()
+	end
+	
 	return api
 end
 
@@ -3172,9 +3177,14 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	end
 
 	self._Controls[persistKey] = api
+	
+	-- Force immediate rebuild and avoid yield if progressive build is disabled
 	rebuild()
 	refreshValueText()
-	self:_YieldBuild()
+	if self._ProgressiveBuild then
+		self:_YieldBuild()
+	end
+	
 	return api
 end
 
@@ -3392,7 +3402,12 @@ t.Parent = optRow
 		valueLbl.Text = (value ~= "") and value or "Select..."
 		valueLbl.TextColor3 = (value ~= "") and THEME.Text or THEME.SubText
 	end
-	self:_YieldBuild()
+	
+	rebuild()
+	if self._ProgressiveBuild then
+		self:_YieldBuild()
+	end
+	
 	return api
 end
 
