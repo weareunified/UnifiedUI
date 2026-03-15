@@ -2745,6 +2745,26 @@ function UI:CreateDropdown(sectionBody, opt)
 	local value = default
 	local openToken = 0
 
+	local function setOpen(state)
+		openToken += 1
+		local token = openToken
+		opened = state == true
+		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
+		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
+		local contentH = optList.AbsoluteContentSize.Y
+		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
+		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
+		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
+
+		if not opened then
+			task.delay(0.23, function()
+				if token ~= openToken then return end
+				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
+				row.Size = UDim2.new(1, 0, 0, BASE_H)
+			end)
+		end
+	end
+
 	local function rebuild()
 		if not optionsHolder or not optionsHolder.Parent then return end
 		
@@ -2779,7 +2799,7 @@ function UI:CreateDropdown(sectionBody, opt)
 				t.ZIndex = optBtn.ZIndex + 1
 				t.Size = UDim2.new(1, -18, 1, 0)
 				t.Position = UDim2.fromOffset(10, 0)
-t.Parent = optRow
+				t.Parent = optRow
 
 				optBtn.MouseButton1Click:Connect(function()
 					value = item
@@ -2789,9 +2809,7 @@ t.Parent = optRow
 					task.spawn(function()
 						pcall(cb, _StripRichText(value))
 					end)
-					pcall(function()
-						setOpen(false)
-					end)
+					setOpen(false)
 				end)
 			end
 		end
@@ -2801,28 +2819,6 @@ t.Parent = optRow
 			local h = (itemCount > 0) and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
 			optionsHolder.Size = UDim2.new(1, -28, 0, h)
 			row.Size = UDim2.new(1, 0, 0, BASE_H + (h > 0 and (h + OPEN_GAP) or 0))
-		end
-	end
-
-	rebuild()
-
-	local function setOpen(state)
-		openToken += 1
-		local token = openToken
-		opened = state == true
-		Tween(arrow, {Rotation = opened and 0 or 180}, 0.35)
-		Tween(glow, {Transparency = opened and 0.35 or 1}, 0.22)
-		local contentH = optList.AbsoluteContentSize.Y
-		local h = opened and (contentH + optPad.PaddingTop.Offset + optPad.PaddingBottom.Offset + 4) or 0
-		Tween(optionsHolder, {Size = UDim2.new(1, -28, 0, h)}, 0.22)
-		Tween(row, {Size = UDim2.new(1, 0, 0, BASE_H + (opened and (h + OPEN_GAP) or 0))}, 0.22)
-
-		if not opened then
-			task.delay(0.23, function()
-				if token ~= openToken then return end
-				optionsHolder.Size = UDim2.new(1, -28, 0, 0)
-				row.Size = UDim2.new(1, 0, 0, BASE_H)
-			end)
 		end
 	end
 
