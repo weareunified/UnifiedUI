@@ -3810,29 +3810,34 @@ function UI:CreateWindow(config)
 	bgEffect.Name = "BackgroundEffect"
 	bgEffect.BackgroundTransparency = 1
 	bgEffect.Size = UDim2.fromScale(1, 1)
-	bgEffect.ZIndex = 2
+	bgEffect.ZIndex = -10 -- Force to very bottom
 	bgEffect.ClipsDescendants = true
 	bgEffect.Parent = sg
 
 	local function CreateGlowShape(pos, size, color)
 		local g = Instance.new("ImageLabel")
+		g.Name = "GlowShape"
 		g.BackgroundTransparency = 1
 		g.Image = "rbxassetid://6015667320"
 		g.ImageColor3 = color
-		g.ImageTransparency = 0.85
+		g.ImageTransparency = 0.2 -- Much more visible
 		g.Position = pos
 		g.Size = size
-		g.ZIndex = 2
+		g.ZIndex = -10
 		g.Parent = bgEffect
 
 		task.spawn(function()
-			while g.Parent do
+			while g and g.Parent do
 				local targetPos = UDim2.new(
-					pos.X.Scale + math.random(-5, 5)/100, pos.X.Offset + math.random(-20, 20),
-					pos.Y.Scale + math.random(-5, 5)/100, pos.Y.Offset + math.random(-20, 20)
+					pos.X.Scale + math.random(-35, 35)/100, pos.X.Offset + math.random(-150, 150),
+					pos.Y.Scale + math.random(-35, 35)/100, pos.Y.Offset + math.random(-150, 150)
 				)
-				Tween(g, {Position = targetPos, ImageTransparency = 0.7 + math.random(0, 15)/100}, math.random(3, 6))
-				task.wait(math.random(4, 7))
+				local t = Tween(g, {
+					Position = targetPos, 
+					ImageTransparency = 0.15 + math.random(0, 30)/100,
+					Size = UDim2.fromOffset(size.X.Offset + math.random(-80, 80), size.Y.Offset + math.random(-80, 80))
+				}, math.random(10, 20))
+				t.Completed:Wait()
 			end
 		end)
 	end
