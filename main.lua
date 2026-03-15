@@ -2318,7 +2318,7 @@ function UI:CreateTextbox(sectionBody, opt)
 	lbl.Size = UDim2.new(1, -120, 0, 18)
 	lbl.Position = UDim2.fromOffset(14, 8)
 
-	local sideLbl = MakeText(row, _FormatNumber(default), 12, "semibold")
+	local sideLbl = MakeText(row, tostring(default), 12, "semibold")
 	sideLbl.Name = "SideValue"
 	sideLbl.TextColor3 = THEME.Primary
 	sideLbl.TextXAlignment = Enum.TextXAlignment.Right
