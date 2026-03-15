@@ -1090,14 +1090,22 @@ end
 
 function UI:Notify(title, body, duration)
 	if self._Settings and self._Settings.NotificationsEnabled == false then return end
-	if not self._NotifyStack and type(self._NotifyStacks) ~= "table" then return end
-	local dur = duration or 2.6
+	
 	local stack = self._NotifyStack
 	if not stack and type(self._NotifyStacks) == "table" then
 		local key = (self._Settings and self._Settings.NotificationPosition) or "BottomRight"
 		stack = self._NotifyStacks[key] or self._NotifyStacks.BottomRight
 		self._NotifyStack = stack
 	end
+	
+	if not stack then 
+		-- Fallback to finding it if initialized but not assigned
+		if type(self._NotifyStacks) == "table" then
+			stack = self._NotifyStacks.BottomRight
+			self._NotifyStack = stack
+		end
+	end
+	
 	if not stack then return end
 	local posKey = "BottomRight"
 	pcall(function()
@@ -1110,6 +1118,8 @@ function UI:Notify(title, body, duration)
 	card.BackgroundTransparency = 0.08
 	card.BorderSizePixel = 0
 	card.Size = UDim2.fromOffset(320, 78)
+	card.ClipsDescendants = false -- Ensure contents aren't clipped
+	
 	local isRight = tostring(posKey):find("Right") ~= nil
 	local isBottom = tostring(posKey):find("Bottom") ~= nil
 	local yScale = isBottom and 1 or 0
@@ -1117,13 +1127,15 @@ function UI:Notify(title, body, duration)
 	local xOutOff = isRight and 340 or -340
 	local xInOff = isRight and -334 or 14
 	card.Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, 0)
-	card.ZIndex = 200
+	card.ZIndex = 2000 -- Drastically increase ZIndex to ensure it's on top
 	AddCorner(card, 14)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
-	AddShadow(card, 199)
+	AddShadow(card, 1999) -- Shadow just below card
 	AddGradient(card, THEME.Surface, THEME.Panel, 90)
-	card.Parent = stack
+	card.Parent = stack -- Ensure it's parented to the stack!
 
+	local dur = duration or 2.6
+	
 	local glow = Instance.new("UIStroke")
 	glow.Thickness = 2
 	glow.Color = THEME.Primary
@@ -1135,26 +1147,29 @@ function UI:Notify(title, body, duration)
 	inner.BackgroundTransparency = 1
 	inner.Size = UDim2.new(1, -18, 1, -18)
 	inner.Position = UDim2.fromOffset(9, 9)
-	inner.ZIndex = 201
+	inner.ZIndex = 2001
 	inner.Parent = card
 
 	local t1 = MakeText(inner, title or "Notification", 14, "bold")
-	t1.ZIndex = 202
+	t1.ZIndex = 2002
 	t1.Size = UDim2.new(1, -10, 0, 18)
 	t1.Position = UDim2.fromOffset(0, 0)
+	t1.Parent = inner -- Ensure Parent is set!
 
 	local t2 = MakeText(inner, body or "", 12, "")
 	t2.TextColor3 = THEME.SubText
-	t2.ZIndex = 202
+	t2.ZIndex = 2002
 	t2.Size = UDim2.new(1, -10, 1, -24)
 	t2.Position = UDim2.fromOffset(0, 22)
 	t2.TextWrapped = true
 	t2.TextYAlignment = Enum.TextYAlignment.Top
+	t2.Parent = inner -- Ensure Parent is set!
 
 	local close = MakeButtonBase(inner)
-	close.ZIndex = 203
+	close.ZIndex = 2003
 	close.Size = UDim2.fromOffset(22, 22)
 	close.Position = UDim2.new(1, -22, 0, -2)
+	close.Parent = inner -- Ensure Parent is set!
 	local closeBg = Instance.new("Frame")
 	closeBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	closeBg.BackgroundTransparency = 0.92
