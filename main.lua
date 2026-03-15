@@ -348,9 +348,15 @@ UI._TabSwitchToken = 0
 
 UI._ProgressiveBuild = true
 UI._BuildYieldSteps = 1
+UI._BuildYieldSeconds = 0.2
 
 function UI:_YieldBuild(steps)
 	if not self._ProgressiveBuild then
+		return
+	end
+	local seconds = tonumber(self._BuildYieldSeconds)
+	if seconds and seconds > 0 then
+		task.wait(math.clamp(seconds, 0, 2))
 		return
 	end
 	steps = tonumber(steps) or self._BuildYieldSteps or 1
@@ -3692,6 +3698,9 @@ function UI:CreateWindow(config)
 		end
 		if config.BuildYieldSteps ~= nil then
 			self._BuildYieldSteps = tonumber(config.BuildYieldSteps) or self._BuildYieldSteps
+		end
+		if config.BuildYieldSeconds ~= nil then
+			self._BuildYieldSeconds = tonumber(config.BuildYieldSeconds) or self._BuildYieldSeconds
 		end
 	end
 
