@@ -2858,12 +2858,17 @@ function UI:CreateDropdown(sectionBody, opt)
 		if type(v) == "table" then
 			v = ""
 		end
-		v = tostring(v or "")
 		value = v
-		valueLbl.Text = (v ~= "") and v or "Select..."
-		valueLbl.TextColor3 = (v ~= "") and THEME.Text or THEME.SubText
+		valueLbl.Text = tostring(v)
+		valueLbl.TextColor3 = THEME.Text
 		self._UIState[persistKey] = _StripRichText(value)
-		pcall(cb, _StripRichText(value))
+		task.spawn(function()
+			pcall(cb, _StripRichText(value))
+		end)
+	end
+	api.UpdateList = function(newList)
+		list = newList or {}
+		rebuild()
 	end
 	api.Refresh = function(a, b)
 		local newList = b
@@ -2879,6 +2884,8 @@ function UI:CreateDropdown(sectionBody, opt)
 		end
 	end
 	self._Controls[persistKey] = api
+	rebuild()
+	self:_YieldBuild()
 	return api
 end
 
@@ -3165,6 +3172,9 @@ function UI:CreateMultiDropdown(sectionBody, opt)
 	end
 
 	self._Controls[persistKey] = api
+	rebuild()
+	refreshValueText()
+	self:_YieldBuild()
 	return api
 end
 
@@ -3382,6 +3392,7 @@ t.Parent = optRow
 		valueLbl.Text = (value ~= "") and value or "Select..."
 		valueLbl.TextColor3 = (value ~= "") and THEME.Text or THEME.SubText
 	end
+	self:_YieldBuild()
 	return api
 end
 
