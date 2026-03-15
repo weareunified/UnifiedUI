@@ -1091,119 +1091,75 @@ end
 function UI:Notify(title, body, duration)
 	if self._Settings and self._Settings.NotificationsEnabled == false then return end
 	
-	local stack = self._NotifyStack
-	if not stack and type(self._NotifyStacks) == "table" then
-		local key = (self._Settings and self._Settings.NotificationPosition) or "BottomRight"
-		stack = self._NotifyStacks[key] or self._NotifyStacks.BottomRight
-		self._NotifyStack = stack
-	end
-	
-	if not stack then 
-		-- Fallback to finding it if initialized but not assigned
-		if type(self._NotifyStacks) == "table" then
-			stack = self._NotifyStacks.BottomRight
-			self._NotifyStack = stack
-		end
-	end
+	local playerGui = LOCAL_PLAYER and LOCAL_PLAYER:FindFirstChildOfClass("PlayerGui")
+	local stack = self._NotifyStack or (playerGui and (playerGui:FindFirstChild("UnifiedUI") or playerGui:FindFirstChildOfClass("ScreenGui")))
 	
 	if not stack then return end
-	local posKey = "BottomRight"
-	pcall(function()
-		posKey = stack:GetAttribute("UH_NotifyPos") or posKey
-	end)
-
+	
 	local card = Instance.new("Frame")
 	card.Name = "Notification"
-	card.BackgroundColor3 = THEME.Panel
-	card.BackgroundTransparency = 0.08
+	card.BackgroundColor3 = THEME.Panel or Color3.fromRGB(30, 30, 30)
+	card.BackgroundTransparency = 0.1
 	card.BorderSizePixel = 0
-	card.Size = UDim2.fromOffset(320, 78)
-	card.ClipsDescendants = false -- Ensure contents aren't clipped
+	card.Size = UDim2.fromOffset(300, 70)
+	card.Position = UDim2.new(1, -20, 1, -20)
+	card.AnchorPoint = Vector2.new(1, 1)
+	card.ZIndex = 20000
+	card.Visible = true
 	
-	local isRight = tostring(posKey):find("Right") ~= nil
-	local isBottom = tostring(posKey):find("Bottom") ~= nil
-	local yScale = isBottom and 1 or 0
-	local yInOff = isBottom and -8 or 8
-	local xOutOff = isRight and 340 or -340
-	local xInOff = isRight and -334 or 14
-	card.Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, 0)
-	card.ZIndex = 2000 -- Drastically increase ZIndex to ensure it's on top
-	AddCorner(card, 14)
-	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
-	AddShadow(card, 1999) -- Shadow just below card
-	AddGradient(card, THEME.Surface, THEME.Panel, 90)
-	card.Parent = stack -- Ensure it's parented to the stack!
-
-	local dur = duration or 2.6
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 10)
+	c.Parent = card
 	
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 2
-	glow.Color = THEME.Primary
-	glow.Transparency = 1
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = card
+	local s = Instance.new("UIStroke")
+	s.Thickness = 1
+	s.Color = THEME.Primary or Color3.fromRGB(255, 255, 255)
+	s.Transparency = 0.5
+	s.Parent = card
+	
+	local t1 = Instance.new("TextLabel")
+	t1.Name = "Title"
+	t1.BackgroundTransparency = 1
+	t1.Font = Enum.Font.GothamBold
+	t1.TextSize = 14
+	t1.TextColor3 = THEME.Text or Color3.fromRGB(255, 255, 255)
+	t1.TextXAlignment = Enum.TextXAlignment.Left
+	t1.Text = tostring(title or "Notification")
+	t1.Position = UDim2.fromOffset(12, 10)
+	t1.Size = UDim2.new(1, -24, 0, 18)
+	t1.ZIndex = 20001
+	t1.Parent = card
 
-	local inner = Instance.new("Frame")
-	inner.BackgroundTransparency = 1
-	inner.Size = UDim2.new(1, -18, 1, -18)
-	inner.Position = UDim2.fromOffset(9, 9)
-	inner.ZIndex = 2001
-	inner.Parent = card
-
-	local t1 = MakeText(inner, title or "Notification", 14, "bold")
-	t1.ZIndex = 2002
-	t1.Size = UDim2.new(1, -10, 0, 18)
-	t1.Position = UDim2.fromOffset(0, 0)
-	t1.Parent = inner -- Ensure Parent is set!
-
-	local t2 = MakeText(inner, body or "", 12, "")
-	t2.TextColor3 = THEME.SubText
-	t2.ZIndex = 2002
-	t2.Size = UDim2.new(1, -10, 1, -24)
-	t2.Position = UDim2.fromOffset(0, 22)
-	t2.TextWrapped = true
+	local t2 = Instance.new("TextLabel")
+	t2.Name = "Body"
+	t2.BackgroundTransparency = 1
+	t2.Font = Enum.Font.GothamMedium
+	t2.TextSize = 12
+	t2.TextColor3 = THEME.SubText or Color3.fromRGB(200, 200, 200)
+	t2.TextXAlignment = Enum.TextXAlignment.Left
 	t2.TextYAlignment = Enum.TextYAlignment.Top
-	t2.Parent = inner -- Ensure Parent is set!
+	t2.Text = tostring(body or "")
+	t2.TextWrapped = true
+	t2.Position = UDim2.fromOffset(12, 30)
+	t2.Size = UDim2.new(1, -24, 0, 30)
+	t2.ZIndex = 20001
+	t2.Parent = card
 
-	local close = MakeButtonBase(inner)
-	close.ZIndex = 2003
-	close.Size = UDim2.fromOffset(22, 22)
-	close.Position = UDim2.new(1, -22, 0, -2)
-	close.Parent = inner -- Ensure Parent is set!
-	local closeBg = Instance.new("Frame")
-	closeBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	closeBg.BackgroundTransparency = 0.92
-	closeBg.BorderSizePixel = 0
-	closeBg.Size = UDim2.fromScale(1, 1)
-	closeBg.ZIndex = 203
-	AddCorner(closeBg, 8)
-	AddStroke(closeBg, 1, THEME.StrokeSoft, 0.55)
-	closeBg.Parent = close
-	local x = MakeText(closeBg, "×", 16, "bold")
-	x.TextColor3 = THEME.Text
-	x.TextXAlignment = Enum.TextXAlignment.Center
-	x.Size = UDim2.fromScale(1, 1)
-	x.ZIndex = 204
-	BindHoverFX(close, closeBg)
-	BindClickFX(close, closeBg)
-
-	local scale = AddScale(card, 1)
-	scale.Scale = 0.96
-	card.BackgroundTransparency = 1
-	Tween(scale, {Scale = 1}, 0.35)
-	Tween(card, {Position = UDim2.new(isRight and 1 or 0, xInOff, yScale, yInOff), BackgroundTransparency = 0.08}, 0.35)
-
-	local function dismiss()
-		if not card.Parent then return end
-		Tween(scale, {Scale = 0.96}, 0.22)
-		Tween(card, {Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, yInOff), BackgroundTransparency = 1}, 0.28)
-		task.delay(0.32, function()
-			pcall(function() card:Destroy() end)
-		end)
-	end
-
-	close.MouseButton1Click:Connect(dismiss)
-	task.delay(dur, dismiss)
+	card.Parent = stack
+	
+	task.delay(duration or 3, function()
+		if card and card.Parent then
+			pcall(function()
+				local tw = TweenService:Create(card, TweenInfo.new(0.5), {BackgroundTransparency = 1})
+				TweenService:Create(t1, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+				TweenService:Create(t2, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+				tw:Play()
+				tw.Completed:Connect(function()
+					card:Destroy()
+				end)
+			end)
+		end
+	end)
 end
 
 function UI:SetNotificationPosition(pos)
