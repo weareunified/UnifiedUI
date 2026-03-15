@@ -346,6 +346,20 @@ UI._Alive = true
 UI._Open = true
 UI._TabSwitchToken = 0
 
+UI._ProgressiveBuild = true
+UI._BuildYieldSteps = 1
+
+function UI:_YieldBuild(steps)
+	if not self._ProgressiveBuild then
+		return
+	end
+	steps = tonumber(steps) or self._BuildYieldSteps or 1
+	steps = math.clamp(steps, 1, 30)
+	for _ = 1, steps do
+		RunService.Heartbeat:Wait()
+	end
+end
+
 UI._SearchToken = 0
 UI._Settings = UI._Settings or {}
 
@@ -1434,6 +1448,8 @@ function UI:CreateTab(opt)
 		tabBtn.Surface = surface
 	end
 
+	self:_YieldBuild()
+
 	return tabBtn
 end
 
@@ -1454,6 +1470,7 @@ function UI:CreateSection(page, title)
 	AddGradient(section, THEME.Surface, THEME.Panel, 90)
 	AddShadow(section, 9)
 	section.Parent = page
+	self:_YieldBuild()
 
 	local header = Instance.new("Frame")
 	header.Name = "Header"
@@ -1494,6 +1511,7 @@ function UI:CreateSection(page, title)
 	local SectionAPI = {}
 	SectionAPI.Frame = section
 	SectionAPI.Body = body
+	self:_YieldBuild()
 	return SectionAPI
 end
 
@@ -1547,6 +1565,7 @@ function UI:CreateLockedSection(page, title)
 	api.SetLocked = function(_, locked)
 		overlay.Visible = locked ~= false
 	end
+	self:_YieldBuild()
 	return api
 end
 
@@ -1711,6 +1730,7 @@ function UI:CreateToggle(sectionBody, opt)
 		pcall(cb, value)
 	end
 	self._Controls[persistKey] = api
+	self:_YieldBuild()
 	return api
 end
 
@@ -2217,6 +2237,7 @@ function UI:CreateButton(sectionBody, opt)
 			row:SetAttribute("UH_SearchText", t)
 		end)
 	end
+	self:_YieldBuild()
 	return api
 end
 
@@ -2380,6 +2401,7 @@ function UI:CreateTextbox(sectionBody, opt)
 		pcall(cb, box.Text, false)
 	end
 	self._Controls[persistKey] = api
+	self:_YieldBuild()
 	return api
 end
 
@@ -2573,6 +2595,7 @@ function UI:CreateSlider(sectionBody, opt)
 		end)
 	end
 	self._Controls[persistKey] = api
+	self:_YieldBuild()
 	return api
 end
 
@@ -3503,11 +3526,13 @@ function UI:CreateTab(tabInfo)
 
 	TabAPI._SetActiveVisual = setActiveVisual
 
+	self:_YieldBuild()
+
 	b.MouseEnter:Connect(function()
 		if TabAPI._Active then
 			Tween(surface, {BackgroundTransparency = 0.75}, 0.18)
 		else
-			Tween(surface, {BackgroundTransparency = 0.70}, 0.18)
+			Tween(surface, {BackgroundTransparency = 0.90}, 0.18)
 		end
 	end)
 	b.MouseLeave:Connect(function()
@@ -3519,6 +3544,7 @@ function UI:CreateTab(tabInfo)
 	end)
 
 	Tabs[name] = TabAPI
+	self:_YieldBuild()
 	return TabAPI
 end
 
@@ -3660,6 +3686,15 @@ function UI:CreateWindow(config)
 		windowTitle = config.Title
 	end
 
+	if type(config) == "table" then
+		if config.ProgressiveBuild ~= nil then
+			self._ProgressiveBuild = (config.ProgressiveBuild == true)
+		end
+		if config.BuildYieldSteps ~= nil then
+			self._BuildYieldSteps = tonumber(config.BuildYieldSteps) or self._BuildYieldSteps
+		end
+	end
+
 	local sg = Instance.new("ScreenGui")
 	sg.Name = "UnifiedHub"
 	sg.ResetOnSpawn = false
@@ -3668,6 +3703,7 @@ function UI:CreateWindow(config)
 
 	pcall(ProtectGui, sg)
 	sg.Parent = GetUIParent()
+	self:_YieldBuild()
 
 	local shade = Instance.new("Frame")
 	shade.Name = "Shade"
@@ -3688,6 +3724,7 @@ function UI:CreateWindow(config)
 	container.GroupTransparency = 0
 	container.Visible = true
 	container.Parent = sg
+	self:_YieldBuild()
 
 	local maximizeBtn = nil
 	local isMobile = IS_MOBILE
@@ -3725,6 +3762,7 @@ function UI:CreateWindow(config)
 	AddGradient(main, THEME.Panel2, THEME.Panel, 90)
 	AddShadow(main, 9)
 	main.Parent = container
+	self:_YieldBuild()
 
 	local mainScale = Instance.new("UIScale")
 	mainScale.Scale = isMobile and 0.80 or 1
@@ -3882,6 +3920,7 @@ function UI:CreateWindow(config)
 	AddCorner(sidebar, 12)
 	AddGradient(sidebar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 90)
 	sidebar.Parent = body
+	self:_YieldBuild()
 
 	local sideDivider = Instance.new("Frame")
 	sideDivider.Name = "SideDivider"
@@ -3937,6 +3976,7 @@ function UI:CreateWindow(config)
 	right.Position = UDim2.fromOffset(181, 0)
 	right.ZIndex = 12
 	right.Parent = body
+	self:_YieldBuild()
 
 	local rightSurface = Instance.new("Frame")
 	rightSurface.Name = "Surface"
@@ -4029,6 +4069,7 @@ function UI:CreateWindow(config)
 	pages.Position = UDim2.fromOffset(6, 60)
 	pages.ZIndex = 13
 	pages.Parent = rightSurface
+	self:_YieldBuild()
 
 	local function makeNotifyStack(name, anchorPoint, position, hAlign, vAlign, posKey)
 		local st = Instance.new("Frame")
