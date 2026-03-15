@@ -1097,10 +1097,10 @@ function UI:Notify(title, body, duration)
 	local card = Instance.new("Frame")
 	card.Name = "Notification"
 	card.BackgroundColor3 = THEME.Panel
-	card.BackgroundTransparency = 0.08
+	card.BackgroundTransparency = 1 -- Start transparent for tween
 	card.BorderSizePixel = 0
 	card.Size = UDim2.fromOffset(320, 78)
-	card.ClipsDescendants = false -- Ensure contents aren't clipped
+	card.ClipsDescendants = true -- Revert to original clipping
 	
 	local isRight = tostring(posKey):find("Right") ~= nil
 	local isBottom = tostring(posKey):find("Bottom") ~= nil
@@ -1109,12 +1109,12 @@ function UI:Notify(title, body, duration)
 	local xOutOff = isRight and 340 or -340
 	local xInOff = isRight and -334 or 14
 	card.Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, 0)
-	card.ZIndex = 2000 -- Drastically increase ZIndex to ensure it's on top
+	card.ZIndex = 2000
 	AddCorner(card, 14)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
-	AddShadow(card, 1999) -- Shadow just below card
+	AddShadow(card, 1999)
 	AddGradient(card, THEME.Surface, THEME.Panel, 90)
-	card.Parent = stack -- Ensure it's parented to the stack!
+	card.Parent = stack
 
 	local dur = duration or 2.6
 	
@@ -1136,7 +1136,7 @@ function UI:Notify(title, body, duration)
 	t1.ZIndex = 2002
 	t1.Size = UDim2.new(1, -10, 0, 18)
 	t1.Position = UDim2.fromOffset(0, 0)
-	t1.Parent = inner -- Ensure Parent is set!
+	t1.Parent = inner
 
 	local t2 = MakeText(inner, body or "", 12, "")
 	t2.TextColor3 = THEME.SubText
@@ -1145,13 +1145,13 @@ function UI:Notify(title, body, duration)
 	t2.Position = UDim2.fromOffset(0, 22)
 	t2.TextWrapped = true
 	t2.TextYAlignment = Enum.TextYAlignment.Top
-	t2.Parent = inner -- Ensure Parent is set!
+	t2.Parent = inner
 
 	local close = MakeButtonBase(inner)
 	close.ZIndex = 2003
 	close.Size = UDim2.fromOffset(22, 22)
 	close.Position = UDim2.new(1, -22, 0, -2)
-	close.Parent = inner -- Ensure Parent is set!
+	close.Parent = inner
 	local closeBg = Instance.new("Frame")
 	closeBg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	closeBg.BackgroundTransparency = 0.92
