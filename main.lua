@@ -3788,6 +3788,12 @@ function UI:Unload()
 	end)
 end
 
+function UI:Close()
+	pcall(function()
+		self:Unload()
+	end)
+end
+
 function UI:CreateWindow(config)
 	local windowTitle = "Unified.wtf | UI | dsc.gg/unifiedhub"
 	if type(config) == "table" and type(config.Title) == "string" then
