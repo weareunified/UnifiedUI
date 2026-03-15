@@ -2789,7 +2789,9 @@ t.Parent = optRow
 					task.spawn(function()
 						pcall(cb, _StripRichText(value))
 					end)
-					setOpen(false)
+					pcall(function()
+						setOpen(false)
+					end)
 				end)
 			end
 		end
