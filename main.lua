@@ -278,6 +278,12 @@ local function SetVisibleRecursive(gui, visible)
 	end
 end
 
+function UI:Close()
+	pcall(function()
+		self:Unload()
+	end)
+end
+
 local function Ripple(parent, x, y, color)
 	local r = Instance.new("Frame")
 	r.Name = "Ripple"
@@ -3986,7 +3992,7 @@ function UI:CreateWindow(config)
 	MakeDraggable(top, main)
 
 	minimizeBtn.MouseButton1Click:Connect(function()
-		self:SetOpen(false)
+		self:Close()
 	end)
 
 	closeBtn.MouseButton1Click:Connect(function()
@@ -4359,7 +4365,7 @@ function UI:CreateWindow(config)
 		end
 
 		if input.KeyCode == (self._Settings and self._Settings.MinimizeKeyCode) then
-			self:SetOpen(not self._Open)
+			self:Close()
 			return
 		end
 
