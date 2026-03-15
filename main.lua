@@ -20,54 +20,54 @@ local LOCAL_PLAYER = Players.LocalPlayer
 local EASE_STYLE = Enum.EasingStyle.Quint
 local EASE_DIR = Enum.EasingDirection.Out
 
-local THEME = {
+	local THEME = {
 	Primary = Color3.fromRGB(139, 92, 246),
-	BG = Color3.fromRGB(26, 26, 32),
-	Panel = Color3.fromRGB(34, 34, 42),
-	Panel2 = Color3.fromRGB(40, 40, 50),
-	Surface = Color3.fromRGB(30, 26, 36),
-	Text = Color3.fromRGB(235, 235, 245),
-	SubText = Color3.fromRGB(170, 170, 190),
-	Stroke = Color3.fromRGB(90, 90, 110),
-	StrokeSoft = Color3.fromRGB(78, 78, 96),
+	BG = Color3.fromRGB(13, 13, 18),
+	Panel = Color3.fromRGB(20, 20, 28),
+	Panel2 = Color3.fromRGB(26, 26, 36),
+	Surface = Color3.fromRGB(16, 16, 24),
+	Text = Color3.fromRGB(240, 240, 255),
+	SubText = Color3.fromRGB(160, 160, 180),
+	Stroke = Color3.fromRGB(40, 40, 55),
+	StrokeSoft = Color3.fromRGB(32, 32, 42),
 	Shadow = Color3.fromRGB(0, 0, 0),
 }
 
 local THEME_PRESETS = {
 	Default = {
 		Primary = Color3.fromRGB(139, 92, 246),
-		BG = Color3.fromRGB(26, 26, 32),
-		Panel = Color3.fromRGB(34, 34, 42),
-		Panel2 = Color3.fromRGB(40, 40, 50),
-		Surface = Color3.fromRGB(30, 26, 36),
-		Text = Color3.fromRGB(235, 235, 245),
-		SubText = Color3.fromRGB(170, 170, 190),
-		Stroke = Color3.fromRGB(90, 90, 110),
-		StrokeSoft = Color3.fromRGB(78, 78, 96),
+		BG = Color3.fromRGB(13, 13, 18),
+		Panel = Color3.fromRGB(20, 20, 28),
+		Panel2 = Color3.fromRGB(26, 26, 36),
+		Surface = Color3.fromRGB(16, 16, 24),
+		Text = Color3.fromRGB(240, 240, 255),
+		SubText = Color3.fromRGB(160, 160, 180),
+		Stroke = Color3.fromRGB(40, 40, 55),
+		StrokeSoft = Color3.fromRGB(32, 32, 42),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Special = {
 		Primary = Color3.fromRGB(255, 90, 205),
-		BG = Color3.fromRGB(10, 12, 18),
-		Panel = Color3.fromRGB(18, 20, 30),
-		Panel2 = Color3.fromRGB(26, 28, 42),
-		Surface = Color3.fromRGB(14, 16, 26),
-		Text = Color3.fromRGB(246, 248, 255),
-		SubText = Color3.fromRGB(190, 205, 230),
-		Stroke = Color3.fromRGB(120, 120, 150),
-		StrokeSoft = Color3.fromRGB(85, 90, 120),
+		BG = Color3.fromRGB(10, 10, 15),
+		Panel = Color3.fromRGB(18, 18, 26),
+		Panel2 = Color3.fromRGB(24, 24, 34),
+		Surface = Color3.fromRGB(14, 14, 22),
+		Text = Color3.fromRGB(255, 255, 255),
+		SubText = Color3.fromRGB(180, 180, 210),
+		Stroke = Color3.fromRGB(45, 45, 65),
+		StrokeSoft = Color3.fromRGB(35, 35, 50),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Dark = {
 		Primary = Color3.fromRGB(139, 92, 246),
-		BG = Color3.fromRGB(20, 20, 24),
-		Panel = Color3.fromRGB(28, 28, 34),
-		Panel2 = Color3.fromRGB(34, 34, 42),
-		Surface = Color3.fromRGB(24, 20, 28),
+		BG = Color3.fromRGB(8, 8, 12),
+		Panel = Color3.fromRGB(14, 14, 20),
+		Panel2 = Color3.fromRGB(20, 20, 28),
+		Surface = Color3.fromRGB(12, 12, 18),
 		Text = Color3.fromRGB(235, 235, 245),
-		SubText = Color3.fromRGB(170, 170, 190),
-		Stroke = Color3.fromRGB(90, 90, 110),
-		StrokeSoft = Color3.fromRGB(78, 78, 96),
+		SubText = Color3.fromRGB(150, 150, 170),
+		Stroke = Color3.fromRGB(35, 35, 50),
+		StrokeSoft = Color3.fromRGB(28, 28, 38),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Light = {
@@ -82,55 +82,61 @@ local THEME_PRESETS = {
 		StrokeSoft = Color3.fromRGB(200, 200, 212),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
-	Crimson = {
-		Primary = Color3.fromRGB(175, 25, 55),
-		BG = Color3.fromRGB(20, 12, 14),
-		Panel = Color3.fromRGB(32, 16, 18),
-		Panel2 = Color3.fromRGB(48, 20, 24),
-		Surface = Color3.fromRGB(26, 14, 16),
-		Text = Color3.fromRGB(242, 238, 240),
-		SubText = Color3.fromRGB(200, 185, 190),
-		Stroke = Color3.fromRGB(120, 85, 95),
-		StrokeSoft = Color3.fromRGB(100, 70, 78),
-		Shadow = Color3.fromRGB(0, 0, 0),
-	},
 	Ocean = {
 		Primary = Color3.fromRGB(35, 160, 255),
-		BG = Color3.fromRGB(18, 22, 28),
-		Panel = Color3.fromRGB(26, 32, 40),
-		Panel2 = Color3.fromRGB(30, 40, 52),
-		Surface = Color3.fromRGB(22, 28, 36),
-		Text = Color3.fromRGB(235, 245, 255),
-		SubText = Color3.fromRGB(165, 190, 205),
-		Stroke = Color3.fromRGB(90, 115, 130),
-		StrokeSoft = Color3.fromRGB(70, 92, 110),
+		BG = Color3.fromRGB(10, 14, 20),
+		Panel = Color3.fromRGB(16, 20, 28),
+		Panel2 = Color3.fromRGB(22, 26, 36),
+		Surface = Color3.fromRGB(14, 18, 24),
+		Text = Color3.fromRGB(240, 245, 255),
+		SubText = Color3.fromRGB(160, 175, 200),
+		Stroke = Color3.fromRGB(35, 45, 60),
+		StrokeSoft = Color3.fromRGB(28, 35, 50),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Emerald = {
-		Primary = Color3.fromRGB(35, 220, 150),
-		BG = Color3.fromRGB(18, 24, 22),
-		Panel = Color3.fromRGB(26, 34, 32),
-		Panel2 = Color3.fromRGB(30, 44, 38),
-		Surface = Color3.fromRGB(22, 30, 28),
-		Text = Color3.fromRGB(238, 248, 244),
-		SubText = Color3.fromRGB(170, 200, 190),
-		Stroke = Color3.fromRGB(92, 120, 112),
-		StrokeSoft = Color3.fromRGB(74, 96, 90),
+		Primary = Color3.fromRGB(16, 185, 129),
+		BG = Color3.fromRGB(8, 12, 10),
+		Panel = Color3.fromRGB(14, 18, 16),
+		Panel2 = Color3.fromRGB(20, 24, 22),
+		Surface = Color3.fromRGB(12, 16, 14),
+		Text = Color3.fromRGB(240, 255, 245),
+		SubText = Color3.fromRGB(160, 190, 170),
+		Stroke = Color3.fromRGB(35, 50, 40),
+		StrokeSoft = Color3.fromRGB(28, 40, 32),
+		Shadow = Color3.fromRGB(0, 0, 0),
+	},
+	Crimson = {
+		Primary = Color3.fromRGB(239, 68, 68),
+		BG = Color3.fromRGB(12, 8, 8),
+		Panel = Color3.fromRGB(20, 14, 14),
+		Panel2 = Color3.fromRGB(26, 20, 20),
+		Surface = Color3.fromRGB(16, 12, 12),
+		Text = Color3.fromRGB(255, 240, 240),
+		SubText = Color3.fromRGB(190, 160, 160),
+		Stroke = Color3.fromRGB(50, 35, 35),
+		StrokeSoft = Color3.fromRGB(40, 28, 28),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Sunset = {
-		Primary = Color3.fromRGB(255, 120, 55),
-		BG = Color3.fromRGB(24, 18, 20),
-		Panel = Color3.fromRGB(36, 24, 24),
-		Panel2 = Color3.fromRGB(48, 30, 26),
-		Surface = Color3.fromRGB(30, 20, 20),
-		Text = Color3.fromRGB(248, 240, 235),
-		SubText = Color3.fromRGB(210, 190, 180),
-		Stroke = Color3.fromRGB(125, 100, 95),
-		StrokeSoft = Color3.fromRGB(105, 85, 80),
+		Primary = Color3.fromRGB(249, 115, 22),
+		BG = Color3.fromRGB(12, 10, 8),
+		Panel = Color3.fromRGB(20, 16, 14),
+		Panel2 = Color3.fromRGB(26, 22, 20),
+		Surface = Color3.fromRGB(16, 14, 12),
+		Text = Color3.fromRGB(255, 245, 240),
+		SubText = Color3.fromRGB(190, 170, 160),
+		Stroke = Color3.fromRGB(50, 40, 35),
+		StrokeSoft = Color3.fromRGB(40, 32, 28),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 }
+
+	local THEME = THEME_PRESETS.Default
+
+	function UI:GetTheme()
+		return THEME
+	end
 
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end)
 
@@ -190,7 +196,7 @@ local function AddCorner(inst, r)
 	local c = Instance.new("UICorner")
 	local rr = r or 10
 	if rr < 900 then
-		rr = math.max(2, math.floor((rr * 0.6) + 0.5))
+		rr = math.max(6, math.floor((rr * 1.2) + 0.5))
 	end
 	c.CornerRadius = UDim.new(0, rr)
 	c.Parent = inst
@@ -198,11 +204,28 @@ local function AddCorner(inst, r)
 end
 
 local function AddStroke(inst, thickness, color, transparency)
-	return nil
+	local s = Instance.new("UIStroke")
+	s.Thickness = thickness or 1.2
+	s.Color = color or THEME.Stroke
+	s.Transparency = transparency or 0.75
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.Parent = inst
+	return s
 end
 
 local function AddShadow(inst, zindex)
-	return nil
+	local s = Instance.new("ImageLabel")
+	s.Name = "Shadow"
+	s.BackgroundTransparency = 1
+	s.Image = "rbxassetid://6014261993"
+	s.ImageColor3 = Color3.new(0, 0, 0)
+	s.ImageTransparency = 0.6
+	s.Position = UDim2.new(0.5, 0, 0.5, 0)
+	s.AnchorPoint = Vector2.new(0.5, 0.5)
+	s.Size = UDim2.new(1, 30, 1, 30)
+	s.ZIndex = (zindex or inst.ZIndex) - 1
+	s.Parent = inst
+	return s
 end
 
 local function AddGradient(inst, c1, c2, rot)
@@ -1554,6 +1577,11 @@ function UI:CreateSection(page, title)
 	local SectionAPI = {}
 	SectionAPI.Frame = section
 	SectionAPI.Body = body
+	
+	function SectionAPI:SetTitle(title)
+		headerLbl.Text = tostring(title)
+	end
+	
 	self:_YieldBuild()
 	return SectionAPI
 end
