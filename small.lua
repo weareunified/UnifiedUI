@@ -24,6 +24,25 @@ UI._Settings = {
 	MinimizeKeyCode = Enum.KeyCode.RightControl,
 }
 
+function UI:SetOpen(state)
+	local open = not not state
+	self._Open = open
+	pcall(function()
+		if self.ScreenGui then
+			self.ScreenGui.Enabled = open
+		end
+	end)
+	pcall(function()
+		if self.Main then
+			self.Main.Visible = open
+		end
+	end)
+end
+
+function UI:GetOpen()
+	return not not self._Open
+end
+
 -- // CORE UI SETUP
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "UnifiedHub_Final"
@@ -71,6 +90,7 @@ Main.BackgroundColor3 = THEME.Background
 Main.BackgroundTransparency = 0.08
 Main.BorderSizePixel = 0
 Main.Parent = ScreenGui
+UI.Main = Main
 AddCorner(Main, 12)
 
 AddStroke(Main, 1, THEME.StrokeSoft, 0.35)
