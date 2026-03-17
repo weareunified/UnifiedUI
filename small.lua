@@ -105,8 +105,23 @@ ContainerHolder.BackgroundTransparency = 1
 ContainerHolder.Parent = Main
 
 local function ToggleMinimize()
-	local target = (Main.Size.Y.Offset > 60) and UDim2.fromOffset(MAIN_W, 50) or UDim2.fromOffset(MAIN_W, 550)
-	TweenService:Create(Main, TweenInfo.new(0.4), {Size = target}):Play()
+	local isMinimizing = Main.Size.Y.Offset > 60
+	local target = isMinimizing and UDim2.fromOffset(MAIN_W, 50) or UDim2.fromOffset(MAIN_W, 550)
+	
+	TweenService:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = target}):Play()
+	
+	-- Fix: Ensure internal elements are hidden when minimized
+	TabBar.Visible = not isMinimizing
+	ContainerHolder.Visible = not isMinimizing
+	
+	-- Fix: Handle dropdown list visibility if open during minimize
+	if isMinimizing then
+		for _, v in pairs(ScreenGui:GetChildren()) do
+			if v.Name == "DropdownOverlay" or (v:IsA("Frame") and v.ZIndex == 300) then
+				v.Visible = false
+			end
+		end
+	end
 end
 
 -- // TOP BAR (DRAGGABLE)
