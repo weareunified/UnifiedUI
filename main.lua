@@ -194,7 +194,11 @@ end
 
 local function AddCorner(inst, r)
 	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 8)
+	local rr = r or 10
+	if rr < 900 then
+		rr = math.max(6, math.floor((rr * 1.2) + 0.5))
+	end
+	c.CornerRadius = UDim.new(0, rr)
 	c.Parent = inst
 	return c
 end
@@ -210,7 +214,18 @@ local function AddStroke(inst, thickness, color, transparency)
 end
 
 local function AddShadow(inst, zindex)
-	-- No shadow
+	local s = Instance.new("ImageLabel")
+	s.Name = "Shadow"
+	s.BackgroundTransparency = 1
+	s.Image = "rbxassetid://6014261993"
+	s.ImageColor3 = Color3.new(0, 0, 0)
+	s.ImageTransparency = 0.6
+	s.Position = UDim2.new(0.5, 0, 0.5, 0)
+	s.AnchorPoint = Vector2.new(0.5, 0.5)
+	s.Size = UDim2.new(1, 30, 1, 30)
+	s.ZIndex = (zindex or inst.ZIndex) - 1
+	s.Parent = inst
+	return s
 end
 
 local function AddGradient(inst, c1, c2, rot)
@@ -1133,8 +1148,9 @@ function UI:Notify(title, body, duration)
 	local xInOff = isRight and -334 or 14
 	card.Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, 0)
 	card.ZIndex = 2000
-	AddCorner(card, 0)
+	AddCorner(card, 14)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
+	AddShadow(card, 1999)
 	AddGradient(card, THEME.Surface, THEME.Panel, 90)
 	card.Parent = stack
 
@@ -3418,9 +3434,9 @@ function UI:CreateTab(tabInfo)
 		tabButton:SetAttribute("UH_TabName", tostring(name))
 	end)
 	if IS_MOBILE then
-		tabButton.Size = UDim2.new(1, -8, 0, 44)
+		tabButton.Size = UDim2.new(1, -12, 0, 44)
 	else
-		tabButton.Size = UDim2.new(1, -8, 0, 36)
+		tabButton.Size = UDim2.new(1, -12, 0, 36)
 	end
 	tabButton.ZIndex = 30
 	tabButton.Parent = self._TabsHolder
@@ -3836,7 +3852,15 @@ function UI:CreateWindow(config)
 		end)
 	end
 
+	CreateGlowShape(UDim2.new(0.1, 0, 0.2, 0), UDim2.fromOffset(400, 400), THEME.Primary)
+	CreateGlowShape(UDim2.new(0.8, 0, 0.7, 0), UDim2.fromOffset(500, 500), THEME.Primary)
+	CreateGlowShape(UDim2.new(0.4, 0, 0.5, 0), UDim2.fromOffset(300, 300), THEME.Panel2)
+
 	local function updateBackgroundGlow()
+		bgEffect:ClearAllChildren()
+		CreateGlowShape(UDim2.new(0.1, 0, 0.2, 0), UDim2.fromOffset(400, 400), THEME.Primary)
+		CreateGlowShape(UDim2.new(0.8, 0, 0.7, 0), UDim2.fromOffset(500, 500), THEME.Primary)
+		CreateGlowShape(UDim2.new(0.4, 0, 0.5, 0), UDim2.fromOffset(300, 300), THEME.Panel2)
 	end
 
 	local container = Instance.new("CanvasGroup")
@@ -3882,13 +3906,10 @@ function UI:CreateWindow(config)
 	main.Position = isMobile and UDim2.new(0.5, -310, 0.5, -210) or UDim2.new(0.5, -400, 0.5, -265)
 	main.ZIndex = 10
 	main.Visible = true
-	AddCorner(main, 8)
+	AddCorner(main, 12)
 	AddGradient(main, THEME.Panel2, THEME.Panel, 90)
+	AddShadow(main, 9)
 	main.Parent = container
-	
-	local mainCorner = Instance.new("UICorner")
-	mainCorner.CornerRadius = UDim.new(0, 8)
-	mainCorner.Parent = main
 	self:_YieldBuild()
 
 	local mainScale = Instance.new("UIScale")
@@ -4046,6 +4067,7 @@ function UI:CreateWindow(config)
 	tabBar.Position = UDim2.fromOffset(0, 0)
 	tabBar.ZIndex = 12
 	tabBar.ClipsDescendants = true
+	AddCorner(tabBar, 12)
 	AddGradient(tabBar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 90)
 	tabBar.Parent = body
 	self:_YieldBuild()
@@ -4105,8 +4127,10 @@ function UI:CreateWindow(config)
 	rightSurface.BorderSizePixel = 0
 	rightSurface.Size = UDim2.fromScale(1, 1)
 	rightSurface.ZIndex = 12
+	AddCorner(rightSurface, 12)
 	AddStroke(rightSurface, 1, THEME.StrokeSoft, 0.45)
 	AddGradient(rightSurface, THEME.Surface, THEME.Panel, 90)
+	AddShadow(rightSurface, 11)
 	rightSurface.Parent = right
 
 	local rightHeader = Instance.new("Frame")
@@ -4254,7 +4278,8 @@ function UI:CreateWindow(config)
 	end
 
 	function self:_UpdateRightLayout(anim)
-		local props = {Position = UDim2.fromOffset(168, 0), Size = UDim2.new(1, -168, 1, 0)}
+		local w = 180
+		local props = {Position = UDim2.fromOffset(w + 1, 0), Size = UDim2.new(1, -(w + 1), 1, 0)}
 		if anim then
 			Tween(right, props, 0.45)
 		else
