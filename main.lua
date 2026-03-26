@@ -3882,6 +3882,7 @@ function UI:CreateWindow(config)
 	main.Position = isMobile and UDim2.new(0.5, -310, 0.5, -210) or UDim2.new(0.5, -400, 0.5, -265)
 	main.ZIndex = 10
 	main.Visible = true
+	AddCorner(main, 6)
 	AddGradient(main, THEME.Panel2, THEME.Panel, 90)
 	main.Parent = container
 	self:_YieldBuild()
