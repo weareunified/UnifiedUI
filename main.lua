@@ -194,7 +194,11 @@ end
 
 local function AddCorner(inst, r)
 	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 0)
+	local rr = r or 10
+	if rr < 900 then
+		rr = math.max(6, math.floor((rr * 1.2) + 0.5))
+	end
+	c.CornerRadius = UDim.new(0, rr)
 	c.Parent = inst
 	return c
 end
@@ -3898,8 +3902,8 @@ function UI:CreateWindow(config)
 	main.BackgroundColor3 = THEME.Panel
 	main.BackgroundTransparency = 0.10
 	main.BorderSizePixel = 0
-	main.Size = isMobile and UDim2.fromOffset(520, 680) or UDim2.fromOffset(650, 750)
-	main.Position = isMobile and UDim2.new(0.5, -260, 0.5, -340) or UDim2.new(0.5, -325, 0.5, -375)
+	main.Size = isMobile and UDim2.fromOffset(620, 420) or UDim2.fromOffset(800, 530)
+	main.Position = isMobile and UDim2.new(0.5, -310, 0.5, -210) or UDim2.new(0.5, -400, 0.5, -265)
 	main.ZIndex = 10
 	main.Visible = true
 	AddCorner(main, 12)
