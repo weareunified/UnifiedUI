@@ -25,29 +25,29 @@ local EASE_STYLE = Enum.EasingStyle.Quint
 local EASE_DIR = Enum.EasingDirection.Out
 
 local THEME = {
-	Primary = Color3.fromRGB(157, 78, 221),
-	BG = Color3.fromRGB(10, 10, 14),
-	Panel = Color3.fromRGB(16, 16, 22),
-	Panel2 = Color3.fromRGB(22, 22, 30),
-	Surface = Color3.fromRGB(12, 12, 18),
-	Text = Color3.fromRGB(245, 245, 255),
-	SubText = Color3.fromRGB(150, 150, 170),
-	Stroke = Color3.fromRGB(45, 45, 60),
-	StrokeSoft = Color3.fromRGB(35, 35, 48),
+	Primary = Color3.fromRGB(139, 92, 246),
+	BG = Color3.fromRGB(13, 13, 18),
+	Panel = Color3.fromRGB(20, 20, 28),
+	Panel2 = Color3.fromRGB(26, 26, 36),
+	Surface = Color3.fromRGB(16, 16, 24),
+	Text = Color3.fromRGB(240, 240, 255),
+	SubText = Color3.fromRGB(160, 160, 180),
+	Stroke = Color3.fromRGB(40, 40, 55),
+	StrokeSoft = Color3.fromRGB(32, 32, 42),
 	Shadow = Color3.fromRGB(0, 0, 0),
 }
 
 local THEME_PRESETS = {
 	Default = {
-		Primary = Color3.fromRGB(157, 78, 221),
-		BG = Color3.fromRGB(10, 10, 14),
-		Panel = Color3.fromRGB(16, 16, 22),
-		Panel2 = Color3.fromRGB(22, 22, 30),
-		Surface = Color3.fromRGB(12, 12, 18),
-		Text = Color3.fromRGB(245, 245, 255),
-		SubText = Color3.fromRGB(150, 150, 170),
-		Stroke = Color3.fromRGB(45, 45, 60),
-		StrokeSoft = Color3.fromRGB(35, 35, 48),
+		Primary = Color3.fromRGB(139, 92, 246),
+		BG = Color3.fromRGB(13, 13, 18),
+		Panel = Color3.fromRGB(20, 20, 28),
+		Panel2 = Color3.fromRGB(26, 26, 36),
+		Surface = Color3.fromRGB(16, 16, 24),
+		Text = Color3.fromRGB(240, 240, 255),
+		SubText = Color3.fromRGB(160, 160, 180),
+		Stroke = Color3.fromRGB(40, 40, 55),
+		StrokeSoft = Color3.fromRGB(32, 32, 42),
 		Shadow = Color3.fromRGB(0, 0, 0),
 	},
 	Special = {
@@ -1548,7 +1548,10 @@ function UI:CreateSection(page, title)
 		section:SetAttribute("UH_SearchText", tostring(title or "Section"))
 	end)
 	AddCorner(section, 12)
-	AddGradient(section, THEME.Surface, THEME.Panel, 90)
+	-- Darker purple gradient for sections
+	local darkerSurface = Color3.fromRGB(25, 20, 30)
+	local darkerPanel = Color3.fromRGB(30, 28, 38)
+	AddGradient(section, darkerSurface, darkerPanel, 90)
 	AddShadow(section, 9)
 	section.Parent = page
 	self:_YieldBuild()
