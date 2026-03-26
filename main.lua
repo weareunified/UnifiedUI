@@ -3902,8 +3902,8 @@ function UI:CreateWindow(config)
 	main.BackgroundColor3 = THEME.Panel
 	main.BackgroundTransparency = 0.10
 	main.BorderSizePixel = 0
-	main.Size = isMobile and UDim2.fromOffset(420, 620) or UDim2.fromOffset(530, 800)
-	main.Position = isMobile and UDim2.new(0.5, -210, 0.5, -310) or UDim2.new(0.5, -265, 0.5, -400)
+	main.Size = isMobile and UDim2.fromOffset(480, 580) or UDim2.fromOffset(620, 720)
+	main.Position = isMobile and UDim2.new(0.5, -240, 0.5, -290) or UDim2.new(0.5, -310, 0.5, -360)
 	main.ZIndex = 10
 	main.Visible = true
 	AddCorner(main, 12)
