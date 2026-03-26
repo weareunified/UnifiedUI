@@ -4118,7 +4118,7 @@ function UI:CreateWindow(config)
 	tabsPad.PaddingBottom = UDim.new(0, 0)
 	tabsPad.Parent = tabsHolder
 
-	AutoCanvas(tabsHolder, tabsList)
+	AutoCanvas(tabsHolder, tabsList, true)
 
 	local right = Instance.new("Frame")
 	right.Name = "Right"
