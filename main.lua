@@ -374,23 +374,6 @@ function UI:GetTheme()
 	return THEME
 end
 
--- Expose helper functions for external use
-function UI:AddCorner(inst, r)
-	return AddCorner(inst, r)
-end
-
-function UI:AddGradient(inst, c1, c2, rot)
-	return AddGradient(inst, c1, c2, rot)
-end
-
-function UI:AddStroke(inst, thickness, color, transparency)
-	return AddStroke(inst, thickness, color, transparency)
-end
-
-function UI:AddShadow(inst, zindex)
-	return AddShadow(inst, zindex)
-end
-
 UI._Alive = true
 UI._Open = true
 UI._TabSwitchToken = 0
@@ -3919,8 +3902,8 @@ function UI:CreateWindow(config)
 	main.BackgroundColor3 = THEME.Panel
 	main.BackgroundTransparency = 0.10
 	main.BorderSizePixel = 0
-	main.Size = isMobile and UDim2.fromOffset(620, 420) or UDim2.fromOffset(800, 530)
-	main.Position = isMobile and UDim2.new(0.5, -310, 0.5, -210) or UDim2.new(0.5, -400, 0.5, -265)
+	main.Size = isMobile and UDim2.fromOffset(420, 620) or UDim2.fromOffset(530, 800)
+	main.Position = isMobile and UDim2.new(0.5, -210, 0.5, -310) or UDim2.new(0.5, -265, 0.5, -400)
 	main.ZIndex = 10
 	main.Visible = true
 	AddCorner(main, 12)
