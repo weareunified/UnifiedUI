@@ -4114,8 +4114,8 @@ function UI:CreateWindow(config)
 	local right = Instance.new("Frame")
 	right.Name = "Right"
 	right.BackgroundTransparency = 1
-	right.Size = UDim2.new(1, -168, 1, 0)
-	right.Position = UDim2.fromOffset(168, 0)
+	right.Size = UDim2.new(1, 0, 1, -49)
+	right.Position = UDim2.fromOffset(0, 49)
 	right.ZIndex = 12
 	right.Parent = body
 	self:_YieldBuild()
@@ -4278,8 +4278,7 @@ function UI:CreateWindow(config)
 	end
 
 	function self:_UpdateRightLayout(anim)
-		local w = 180
-		local props = {Position = UDim2.fromOffset(w + 1, 0), Size = UDim2.new(1, -(w + 1), 1, 0)}
+		local props = {Position = UDim2.fromOffset(0, 0), Size = UDim2.new(1, 0, 1, 0)}
 		if anim then
 			Tween(right, props, 0.45)
 		else
