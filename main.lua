@@ -3434,9 +3434,9 @@ function UI:CreateTab(tabInfo)
 		tabButton:SetAttribute("UH_TabName", tostring(name))
 	end)
 	if IS_MOBILE then
-		tabButton.Size = UDim2.new(1, -12, 0, 44)
+		tabButton.Size = UDim2.new(0, 120, 1, -8)
 	else
-		tabButton.Size = UDim2.new(1, -12, 0, 36)
+		tabButton.Size = UDim2.new(0, 110, 1, -8)
 	end
 	tabButton.ZIndex = 30
 	tabButton.Parent = self._TabsHolder
@@ -3463,13 +3463,8 @@ function UI:CreateTab(tabInfo)
 		iconLabel.BackgroundTransparency = 1
 		iconLabel.Image = icon
 		iconLabel.ImageColor3 = THEME.SubText
-		if IS_MOBILE then
-			iconLabel.Size = UDim2.fromOffset(20, 20)
-			iconLabel.Position = UDim2.new(0, 12, 0.5, 0)
-		else
-			iconLabel.Size = UDim2.fromOffset(18, 18)
-			iconLabel.Position = UDim2.new(0, 10, 0.5, 0)
-		end
+		iconLabel.Size = UDim2.fromOffset(16, 16)
+		iconLabel.Position = UDim2.new(0, 8, 0.5, 0)
 		iconLabel.AnchorPoint = Vector2.new(0, 0.5)
 		iconLabel.ZIndex = 34
 		iconLabel.Parent = surface
@@ -3477,14 +3472,9 @@ function UI:CreateTab(tabInfo)
 
 	local textLbl = MakeText(surface, name, IS_MOBILE and 13 or 12, "semibold")
 	textLbl.ZIndex = 34
-	if IS_MOBILE then
-		textLbl.Size = UDim2.new(1, icon and -48 or -42, 1, 0)
-		textLbl.Position = UDim2.fromOffset(icon and 40 or 26, 0)
-	else
-		textLbl.Size = UDim2.new(1, icon and -44 or -38, 1, 0)
-		textLbl.Position = UDim2.fromOffset(icon and 36 or 22, 0)
-	end
-	textLbl.TextXAlignment = Enum.TextXAlignment.Left
+	textLbl.Size = UDim2.new(1, icon and -28 or -16, 1, 0)
+	textLbl.Position = UDim2.fromOffset(icon and 26 or 8, 0)
+	textLbl.TextXAlignment = Enum.TextXAlignment.Center
 
 	local page = Instance.new("ScrollingFrame")
 	page.Name = name .. "Page"
@@ -3902,8 +3892,8 @@ function UI:CreateWindow(config)
 	main.BackgroundColor3 = THEME.Panel
 	main.BackgroundTransparency = 0.10
 	main.BorderSizePixel = 0
-	main.Size = isMobile and UDim2.fromOffset(480, 580) or UDim2.fromOffset(620, 720)
-	main.Position = isMobile and UDim2.new(0.5, -240, 0.5, -290) or UDim2.new(0.5, -310, 0.5, -360)
+	main.Size = isMobile and UDim2.fromOffset(520, 560) or UDim2.fromOffset(680, 700)
+	main.Position = isMobile and UDim2.new(0.5, -260, 0.5, -280) or UDim2.new(0.5, -340, 0.5, -350)
 	main.ZIndex = 10
 	main.Visible = true
 	AddCorner(main, 12)
