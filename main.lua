@@ -3434,9 +3434,9 @@ function UI:CreateTab(tabInfo)
 		tabButton:SetAttribute("UH_TabName", tostring(name))
 	end)
 	if IS_MOBILE then
-		tabButton.Size = UDim2.new(1, -12, 0, 44)
+		tabButton.Size = UDim2.new(0, 120, 1, -8)
 	else
-		tabButton.Size = UDim2.new(1, -12, 0, 36)
+		tabButton.Size = UDim2.new(0, 110, 1, -8)
 	end
 	tabButton.ZIndex = 30
 	tabButton.Parent = self._TabsHolder
