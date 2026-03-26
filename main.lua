@@ -1148,9 +1148,8 @@ function UI:Notify(title, body, duration)
 	local xInOff = isRight and -334 or 14
 	card.Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, 0)
 	card.ZIndex = 2000
-	AddCorner(card, 14)
+	AddCorner(card, 0)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
-	AddShadow(card, 1999)
 	AddGradient(card, THEME.Surface, THEME.Panel, 90)
 	card.Parent = stack
 
@@ -3906,9 +3905,7 @@ function UI:CreateWindow(config)
 	main.Position = isMobile and UDim2.new(0.5, -310, 0.5, -210) or UDim2.new(0.5, -400, 0.5, -265)
 	main.ZIndex = 10
 	main.Visible = true
-	AddCorner(main, 12)
 	AddGradient(main, THEME.Panel2, THEME.Panel, 90)
-	AddShadow(main, 9)
 	main.Parent = container
 	self:_YieldBuild()
 
@@ -4067,7 +4064,6 @@ function UI:CreateWindow(config)
 	tabBar.Position = UDim2.fromOffset(0, 0)
 	tabBar.ZIndex = 12
 	tabBar.ClipsDescendants = true
-	AddCorner(tabBar, 12)
 	AddGradient(tabBar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 90)
 	tabBar.Parent = body
 	self:_YieldBuild()
@@ -4127,10 +4123,8 @@ function UI:CreateWindow(config)
 	rightSurface.BorderSizePixel = 0
 	rightSurface.Size = UDim2.fromScale(1, 1)
 	rightSurface.ZIndex = 12
-	AddCorner(rightSurface, 12)
 	AddStroke(rightSurface, 1, THEME.StrokeSoft, 0.45)
 	AddGradient(rightSurface, THEME.Surface, THEME.Panel, 90)
-	AddShadow(rightSurface, 11)
 	rightSurface.Parent = right
 
 	local rightHeader = Instance.new("Frame")
