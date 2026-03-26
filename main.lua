@@ -3434,9 +3434,9 @@ function UI:CreateTab(tabInfo)
 		tabButton:SetAttribute("UH_TabName", tostring(name))
 	end)
 	if IS_MOBILE then
-		tabButton.Size = UDim2.new(0, 140, 0, 36)
+		tabButton.Size = UDim2.new(0, 140, 0, 34)
 	else
-		tabButton.Size = UDim2.new(0, 120, 0, 36)
+		tabButton.Size = UDim2.new(0, 110, 0, 34)
 	end
 	tabButton.ZIndex = 30
 	tabButton.Parent = self._TabsHolder
@@ -4061,6 +4061,7 @@ function UI:CreateWindow(config)
 	tabBar.Size = UDim2.new(1, 0, 0, 48)
 	tabBar.Position = UDim2.fromOffset(0, 0)
 	tabBar.ZIndex = 12
+	tabBar.ClipsDescendants = true
 	AddCorner(tabBar, 12)
 	AddGradient(tabBar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 0)
 	tabBar.Parent = body
@@ -4078,8 +4079,8 @@ function UI:CreateWindow(config)
 
 	local tabInner = Instance.new("Frame")
 	tabInner.BackgroundTransparency = 1
-	tabInner.Size = UDim2.new(1, -12, 1, -12)
-	tabInner.Position = UDim2.fromOffset(6, 6)
+	tabInner.Size = UDim2.new(1, -8, 1, 0)
+	tabInner.Position = UDim2.fromOffset(4, 0)
 	tabInner.ZIndex = 13
 	tabInner.Parent = tabBar
 
@@ -4101,16 +4102,17 @@ function UI:CreateWindow(config)
 
 	local tabsList = Instance.new("UIListLayout")
 	tabsList.SortOrder = Enum.SortOrder.LayoutOrder
-	tabsList.Padding = UDim.new(0, 8)
+	tabsList.Padding = UDim.new(0, 6)
 	tabsList.FillDirection = Enum.FillDirection.Horizontal
 	tabsList.VerticalAlignment = Enum.VerticalAlignment.Center
+	tabsList.HorizontalAlignment = Enum.HorizontalAlignment.Left
 	tabsList.Parent = tabsHolder
 
 	local tabsPad = Instance.new("UIPadding")
 	tabsPad.PaddingLeft = UDim.new(0, 4)
 	tabsPad.PaddingRight = UDim.new(0, 4)
-	tabsPad.PaddingTop = UDim.new(0, 0)
-	tabsPad.PaddingBottom = UDim.new(0, 0)
+	tabsPad.PaddingTop = UDim.new(0, 6)
+	tabsPad.PaddingBottom = UDim.new(0, 6)
 	tabsPad.Parent = tabsHolder
 
 	AutoCanvas(tabsHolder, tabsList, true)
