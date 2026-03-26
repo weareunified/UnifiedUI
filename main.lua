@@ -3477,14 +3477,9 @@ function UI:CreateTab(tabInfo)
 
 	local textLbl = MakeText(surface, name, IS_MOBILE and 13 or 12, "semibold")
 	textLbl.ZIndex = 34
-	if IS_MOBILE then
-		textLbl.Size = UDim2.new(1, icon and -48 or -42, 1, 0)
-		textLbl.Position = UDim2.fromOffset(icon and 40 or 26, 0)
-	else
-		textLbl.Size = UDim2.new(1, icon and -44 or -38, 1, 0)
-		textLbl.Position = UDim2.fromOffset(icon and 36 or 22, 0)
-	end
-	textLbl.TextXAlignment = Enum.TextXAlignment.Left
+	textLbl.Size = UDim2.new(1, icon and -28 or -8, 1, 0)
+	textLbl.Position = UDim2.fromOffset(icon and 24 or 4, 0)
+	textLbl.TextXAlignment = Enum.TextXAlignment.Center
 
 	local page = Instance.new("ScrollingFrame")
 	page.Name = name .. "Page"
