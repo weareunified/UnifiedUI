@@ -194,7 +194,7 @@ end
 
 local function AddCorner(inst, r)
 	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 6)
+	c.CornerRadius = UDim.new(0, 8)
 	c.Parent = inst
 	return c
 end
@@ -3882,9 +3882,13 @@ function UI:CreateWindow(config)
 	main.Position = isMobile and UDim2.new(0.5, -310, 0.5, -210) or UDim2.new(0.5, -400, 0.5, -265)
 	main.ZIndex = 10
 	main.Visible = true
-	AddCorner(main, 6)
+	AddCorner(main, 8)
 	AddGradient(main, THEME.Panel2, THEME.Panel, 90)
 	main.Parent = container
+	
+	local mainCorner = Instance.new("UICorner")
+	mainCorner.CornerRadius = UDim.new(0, 8)
+	mainCorner.Parent = main
 	self:_YieldBuild()
 
 	local mainScale = Instance.new("UIScale")
