@@ -193,7 +193,10 @@ local function _StripRichText(s)
 end
 
 local function AddCorner(inst, r)
-	-- No rounded corners
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 6)
+	c.Parent = inst
+	return c
 end
 
 local function AddStroke(inst, thickness, color, transparency)
