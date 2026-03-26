@@ -3833,15 +3833,7 @@ function UI:CreateWindow(config)
 		end)
 	end
 
-	CreateGlowShape(UDim2.new(0.1, 0, 0.2, 0), UDim2.fromOffset(400, 400), THEME.Primary)
-	CreateGlowShape(UDim2.new(0.8, 0, 0.7, 0), UDim2.fromOffset(500, 500), THEME.Primary)
-	CreateGlowShape(UDim2.new(0.4, 0, 0.5, 0), UDim2.fromOffset(300, 300), THEME.Panel2)
-
 	local function updateBackgroundGlow()
-		bgEffect:ClearAllChildren()
-		CreateGlowShape(UDim2.new(0.1, 0, 0.2, 0), UDim2.fromOffset(400, 400), THEME.Primary)
-		CreateGlowShape(UDim2.new(0.8, 0, 0.7, 0), UDim2.fromOffset(500, 500), THEME.Primary)
-		CreateGlowShape(UDim2.new(0.4, 0, 0.5, 0), UDim2.fromOffset(300, 300), THEME.Panel2)
 	end
 
 	local container = Instance.new("CanvasGroup")
