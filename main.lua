@@ -193,14 +193,7 @@ local function _StripRichText(s)
 end
 
 local function AddCorner(inst, r)
-	local c = Instance.new("UICorner")
-	local rr = r or 10
-	if rr < 900 then
-		rr = math.max(6, math.floor((rr * 1.2) + 0.5))
-	end
-	c.CornerRadius = UDim.new(0, rr)
-	c.Parent = inst
-	return c
+	-- No rounded corners
 end
 
 local function AddStroke(inst, thickness, color, transparency)
@@ -214,18 +207,7 @@ local function AddStroke(inst, thickness, color, transparency)
 end
 
 local function AddShadow(inst, zindex)
-	local s = Instance.new("ImageLabel")
-	s.Name = "Shadow"
-	s.BackgroundTransparency = 1
-	s.Image = "rbxassetid://6014261993"
-	s.ImageColor3 = Color3.new(0, 0, 0)
-	s.ImageTransparency = 0.6
-	s.Position = UDim2.new(0.5, 0, 0.5, 0)
-	s.AnchorPoint = Vector2.new(0.5, 0.5)
-	s.Size = UDim2.new(1, 30, 1, 30)
-	s.ZIndex = (zindex or inst.ZIndex) - 1
-	s.Parent = inst
-	return s
+	-- No shadow
 end
 
 local function AddGradient(inst, c1, c2, rot)
