@@ -3434,9 +3434,9 @@ function UI:CreateTab(tabInfo)
 		tabButton:SetAttribute("UH_TabName", tostring(name))
 	end)
 	if IS_MOBILE then
-		tabButton.Size = UDim2.new(1, -12, 0, 44)
+		tabButton.Size = UDim2.new(1, -8, 0, 44)
 	else
-		tabButton.Size = UDim2.new(1, -12, 0, 36)
+		tabButton.Size = UDim2.new(1, -8, 0, 36)
 	end
 	tabButton.ZIndex = 30
 	tabButton.Parent = self._TabsHolder
@@ -4057,35 +4057,25 @@ function UI:CreateWindow(config)
 	body.ZIndex = 11
 	body.Parent = main
 
-	-- HORIZONTAL TAB BAR (replaces sidebar)
+	-- LEFT SIDEBAR FOR TABS
 	local tabBar = Instance.new("Frame")
 	tabBar.Name = "TabBar"
 	tabBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	tabBar.BackgroundTransparency = 0.92
 	tabBar.BorderSizePixel = 0
-	tabBar.Size = UDim2.new(1, 0, 0, 48)
+	tabBar.Size = UDim2.new(0, 160, 1, 0)
 	tabBar.Position = UDim2.fromOffset(0, 0)
 	tabBar.ZIndex = 12
 	tabBar.ClipsDescendants = true
 	AddCorner(tabBar, 12)
-	AddGradient(tabBar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 0)
+	AddGradient(tabBar, Color3.fromRGB(20, 20, 30), Color3.fromRGB(14, 14, 20), 90)
 	tabBar.Parent = body
 	self:_YieldBuild()
 
-	local tabDivider = Instance.new("Frame")
-	tabDivider.Name = "TabDivider"
-	tabDivider.BackgroundColor3 = THEME.StrokeSoft
-	tabDivider.BackgroundTransparency = 0.55
-	tabDivider.BorderSizePixel = 0
-	tabDivider.Size = UDim2.new(1, 0, 0, 1)
-	tabDivider.Position = UDim2.fromOffset(0, 48)
-	tabDivider.ZIndex = 13
-	tabDivider.Parent = body
-
 	local tabInner = Instance.new("Frame")
 	tabInner.BackgroundTransparency = 1
-	tabInner.Size = UDim2.new(1, -8, 1, 0)
-	tabInner.Position = UDim2.fromOffset(4, 0)
+	tabInner.Size = UDim2.new(1, -12, 1, -12)
+	tabInner.Position = UDim2.fromOffset(6, 6)
 	tabInner.ZIndex = 13
 	tabInner.Parent = tabBar
 
@@ -4096,7 +4086,7 @@ function UI:CreateWindow(config)
 	tabsHolder.ScrollBarThickness = 2
 	tabsHolder.ScrollBarImageColor3 = THEME.Primary
 	tabsHolder.ScrollBarImageTransparency = 0.55
-	tabsHolder.ScrollingDirection = Enum.ScrollingDirection.X
+	tabsHolder.ScrollingDirection = Enum.ScrollingDirection.Y
 	tabsHolder.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
 	tabsHolder.CanvasSize = UDim2.new(0, 0, 0, 0)
 	tabsHolder.Size = UDim2.fromScale(1, 1)
@@ -4108,9 +4098,8 @@ function UI:CreateWindow(config)
 	local tabsList = Instance.new("UIListLayout")
 	tabsList.SortOrder = Enum.SortOrder.LayoutOrder
 	tabsList.Padding = UDim.new(0, 6)
-	tabsList.FillDirection = Enum.FillDirection.Horizontal
-	tabsList.VerticalAlignment = Enum.VerticalAlignment.Center
-	tabsList.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	tabsList.FillDirection = Enum.FillDirection.Vertical
+	tabsList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	tabsList.Parent = tabsHolder
 
 	local tabsPad = Instance.new("UIPadding")
@@ -4120,13 +4109,13 @@ function UI:CreateWindow(config)
 	tabsPad.PaddingBottom = UDim.new(0, 6)
 	tabsPad.Parent = tabsHolder
 
-	AutoCanvas(tabsHolder, tabsList, true)
+	AutoCanvas(tabsHolder, tabsList)
 
 	local right = Instance.new("Frame")
 	right.Name = "Right"
 	right.BackgroundTransparency = 1
-	right.Size = UDim2.new(1, 0, 1, -49)
-	right.Position = UDim2.fromOffset(0, 49)
+	right.Size = UDim2.new(1, -168, 1, 0)
+	right.Position = UDim2.fromOffset(168, 0)
 	right.ZIndex = 12
 	right.Parent = body
 	self:_YieldBuild()
