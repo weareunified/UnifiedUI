@@ -1148,9 +1148,8 @@ function UI:Notify(title, body, duration)
 	local xInOff = isRight and -334 or 14
 	card.Position = UDim2.new(isRight and 1 or 0, xOutOff, yScale, 0)
 	card.ZIndex = 2000
-	AddCorner(card, 14)
+	AddCorner(card, 0)
 	AddStroke(card, 1, THEME.StrokeSoft, 0.35)
-	AddShadow(card, 1999)
 	AddGradient(card, THEME.Surface, THEME.Panel, 90)
 	card.Parent = stack
 
@@ -3906,9 +3905,7 @@ function UI:CreateWindow(config)
 	main.Position = isMobile and UDim2.new(0.5, -310, 0.5, -210) or UDim2.new(0.5, -400, 0.5, -265)
 	main.ZIndex = 10
 	main.Visible = true
-	AddCorner(main, 12)
 	AddGradient(main, THEME.Panel2, THEME.Panel, 90)
-	AddShadow(main, 9)
 	main.Parent = container
 	self:_YieldBuild()
 
@@ -4117,6 +4114,8 @@ function UI:CreateWindow(config)
 	right.Size = UDim2.new(1, -168, 1, 0)
 	right.Position = UDim2.fromOffset(168, 0)
 	right.ZIndex = 12
+	right.Parent = body
+	self:_YieldBuild()
 
 	local rightSurface = Instance.new("Frame")
 	rightSurface.Name = "Surface"
@@ -4276,7 +4275,7 @@ function UI:CreateWindow(config)
 	end
 
 	function self:_UpdateRightLayout(anim)
-		local props = {Position = UDim2.fromOffset(0, 0), Size = UDim2.new(1, 0, 1, 0)}
+		local props = {Position = UDim2.fromOffset(168, 0), Size = UDim2.new(1, -168, 1, 0)}
 		if anim then
 			Tween(right, props, 0.45)
 		else
