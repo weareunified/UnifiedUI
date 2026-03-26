@@ -374,6 +374,23 @@ function UI:GetTheme()
 	return THEME
 end
 
+-- Expose helper functions for external use
+function UI:AddCorner(inst, r)
+	return AddCorner(inst, r)
+end
+
+function UI:AddGradient(inst, c1, c2, rot)
+	return AddGradient(inst, c1, c2, rot)
+end
+
+function UI:AddStroke(inst, thickness, color, transparency)
+	return AddStroke(inst, thickness, color, transparency)
+end
+
+function UI:AddShadow(inst, zindex)
+	return AddShadow(inst, zindex)
+end
+
 UI._Alive = true
 UI._Open = true
 UI._TabSwitchToken = 0
