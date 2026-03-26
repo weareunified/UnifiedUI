@@ -24,7 +24,7 @@ local LOCAL_PLAYER = Players.LocalPlayer
 local EASE_STYLE = Enum.EasingStyle.Quint
 local EASE_DIR = Enum.EasingDirection.Out
 
-	local THEME = {
+local THEME = {
 	Primary = Color3.fromRGB(139, 92, 246),
 	BG = Color3.fromRGB(13, 13, 18),
 	Panel = Color3.fromRGB(20, 20, 28),
