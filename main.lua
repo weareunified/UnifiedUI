@@ -194,7 +194,7 @@ end
 
 local function AddCorner(inst, r)
 	local c = Instance.new("UICorner")
-	local rr = r or 10
+	local rr = r or 14
 	if rr < 900 then
 		rr = math.max(6, math.floor((rr * 1.2) + 0.5))
 	end
