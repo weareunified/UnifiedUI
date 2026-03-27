@@ -888,6 +888,27 @@ function Library:CreateWindow(options)
             function Section:CreateCodeblock(text, code)
                 local Codeblock = {}
                 local rawCode = code:gsub("<font.->", ""):gsub("</font>", "")
+                
+                local function highlight(src)
+                    local keywords = {"local", "function", "if", "then", "else", "elseif", "end", "for", "in", "do", "while", "repeat", "until", "return", "break", "nil", "true", "false", "and", "or", "not"}
+                    local builtins = {"game", "workspace", "script", "math", "table", "string", "task", "wait", "spawn", "delay", "print", "warn", "error", "pcall", "xpcall", "Instance", "Enum", "Color3", "UDim2", "UDim", "Vector3", "Vector2"}
+                    
+                    local highlighted = src
+                    highlighted = highlighted:gsub('("[^"]*")', '<font color="rgb(152, 195, 121)">%1</font>')
+                    highlighted = highlighted:gsub("('[^']*')", '<font color="rgb(152, 195, 121)">%1</font>')
+                    highlighted = highlighted:gsub("%-%-.*", '<font color="rgb(92, 99, 112)">%0</font>')
+                    
+                    for _, kw in pairs(keywords) do
+                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", '<font color="rgb(' .. math.floor(accentColor.R*255) .. ',' .. math.floor(accentColor.G*255) .. ',' .. math.floor(accentColor.B*255) .. ')">'..kw..'</font>')
+                    end
+                    for _, bi in pairs(builtins) do
+                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", '<font color="rgb(97, 175, 239)">'..bi..'</font>')
+                    end
+                    highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", '<font color="rgb(209, 154, 102)">%0</font>')
+                    
+                    return highlighted
+                end
+
                 Codeblock.Frame = Instance.new("Frame")
                 Codeblock.Frame.Name = text .. "Codeblock"
                 Codeblock.Frame.Parent = Container
@@ -903,7 +924,7 @@ function Library:CreateWindow(options)
                 Codeblock.Label.Size = UDim2.new(1, -16, 1, -16)
                 Codeblock.Label.Font = Enum.Font.Code
                 Codeblock.Label.RichText = true
-                Codeblock.Label.Text = code or ""
+                Codeblock.Label.Text = highlight(rawCode)
                 Codeblock.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Codeblock.Label.TextSize = 12
                 Codeblock.Label.TextXAlignment = Enum.TextXAlignment.Left
