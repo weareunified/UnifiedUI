@@ -146,7 +146,7 @@ function Library:CreateWindow(options)
     UI.UserName.Position = UDim2.new(0, 35, 0, 0)
     UI.UserName.Size = UDim2.new(1, -35, 1, 0)
     UI.UserName.Font = Enum.Font.SourceSans
-    UI.UserName.Text = LocalPlayer.Name:lower() .. " <font color=\"rgb(150, 150, 150)\"> • </font> by Unified Production"
+    UI.UserName.Text = " <font color=\"rgb(150, 150, 150)\"> • </font> <i>Thanks for using!</i>"
     UI.UserName.TextColor3 = Color3.fromRGB(180, 180, 180)
     UI.UserName.TextSize = 13
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
