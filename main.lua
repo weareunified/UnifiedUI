@@ -375,6 +375,7 @@ function Library:CreateWindow(options)
         }
         
         table.insert(UI.Tabs, Tab)
+        Tab.Button = Instance.new("TextButton")
         Tab.Button.Name = name .. "Tab"
         Tab.Button.Parent = UI.TabContainer
         Tab.Button.BackgroundColor3 = accentColor
@@ -393,6 +394,7 @@ function Library:CreateWindow(options)
         local TabIndicator = Instance.new("Frame")
         TabIndicator.Name = "Indicator"
         TabIndicator.Parent = Tab.Button
+        Tab.Indicator = TabIndicator
         TabIndicator.BackgroundColor3 = accentColor
         TabIndicator.Position = UDim2.new(0, 0, 0, 0)
         TabIndicator.Size = UDim2.new(0, 2, 1, 0)
@@ -521,6 +523,7 @@ function Library:CreateWindow(options)
             local parent = Tab.Content
             
             table.insert(Tab.Sections, Section)
+            Section.Frame = Instance.new("Frame")
             Section.Frame.Name = title .. "Section"
             Section.Frame.Parent = parent
             Section.Frame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
