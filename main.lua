@@ -11,6 +11,8 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 
+local queue_on_teleport = (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queue_on_teleport
+
 local function Tween(obj, info, goal)
     local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
     tween:Play()
@@ -55,12 +57,21 @@ function Library:SetAutoExecute(state)
     SetAutoExec(state)
 end
 
+function Library:SaveScriptSource(source)
+    if writefile then
+        writefile("UnifiedConfigs/LastScript.txt", source)
+    end
+end
+
 function Library:Rejoin()
     if Library.AutoExecute and queue_on_teleport then
         queue_on_teleport([[
             repeat task.wait() until game:IsLoaded()
             if isfile and isfile("UnifiedConfigs/LastScript.txt") then
-                loadstring(readfile("UnifiedConfigs/LastScript.txt"))()
+                local success, source = pcall(function() return readfile("UnifiedConfigs/LastScript.txt") end)
+                if success and source and source ~= "" then
+                    loadstring(source)()
+                end
             end
         ]])
     end
@@ -83,7 +94,10 @@ function Library:ServerHop()
             queue_on_teleport([[
                 repeat task.wait() until game:IsLoaded()
                 if isfile and isfile("UnifiedConfigs/LastScript.txt") then
-                    loadstring(readfile("UnifiedConfigs/LastScript.txt"))()
+                    local success, source = pcall(function() return readfile("UnifiedConfigs/LastScript.txt") end)
+                    if success and source and source ~= "" then
+                        loadstring(source)()
+                    end
                 end
             ]])
         end
