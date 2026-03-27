@@ -3,6 +3,8 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 
 local function Tween(obj, info, goal)
@@ -21,15 +23,97 @@ local function RandomString(length)
     return res
 end
 
+function Library:Rejoin()
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+end
+
+function Library:ServerHop()
+    local Servers = {}
+    local Success, Error = pcall(function()
+        local Response = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100"))
+        for _, v in pairs(Response.data) do
+            if type(v) == "table" and v.maxPlayers > v.playing and v.id ~= game.JobId then
+                table.insert(Servers, v.id)
+            end
+        end
+    end)
+    
+    if Success and #Servers > 0 then
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, Servers[math.random(1, #Servers)], LocalPlayer)
+    end
+end
+
 function Library:CreateWindow(options)
     options = options or {}
     local windowTitle = options.Name or "UNIFIED"
     local accentColor = options.AccentColor or Color3.fromRGB(207, 165, 255)
+    local configName = options.ConfigName or "UnifiedConfig"
     
     local UI = {
         CurrentTab = nil,
-        Tabs = {}
+        Tabs = {},
+        Flags = {},
+        Folder = configName
     }
+
+    if not isfolder(UI.Folder) then makefolder(UI.Folder) end
+
+    function UI:SaveConfig(name)
+        local config = {}
+        for flag, value in pairs(UI.Flags) do
+            if typeof(value) == "Color3" then
+                config[flag] = {value.R, value.G, value.B}
+            elseif typeof(value) == "EnumItem" then
+                config[flag] = {tostring(value)}
+            else
+                config[flag] = value
+            end
+        end
+        writefile(UI.Folder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
+    end
+
+    function UI:LoadConfig(name)
+        if isfile(UI.Folder .. "/" .. name .. ".json") then
+            local config = HttpService:JSONDecode(readfile(UI.Folder .. "/" .. name .. ".json"))
+            for flag, value in pairs(config) do
+                if UI.Flags[flag] ~= nil then
+                    if type(value) == "table" and #value == 3 then
+                        UI:SetFlag(flag, Color3.new(unpack(value)))
+                    else
+                        UI:SetFlag(flag, value)
+                    end
+                end
+            end
+        end
+    end
+
+    function UI:DeleteConfig(name)
+        if isfile(UI.Folder .. "/" .. name .. ".json") then
+            delfile(UI.Folder .. "/" .. name .. ".json")
+        end
+    end
+
+    function UI:GetConfigs()
+        local configs = {}
+        for _, v in pairs(listfiles(UI.Folder)) do
+            local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
+            if name then table.insert(configs, name) end
+        end
+        return configs
+    end
+
+    function UI:SetFlag(flag, value)
+        for _, tab in pairs(UI.Tabs) do
+            for _, section in pairs(tab.Sections) do
+                for _, element in pairs(section.Elements) do
+                    if element.Flag == flag and element.Update then
+                        element.Update(value)
+                        return
+                    end
+                end
+            end
+        end
+    end
     
     UI.ScreenGui = Instance.new("ScreenGui")
     UI.ScreenGui.Name = RandomString(16)
@@ -290,7 +374,7 @@ function Library:CreateWindow(options)
             Sections = {}
         }
         
-        Tab.Button = Instance.new("TextButton")
+        table.insert(UI.Tabs, Tab)
         Tab.Button.Name = name .. "Tab"
         Tab.Button.Parent = UI.TabContainer
         Tab.Button.BackgroundColor3 = accentColor
@@ -431,10 +515,12 @@ function Library:CreateWindow(options)
         end
 
         function Tab:CreateSection(title)
-            local Section = {}
+            local Section = {
+                Elements = {}
+            }
             local parent = Tab.Content
             
-            Section.Frame = Instance.new("Frame")
+            table.insert(Tab.Sections, Section)
             Section.Frame.Name = title .. "Section"
             Section.Frame.Parent = parent
             Section.Frame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
@@ -490,6 +576,7 @@ function Library:CreateWindow(options)
                     Callback = callback or function() end
                 }
                 
+                table.insert(Section.Elements, Button)
                 Button.Frame = Instance.new("TextButton")
                 Button.Frame.Name = text .. "Button"
                 Button.Frame.Parent = Container
@@ -536,12 +623,16 @@ function Library:CreateWindow(options)
                 return Button
             end
 
-            function Section:CreateToggle(text, default, callback)
+            function Section:CreateToggle(text, flag, default, callback)
                 local Toggle = {
                     State = default or false,
+                    Flag = flag,
                     Callback = callback or function() end
                 }
                 
+                table.insert(Section.Elements, Toggle)
+                if flag then UI.Flags[flag] = Toggle.State end
+
                 Toggle.Frame = Instance.new("TextButton")
                 Toggle.Frame.Name = text .. "Toggle"
                 Toggle.Frame.Parent = Container
@@ -579,7 +670,11 @@ function Library:CreateWindow(options)
                 Toggle.Indicator.Size = UDim2.new(0, 12, 0, 12)
                 Toggle.Indicator.BackgroundTransparency = Toggle.State and 0 or 1
 
-                local function Update()
+                local function Update(manually)
+                    if not manually then
+                        Toggle.State = not Toggle.State
+                    end
+                    if flag then UI.Flags[flag] = Toggle.State end
                     if Toggle.State then
                         Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
                         Tween(BoxStroke, 0.2, {Color = accentColor})
@@ -590,21 +685,29 @@ function Library:CreateWindow(options)
                     pcall(Toggle.Callback, Toggle.State)
                 end
 
+                Toggle.Update = function(val)
+                    Toggle.State = val
+                    Update(true)
+                end
+
                 Toggle.Frame.MouseButton1Click:Connect(function()
-                    Toggle.State = not Toggle.State
                     Update()
                 end)
 
                 return Toggle
             end
 
-            function Section:CreateSlider(text, min, max, default, callback)
+            function Section:CreateSlider(text, flag, min, max, default, callback)
                 local Slider = {
                     Value = default or min,
                     Min = min,
                     Max = max,
+                    Flag = flag,
                     Callback = callback or function() end
                 }
+
+                table.insert(Section.Elements, Slider)
+                if flag then UI.Flags[flag] = Slider.Value end
 
                 Slider.Frame = Instance.new("Frame")
                 Slider.Frame.Name = text .. "Slider"
@@ -649,12 +752,23 @@ function Library:CreateWindow(options)
                 Slider.Fill.BorderSizePixel = 0
                 Slider.Fill.Size = UDim2.new((Slider.Value - min) / (max - min), 0, 1, 0)
 
-                local function Update(input)
-                    local pos = math.clamp((input.Position.X - Slider.Bar.AbsolutePosition.X) / Slider.Bar.AbsoluteSize.X, 0, 1)
-                    Slider.Value = math.floor(min + (max - min) * pos)
+                local function Update(input, manually)
+                    local pos
+                    if manually then
+                        pos = math.clamp((input - min) / (max - min), 0, 1)
+                        Slider.Value = input
+                    else
+                        pos = math.clamp((input.Position.X - Slider.Bar.AbsolutePosition.X) / Slider.Bar.AbsoluteSize.X, 0, 1)
+                        Slider.Value = math.floor(min + (max - min) * pos)
+                    end
+                    if flag then UI.Flags[flag] = Slider.Value end
                     Slider.Fill.Size = UDim2.new(pos, 0, 1, 0)
                     Slider.ValueLabel.Text = tostring(Slider.Value)
                     pcall(Slider.Callback, Slider.Value)
+                end
+
+                Slider.Update = function(val)
+                    Update(val, true)
                 end
 
                 local sliding = false
@@ -680,10 +794,14 @@ function Library:CreateWindow(options)
                 return Slider
             end
 
-            function Section:CreateTextbox(text, placeholder, callback)
+            function Section:CreateTextbox(text, flag, placeholder, callback)
                 local Textbox = {
+                    Flag = flag,
                     Callback = callback or function() end
                 }
+
+                table.insert(Section.Elements, Textbox)
+                if flag then UI.Flags[flag] = "" end
 
                 Textbox.Frame = Instance.new("Frame")
                 Textbox.Frame.Name = text .. "Textbox"
@@ -708,8 +826,15 @@ function Library:CreateWindow(options)
                 Textbox.Input.TextSize = 14
                 Textbox.Input.TextXAlignment = Enum.TextXAlignment.Left
 
+                Textbox.Update = function(val)
+                    Textbox.Input.Text = val
+                    if flag then UI.Flags[flag] = val end
+                    pcall(Textbox.Callback, val)
+                end
+
                 Textbox.Input.FocusLost:Connect(function(enter)
                     if enter then
+                        if flag then UI.Flags[flag] = Textbox.Input.Text end
                         pcall(Textbox.Callback, Textbox.Input.Text)
                     end
                 end)
@@ -970,13 +1095,17 @@ function Library:CreateWindow(options)
                 return Image
             end
 
-            function Section:CreateDropdown(text, options, default, callback)
+            function Section:CreateDropdown(text, flag, options, default, callback)
                 local Dropdown = {
                     Options = options or {},
                     Selected = default,
+                    Flag = flag,
                     Callback = callback or function() end,
                     Opened = false
                 }
+
+                table.insert(Section.Elements, Dropdown)
+                if flag then UI.Flags[flag] = Dropdown.Selected end
 
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "Dropdown"
@@ -1027,9 +1156,17 @@ function Library:CreateWindow(options)
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-                local function Update()
+                local function Update(val, manually)
+                    if not manually then
+                        Dropdown.Selected = val
+                    end
+                    if flag then UI.Flags[flag] = Dropdown.Selected end
                     Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
                     pcall(Dropdown.Callback, Dropdown.Selected)
+                end
+
+                Dropdown.Update = function(val)
+                    Update(val, true)
                 end
 
                 for _, option in pairs(Dropdown.Options) do
@@ -1082,13 +1219,17 @@ function Library:CreateWindow(options)
                 return Dropdown
             end
 
-            function Section:CreateMultiDropdown(text, options, default, callback)
+            function Section:CreateMultiDropdown(text, flag, options, default, callback)
                 local Dropdown = {
                     Options = options or {},
                     Selected = default or {},
+                    Flag = flag,
                     Callback = callback or function() end,
                     Opened = false
                 }
+
+                table.insert(Section.Elements, Dropdown)
+                if flag then UI.Flags[flag] = Dropdown.Selected end
 
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "MultiDropdown"
@@ -1139,8 +1280,19 @@ function Library:CreateWindow(options)
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-                local function Update()
+                local function Update(manually)
+                    if flag then UI.Flags[flag] = Dropdown.Selected end
                     pcall(Dropdown.Callback, Dropdown.Selected)
+                end
+
+                Dropdown.Update = function(val)
+                    Dropdown.Selected = val
+                    for _, btn in pairs(Dropdown.List:GetChildren()) do
+                        if btn:IsA("TextButton") then
+                            Tween(btn, 0.2, {TextColor3 = table.find(Dropdown.Selected, btn.Name) and accentColor or Color3.fromRGB(150, 150, 150)})
+                        end
+                    end
+                    Update(true)
                 end
 
                 for _, option in pairs(Dropdown.Options) do
