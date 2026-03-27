@@ -1,7 +1,4 @@
-local Library = {
-    AutoExecute = false,
-    Folder = "UnifiedConfigs"
-}
+local Library = {}
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -10,8 +7,6 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
-
-local queue_on_teleport = (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queue_on_teleport
 
 local function Tween(obj, info, goal)
     local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
@@ -29,52 +24,7 @@ local function RandomString(length)
     return res
 end
 
-if isfolder and makefolder then
-    if not isfolder("UnifiedConfigs") then makefolder("UnifiedConfigs") end
-end
-
-local function GetAutoExecFile()
-    return "UnifiedConfigs/AutoExec.txt"
-end
-
-local function SetAutoExec(state)
-    if writefile then
-        writefile(GetAutoExecFile(), tostring(state))
-    end
-end
-
-local function GetAutoExec()
-    if isfile and readfile and isfile(GetAutoExecFile()) then
-        return readfile(GetAutoExecFile()) == "true"
-    end
-    return false
-end
-
-Library.AutoExecute = GetAutoExec()
-
-function Library:SetAutoExecute(state)
-    Library.AutoExecute = state
-    SetAutoExec(state)
-end
-
-function Library:SaveScriptSource(source)
-    if writefile then
-        writefile("UnifiedConfigs/LastScript.txt", source)
-    end
-end
-
 function Library:Rejoin()
-    if Library.AutoExecute and queue_on_teleport then
-        queue_on_teleport([[
-            repeat task.wait() until game:IsLoaded()
-            if isfile and isfile("UnifiedConfigs/LastScript.txt") then
-                local success, source = pcall(function() return readfile("UnifiedConfigs/LastScript.txt") end)
-                if success and source and source ~= "" then
-                    loadstring(source)()
-                end
-            end
-        ]])
-    end
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
 end
 
@@ -90,17 +40,6 @@ function Library:ServerHop()
     end)
     
     if Success and #Servers > 0 then
-        if Library.AutoExecute and queue_on_teleport then
-            queue_on_teleport([[
-                repeat task.wait() until game:IsLoaded()
-                if isfile and isfile("UnifiedConfigs/LastScript.txt") then
-                    local success, source = pcall(function() return readfile("UnifiedConfigs/LastScript.txt") end)
-                    if success and source and source ~= "" then
-                        loadstring(source)()
-                    end
-                end
-            ]])
-        end
         TeleportService:TeleportToPlaceInstance(game.PlaceId, Servers[math.random(1, #Servers)], LocalPlayer)
     end
 end
