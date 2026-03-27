@@ -34,7 +34,7 @@ function Library:CreateWindow(options)
     UI.ScreenGui = Instance.new("ScreenGui")
     UI.ScreenGui.Name = RandomString(16)
     UI.ScreenGui.ResetOnSpawn = false
-    UI.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- Changed to Sibling for better clipping behavior
+    UI.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
     local coreGui = game:GetService("CoreGui")
     if gethui then
@@ -53,13 +53,13 @@ function Library:CreateWindow(options)
     UI.MainFrame.Position = UDim2.new(0.5, -315, 0.5, -210)
     UI.MainFrame.Size = UDim2.new(0, 630, 0, 420)
     UI.MainFrame.ClipsDescendants = true
-    UI.MainFrame.BackgroundTransparency = 1 -- For opening animation
-    UI.MainFrame.Size = UDim2.new(0, 600, 0, 400) -- Smaller for opening animation scale
+    UI.MainFrame.BackgroundTransparency = 1
+    UI.MainFrame.Size = UDim2.new(0, 600, 0, 400)
 
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = Color3.fromRGB(34, 26, 40)
     MainStroke.Thickness = 1.5
-    MainStroke.Transparency = 1 -- For opening animation
+    MainStroke.Transparency = 1
     MainStroke.Parent = UI.MainFrame
 
     UI.LeftPanel = Instance.new("Frame")
@@ -68,13 +68,13 @@ function Library:CreateWindow(options)
     UI.LeftPanel.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
     UI.LeftPanel.BorderSizePixel = 0
     UI.LeftPanel.Size = UDim2.new(0, 180, 1, 0)
-    UI.LeftPanel.BackgroundTransparency = 1 -- For opening animation
+    UI.LeftPanel.BackgroundTransparency = 1
 
     local LeftStroke = Instance.new("UIStroke")
     LeftStroke.Color = Color3.fromRGB(34, 26, 40)
     LeftStroke.Thickness = 1.5
     LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    LeftStroke.Transparency = 1 -- For opening animation
+    LeftStroke.Transparency = 1
     LeftStroke.Parent = UI.LeftPanel
 
     UI.LogoContainer = Instance.new("Frame")
@@ -94,7 +94,7 @@ function Library:CreateWindow(options)
     UI.TitleLabel.TextColor3 = accentColor
     UI.TitleLabel.TextSize = 22
     UI.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    UI.TitleLabel.TextTransparency = 1 -- For opening animation
+    UI.TitleLabel.TextTransparency = 1
 
     UI.TabContainer = Instance.new("ScrollingFrame")
     UI.TabContainer.Name = "TabContainer"
@@ -117,12 +117,12 @@ function Library:CreateWindow(options)
     UI.UserPanel.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
     UI.UserPanel.Position = UDim2.new(0, 10, 1, -50)
     UI.UserPanel.Size = UDim2.new(1, -20, 0, 40)
-    UI.UserPanel.BackgroundTransparency = 1 -- For opening animation
+    UI.UserPanel.BackgroundTransparency = 1
 
     local UserStroke = Instance.new("UIStroke")
     UserStroke.Color = Color3.fromRGB(34, 26, 40)
     UserStroke.Thickness = 1
-    UserStroke.Transparency = 1 -- For opening animation
+    UserStroke.Transparency = 1
     UserStroke.Parent = UI.UserPanel
 
     UI.UserName = Instance.new("TextLabel")
@@ -136,7 +136,7 @@ function Library:CreateWindow(options)
     UI.UserName.TextColor3 = Color3.fromRGB(180, 180, 180)
     UI.UserName.TextSize = 14
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
-    UI.UserName.TextTransparency = 1 -- For opening animation
+    UI.UserName.TextTransparency = 1
 
     UI.MainContent = Instance.new("Frame")
     UI.MainContent.Name = "MainContent"
@@ -146,9 +146,7 @@ function Library:CreateWindow(options)
     UI.MainContent.Size = UDim2.new(1, -180, 1, 0)
     UI.MainContent.ClipsDescendants = true
 
-    -- Notification System Variables
     local activeNotifications = {}
-    local notifyYOffset = 0
 
     function UI:Notify(title, text)
         local NotifyFrame = Instance.new("Frame")
@@ -156,7 +154,7 @@ function Library:CreateWindow(options)
         NotifyFrame.Parent = UI.ScreenGui
         NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
         NotifyFrame.BorderSizePixel = 0
-        NotifyFrame.Position = UDim2.new(1, 20, 1, -100) -- Start off-screen
+        NotifyFrame.Position = UDim2.new(1, 20, 1, -100)
         NotifyFrame.Size = UDim2.new(0, 250, 0, 80)
         NotifyFrame.ZIndex = 100
 
@@ -211,7 +209,6 @@ function Library:CreateWindow(options)
         end)
     end
 
-    -- Opening Animation
     task.spawn(function()
         Tween(UI.MainFrame, 0.6, {Size = UDim2.new(0, 630, 0, 420), Position = UDim2.new(0.5, -315, 0.5, -210), BackgroundTransparency = 0})
         Tween(MainStroke, 0.6, {Transparency = 0})
@@ -229,7 +226,6 @@ function Library:CreateWindow(options)
         UI.MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 
-    -- Fixed Dragging: Only allow dragging from LeftPanel or LogoContainer
     local function StartDragging(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
@@ -317,7 +313,7 @@ function Library:CreateWindow(options)
         Tab.Content.ScrollBarThickness = 2
         Tab.Content.ScrollBarImageColor3 = accentColor
         Tab.Content.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Tab.Content.ClipsDescendants = true 
+        Tab.Content.ClipsDescendants = false
 
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.Parent = Tab.Content
@@ -351,7 +347,6 @@ function Library:CreateWindow(options)
                     Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
                 end
                 
-                -- Transition: Slide Out & Fade
                 local oldGroup = oldTab.Page:FindFirstChild("CanvasGroup")
                 if oldGroup then
                     Tween(oldGroup, 0.3, {GroupTransparency = 1, Size = UDim2.new(1, -20, 1, -20), Position = UDim2.new(0, 10, 0, 10)})
@@ -364,7 +359,6 @@ function Library:CreateWindow(options)
             UI.CurrentTab = Tab
             Tab.Page.Visible = true
             
-            -- Transition: Slide In & Fade
             local canvasGroup = Tab.Page:FindFirstChild("CanvasGroup") or Instance.new("CanvasGroup", Tab.Page)
             if not Tab.Page:FindFirstChild("CanvasGroup") then
                 canvasGroup.Size = UDim2.new(1, 0, 1, 0)
@@ -408,7 +402,7 @@ function Library:CreateWindow(options)
             Section.Frame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
             Section.Frame.BorderSizePixel = 0
             Section.Frame.Size = UDim2.new(1, 0, 0, 40)
-            Section.Frame.ClipsDescendants = true
+            Section.Frame.ClipsDescendants = false
 
             local SectionStroke = Instance.new("UIStroke")
             SectionStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -442,7 +436,7 @@ function Library:CreateWindow(options)
             Container.BackgroundTransparency = 1
             Container.Position = UDim2.new(0, 12, 0, 35)
             Container.Size = UDim2.new(1, -24, 0, 0)
-            Container.ClipsDescendants = true -- Changed to true to fix overflow within component container
+            Container.ClipsDescendants = false
 
             local ContainerLayout = Instance.new("UIListLayout")
             ContainerLayout.Parent = Container
@@ -630,7 +624,6 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         sliding = true
                         Update(input)
-                        -- Stop propagation if needed, though in Roblox this is default for buttons/bars
                     end
                 end)
 
@@ -743,7 +736,6 @@ function Library:CreateWindow(options)
 
             function Section:CreateCodeblock(text, code)
                 local Codeblock = {}
-                -- Remove HTML tags for raw copying
                 local rawCode = code:gsub("<font.->", ""):gsub("</font>", "")
 
                 Codeblock.Frame = Instance.new("Frame")
@@ -840,13 +832,7 @@ function Library:CreateWindow(options)
                 Image.Img.Position = UDim2.new(0.5, -45, 0, 25)
                 Image.Img.Size = UDim2.new(0, 90, 0, 90)
                 
-                if isLink and getcustomasset then
-                    -- This is a placeholder for actual link loading if the exploit supports it
-                    -- For now we use the ID provided
-                    Image.Img.Image = id
-                else
-                    Image.Img.Image = id
-                end
+                Image.Img.Image = id
 
                 return Image
             end
@@ -898,7 +884,7 @@ function Library:CreateWindow(options)
                 Dropdown.List.Size = UDim2.new(1, 0, 0, 0)
                 Dropdown.List.Visible = false
                 Dropdown.List.ClipsDescendants = true
-                Dropdown.List.ZIndex = 10
+                Dropdown.List.ZIndex = 100
 
                 local ListStroke = Instance.new("UIStroke")
                 ListStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -925,7 +911,7 @@ function Library:CreateWindow(options)
                     OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
                     OptBtn.TextSize = 14
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                    OptBtn.ZIndex = 11
+                    OptBtn.ZIndex = 110
 
                     OptBtn.MouseButton1Click:Connect(function()
                         Dropdown.Selected = option
@@ -941,7 +927,7 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
-                            Section.Frame.ZIndex = 50 -- Bring section to front when dropdown is open
+                            Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
@@ -949,7 +935,7 @@ function Library:CreateWindow(options)
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                             task.delay(0.3, function() 
                                 Dropdown.List.Visible = false 
-                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end -- Reset ZIndex
+                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end
                             end)
                             Dropdown.Icon.Text = "+"
                         end
@@ -1006,7 +992,7 @@ function Library:CreateWindow(options)
                 Dropdown.List.Size = UDim2.new(1, 0, 0, 0)
                 Dropdown.List.Visible = false
                 Dropdown.List.ClipsDescendants = true
-                Dropdown.List.ZIndex = 10
+                Dropdown.List.ZIndex = 100
 
                 local ListStroke = Instance.new("UIStroke")
                 ListStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -1032,7 +1018,7 @@ function Library:CreateWindow(options)
                     OptBtn.TextColor3 = table.find(Dropdown.Selected, option) and accentColor or Color3.fromRGB(150, 150, 150)
                     OptBtn.TextSize = 14
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                    OptBtn.ZIndex = 11
+                    OptBtn.ZIndex = 110
 
                     OptBtn.MouseButton1Click:Connect(function()
                         local index = table.find(Dropdown.Selected, option)
@@ -1051,7 +1037,7 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
-                            Section.Frame.ZIndex = 50 -- Bring section to front when dropdown is open
+                            Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
@@ -1059,7 +1045,7 @@ function Library:CreateWindow(options)
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                             task.delay(0.3, function() 
                                 Dropdown.List.Visible = false 
-                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end -- Reset ZIndex
+                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end
                             end)
                             Dropdown.Icon.Text = "+"
                         end
@@ -1074,50 +1060,6 @@ function Library:CreateWindow(options)
 
         table.insert(UI.Tabs, Tab)
         return Tab
-    end
-
-    function UI:Notify(title, text)
-        local NotifyFrame = Instance.new("Frame")
-        NotifyFrame.Name = "Notification"
-        NotifyFrame.Parent = UI.ScreenGui
-        NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
-        NotifyFrame.BorderSizePixel = 0
-        NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
-        NotifyFrame.Size = UDim2.new(0, 250, 0, 80)
-
-        local NotifyStroke = Instance.new("UIStroke")
-        NotifyStroke.Color = accentColor
-        NotifyStroke.Thickness = 1.5
-        NotifyStroke.Parent = NotifyFrame
-
-        local NotifyTitle = Instance.new("TextLabel")
-        NotifyTitle.Parent = NotifyFrame
-        NotifyTitle.BackgroundTransparency = 1
-        NotifyTitle.Position = UDim2.new(0, 12, 0, 10)
-        NotifyTitle.Size = UDim2.new(1, -24, 0, 20)
-        NotifyTitle.Font = Enum.Font.SourceSansBold
-        NotifyTitle.Text = title:upper()
-        NotifyTitle.TextColor3 = accentColor
-        NotifyTitle.TextSize = 14
-        NotifyTitle.TextXAlignment = Enum.TextXAlignment.Left
-
-        local NotifyText = Instance.new("TextLabel")
-        NotifyText.Parent = NotifyFrame
-        NotifyText.BackgroundTransparency = 1
-        NotifyText.Position = UDim2.new(0, 12, 0, 35)
-        NotifyText.Size = UDim2.new(1, -24, 0, 35)
-        NotifyText.Font = Enum.Font.SourceSans
-        NotifyText.Text = text
-        NotifyText.TextColor3 = Color3.fromRGB(200, 200, 200)
-        NotifyText.TextSize = 14
-        NotifyText.TextXAlignment = Enum.TextXAlignment.Left
-        NotifyText.TextWrapped = true
-
-        Tween(NotifyFrame, 0.5, {Position = UDim2.new(1, -260, 1, -100)})
-        task.delay(3, function()
-            Tween(NotifyFrame, 0.5, {Position = UDim2.new(1, 10, 1, -100)})
-            task.delay(0.5, function() NotifyFrame:Destroy() end)
-        end)
     end
 
     return UI
