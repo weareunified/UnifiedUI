@@ -752,6 +752,101 @@ function Library:CreateWindow(options)
                 return Bind
             end
 
+            function Section:CreateToggleBind(text, defaultState, defaultKey, callback)
+                local ToggleBind = {
+                    State = defaultState or false,
+                    Key = defaultKey or Enum.KeyCode.F,
+                    Callback = callback or function() end,
+                    Waiting = false
+                }
+
+                ToggleBind.Frame = Instance.new("Frame")
+                ToggleBind.Frame.Name = text .. "ToggleBind"
+                ToggleBind.Frame.Parent = Container
+                ToggleBind.Frame.BackgroundTransparency = 1
+                ToggleBind.Frame.Size = UDim2.new(1, 0, 0, 28)
+
+                ToggleBind.Label = Instance.new("TextLabel")
+                ToggleBind.Label.Parent = ToggleBind.Frame
+                ToggleBind.Label.BackgroundTransparency = 1
+                ToggleBind.Label.Size = UDim2.new(1, -100, 1, 0)
+                ToggleBind.Label.Font = Enum.Font.SourceSans
+                ToggleBind.Label.Text = text
+                ToggleBind.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+                ToggleBind.Label.TextSize = 14
+                ToggleBind.Label.TextXAlignment = Enum.TextXAlignment.Left
+
+                ToggleBind.Box = Instance.new("TextButton")
+                ToggleBind.Box.Name = "Box"
+                ToggleBind.Box.Parent = ToggleBind.Frame
+                ToggleBind.Box.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                ToggleBind.Box.Position = UDim2.new(1, -30, 0.5, -8)
+                ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
+                ToggleBind.Box.Text = ""
+
+                local BoxStroke = Instance.new("UIStroke")
+                BoxStroke.Color = Color3.fromRGB(34, 26, 40)
+                BoxStroke.Thickness = 1
+                BoxStroke.Parent = ToggleBind.Box
+
+                ToggleBind.Indicator = Instance.new("Frame")
+                ToggleBind.Indicator.Name = "Indicator"
+                ToggleBind.Indicator.Parent = ToggleBind.Box
+                ToggleBind.Indicator.BackgroundColor3 = accentColor
+                ToggleBind.Indicator.Position = ToggleBind.State and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
+                ToggleBind.Indicator.Size = UDim2.new(0, 12, 0, 12)
+                ToggleBind.Indicator.BackgroundTransparency = ToggleBind.State and 0 or 1
+
+                ToggleBind.Btn = Instance.new("TextButton")
+                ToggleBind.Btn.Parent = ToggleBind.Frame
+                ToggleBind.Btn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                ToggleBind.Btn.Position = UDim2.new(1, -90, 0.5, -10)
+                ToggleBind.Btn.Size = UDim2.new(0, 50, 0, 20)
+                ToggleBind.Btn.Font = Enum.Font.SourceSans
+                ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                ToggleBind.Btn.TextSize = 12
+
+                local BtnStroke = Instance.new("UIStroke")
+                BtnStroke.Color = Color3.fromRGB(34, 26, 40)
+                BtnStroke.Parent = ToggleBind.Btn
+
+                local function Update()
+                    if ToggleBind.State then
+                        Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
+                        Tween(BoxStroke, 0.2, {Color = accentColor})
+                    else
+                        Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
+                        Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
+                    end
+                    pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
+                end
+
+                ToggleBind.Box.MouseButton1Click:Connect(function()
+                    ToggleBind.State = not ToggleBind.State
+                    Update()
+                end)
+
+                ToggleBind.Btn.MouseButton1Click:Connect(function()
+                    ToggleBind.Waiting = true
+                    ToggleBind.Btn.Text = "..."
+                end)
+
+                UserInputService.InputBegan:Connect(function(input)
+                    if ToggleBind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then
+                        ToggleBind.Key = input.KeyCode
+                        ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                        ToggleBind.Waiting = false
+                        Update()
+                    elseif not ToggleBind.Waiting and input.KeyCode == ToggleBind.Key then
+                        ToggleBind.State = not ToggleBind.State
+                        Update()
+                    end
+                end)
+
+                return ToggleBind
+            end
+
             function Section:CreateCodeblock(text, code)
                 local Codeblock = {}
                 local rawCode = code:gsub("<font.->", ""):gsub("</font>", "")
@@ -935,6 +1030,8 @@ function Library:CreateWindow(options)
                         Dropdown.Selected = option
                         Update()
                         Dropdown.Opened = false
+                        Dropdown.Frame.ZIndex = 5
+                        Section.Frame.ZIndex = 1
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                         task.delay(0.3, function() Dropdown.List.Visible = false end)
                         Dropdown.Icon.Text = "+"
@@ -945,11 +1042,13 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
+                            Dropdown.Frame.ZIndex = 100
                             Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
                         else
+                            Dropdown.Frame.ZIndex = 5
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                             task.delay(0.3, function() 
                                 Dropdown.List.Visible = false 
@@ -1055,11 +1154,13 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
+                            Dropdown.Frame.ZIndex = 100
                             Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
                         else
+                            Dropdown.Frame.ZIndex = 5
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                             task.delay(0.3, function() 
                                 Dropdown.List.Visible = false 
