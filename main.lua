@@ -1,4 +1,8 @@
-local Library = {}
+local Library = {
+    AutoExecute = false,
+    Folder = "UnifiedConfigs"
+}
+
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -23,7 +27,43 @@ local function RandomString(length)
     return res
 end
 
+if isfolder and makefolder then
+    if not isfolder("UnifiedConfigs") then makefolder("UnifiedConfigs") end
+end
+
+local function GetAutoExecFile()
+    return "UnifiedConfigs/AutoExec.txt"
+end
+
+local function SetAutoExec(state)
+    if writefile then
+        writefile(GetAutoExecFile(), tostring(state))
+    end
+end
+
+local function GetAutoExec()
+    if isfile and readfile and isfile(GetAutoExecFile()) then
+        return readfile(GetAutoExecFile()) == "true"
+    end
+    return false
+end
+
+Library.AutoExecute = GetAutoExec()
+
+function Library:SetAutoExecute(state)
+    Library.AutoExecute = state
+    SetAutoExec(state)
+end
+
 function Library:Rejoin()
+    if Library.AutoExecute and queue_on_teleport then
+        queue_on_teleport([[
+            repeat task.wait() until game:IsLoaded()
+            if isfile and isfile("UnifiedConfigs/LastScript.txt") then
+                loadstring(readfile("UnifiedConfigs/LastScript.txt"))()
+            end
+        ]])
+    end
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
 end
 
@@ -39,6 +79,14 @@ function Library:ServerHop()
     end)
     
     if Success and #Servers > 0 then
+        if Library.AutoExecute and queue_on_teleport then
+            queue_on_teleport([[
+                repeat task.wait() until game:IsLoaded()
+                if isfile and isfile("UnifiedConfigs/LastScript.txt") then
+                    loadstring(readfile("UnifiedConfigs/LastScript.txt"))()
+                end
+            ]])
+        end
         TeleportService:TeleportToPlaceInstance(game.PlaceId, Servers[math.random(1, #Servers)], LocalPlayer)
     end
 end
