@@ -6,7 +6,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 local function Tween(obj, info, goal)
-    local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), goal)
+    local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
     tween:Play()
     return tween
 end
@@ -91,7 +91,7 @@ function Library:CreateWindow(options)
 
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.Parent = UI.TabContainer
-    TabLayout.Padding = UDim.new(0, 4)
+    TabLayout.Padding = UDim.new(0, 6)
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     UI.UserPanel = Instance.new("Frame")
@@ -160,26 +160,28 @@ function Library:CreateWindow(options)
         Tab.Button.Parent = UI.TabContainer
         Tab.Button.BackgroundColor3 = accentColor
         Tab.Button.BackgroundTransparency = 1
-        Tab.Button.Size = UDim2.new(1, 0, 0, 30)
+        Tab.Button.Size = UDim2.new(1, 0, 0, 34)
         Tab.Button.Font = Enum.Font.SourceSans
-        Tab.Button.Text = "      " .. name
+        Tab.Button.Text = name
         Tab.Button.TextColor3 = Color3.fromRGB(150, 150, 150)
         Tab.Button.TextSize = 15
-        Tab.Button.TextXAlignment = Enum.TextXAlignment.Left
         Tab.Button.AutoButtonColor = false
+
+        local TabCorner = Instance.new("UICorner")
+        TabCorner.CornerRadius = UDim.new(0, 4)
+        TabCorner.Parent = Tab.Button
 
         local TabIndicator = Instance.new("Frame")
         TabIndicator.Name = "Indicator"
         TabIndicator.Parent = Tab.Button
         TabIndicator.BackgroundColor3 = accentColor
-        TabIndicator.Position = UDim2.new(0, 8, 0.5, -4)
-        TabIndicator.Size = UDim2.new(0, 8, 0, 8)
+        TabIndicator.Position = UDim2.new(0, 0, 0, 0)
+        TabIndicator.Size = UDim2.new(0, 2, 1, 0)
         TabIndicator.BackgroundTransparency = 1
 
-        local TabIndicatorStroke = Instance.new("UIStroke")
-        TabIndicatorStroke.Color = accentColor
-        TabIndicatorStroke.Thickness = 1.2
-        TabIndicatorStroke.Parent = TabIndicator
+        local TabIndicatorCorner = Instance.new("UICorner")
+        TabIndicatorCorner.CornerRadius = UDim.new(0, 4)
+        TabIndicatorCorner.Parent = TabIndicator
 
         Tab.Page = Instance.new("ScrollingFrame")
         Tab.Page.Name = name .. "Page"
@@ -212,23 +214,21 @@ function Library:CreateWindow(options)
             if UI.CurrentTab then
                 UI.CurrentTab.Page.Visible = false
                 Tween(UI.CurrentTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
-                Tween(UI.CurrentTab.Button.Indicator, 0.3, {BackgroundTransparency = 1, Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(0, 8, 0.5, -4)})
+                Tween(UI.CurrentTab.Button.Indicator, 0.3, {BackgroundTransparency = 1})
             end
             
             Tab.Page.Visible = true
             UI.CurrentTab = Tab
-            Tween(Tab.Button, 0.3, {TextColor3 = accentColor, BackgroundTransparency = 0.95})
-            Tween(TabIndicator, 0.3, {BackgroundTransparency = 0, Size = UDim2.new(0, 4, 0, 12), Position = UDim2.new(0, 10, 0.5, -6)})
+            Tween(Tab.Button, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
+            Tween(TabIndicator, 0.3, {BackgroundTransparency = 0})
         end)
 
         if #UI.Tabs == 0 then
             Tab.Page.Visible = true
             UI.CurrentTab = Tab
-            Tab.Button.TextColor3 = accentColor
-            Tab.Button.BackgroundTransparency = 0.95
+            Tab.Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Tab.Button.BackgroundTransparency = 0.92
             TabIndicator.BackgroundTransparency = 0
-            TabIndicator.Size = UDim2.new(0, 4, 0, 12)
-            TabIndicator.Position = UDim2.new(0, 10, 0.5, -6)
         end
 
         function Tab:CreateSection(title)
@@ -297,8 +297,8 @@ function Library:CreateWindow(options)
                 BtnStroke.Parent = Button.Frame
 
                 Button.Frame.MouseEnter:Connect(function()
-                    Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(14, 13, 14)})
-                    Tween(BtnStroke, 0.2, {Color = accentColor})
+                    Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(16, 15, 16)})
+                    Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(50, 40, 60)})
                 end)
 
                 Button.Frame.MouseLeave:Connect(function()
@@ -310,8 +310,8 @@ function Library:CreateWindow(options)
                     local ripple = Instance.new("Frame")
                     ripple.Name = "Ripple"
                     ripple.Parent = Button.Frame
-                    ripple.BackgroundColor3 = accentColor
-                    ripple.BackgroundTransparency = 0.8
+                    ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    ripple.BackgroundTransparency = 0.9
                     ripple.BorderSizePixel = 0
                     ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
                     ripple.Size = UDim2.new(0, 0, 0, 0)
