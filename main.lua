@@ -11,6 +11,16 @@ local function Tween(obj, info, goal)
     return tween
 end
 
+local function RandomString(length)
+    local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local res = ""
+    for i = 1, length do
+        local rand = math.random(1, #chars)
+        res = res .. string.sub(chars, rand, rand)
+    end
+    return res
+end
+
 function Library:CreateWindow(options)
     options = options or {}
     local windowTitle = options.Name or "UNIFIED"
@@ -22,17 +32,17 @@ function Library:CreateWindow(options)
     }
     
     UI.ScreenGui = Instance.new("ScreenGui")
-    UI.ScreenGui.Name = "Unified_V4_6"
+    UI.ScreenGui.Name = RandomString(16)
     UI.ScreenGui.ResetOnSpawn = false
-    UI.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    UI.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- Changed to Sibling for better clipping behavior
     
+    local coreGui = game:GetService("CoreGui")
     if gethui then
         UI.ScreenGui.Parent = gethui()
-    elseif syn and syn.protect_gui then
-        syn.protect_gui(UI.ScreenGui)
-        UI.ScreenGui.Parent = game:GetService("CoreGui")
+    elseif coreGui:FindFirstChild("RobloxGui") then
+        UI.ScreenGui.Parent = coreGui.RobloxGui
     else
-        UI.ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+        UI.ScreenGui.Parent = coreGui
     end
 
     UI.MainFrame = Instance.new("Frame")
@@ -43,10 +53,13 @@ function Library:CreateWindow(options)
     UI.MainFrame.Position = UDim2.new(0.5, -315, 0.5, -210)
     UI.MainFrame.Size = UDim2.new(0, 630, 0, 420)
     UI.MainFrame.ClipsDescendants = true
+    UI.MainFrame.BackgroundTransparency = 1 -- For opening animation
+    UI.MainFrame.Size = UDim2.new(0, 600, 0, 400) -- Smaller for opening animation scale
 
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = Color3.fromRGB(34, 26, 40)
     MainStroke.Thickness = 1.5
+    MainStroke.Transparency = 1 -- For opening animation
     MainStroke.Parent = UI.MainFrame
 
     UI.LeftPanel = Instance.new("Frame")
@@ -55,11 +68,13 @@ function Library:CreateWindow(options)
     UI.LeftPanel.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
     UI.LeftPanel.BorderSizePixel = 0
     UI.LeftPanel.Size = UDim2.new(0, 180, 1, 0)
+    UI.LeftPanel.BackgroundTransparency = 1 -- For opening animation
 
     local LeftStroke = Instance.new("UIStroke")
     LeftStroke.Color = Color3.fromRGB(34, 26, 40)
     LeftStroke.Thickness = 1.5
     LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    LeftStroke.Transparency = 1 -- For opening animation
     LeftStroke.Parent = UI.LeftPanel
 
     UI.LogoContainer = Instance.new("Frame")
@@ -79,6 +94,7 @@ function Library:CreateWindow(options)
     UI.TitleLabel.TextColor3 = accentColor
     UI.TitleLabel.TextSize = 22
     UI.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    UI.TitleLabel.TextTransparency = 1 -- For opening animation
 
     UI.TabContainer = Instance.new("ScrollingFrame")
     UI.TabContainer.Name = "TabContainer"
@@ -101,10 +117,12 @@ function Library:CreateWindow(options)
     UI.UserPanel.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
     UI.UserPanel.Position = UDim2.new(0, 10, 1, -50)
     UI.UserPanel.Size = UDim2.new(1, -20, 0, 40)
+    UI.UserPanel.BackgroundTransparency = 1 -- For opening animation
 
     local UserStroke = Instance.new("UIStroke")
     UserStroke.Color = Color3.fromRGB(34, 26, 40)
     UserStroke.Thickness = 1
+    UserStroke.Transparency = 1 -- For opening animation
     UserStroke.Parent = UI.UserPanel
 
     UI.UserName = Instance.new("TextLabel")
@@ -118,6 +136,7 @@ function Library:CreateWindow(options)
     UI.UserName.TextColor3 = Color3.fromRGB(180, 180, 180)
     UI.UserName.TextSize = 14
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
+    UI.UserName.TextTransparency = 1 -- For opening animation
 
     UI.MainContent = Instance.new("Frame")
     UI.MainContent.Name = "MainContent"
@@ -127,28 +146,45 @@ function Library:CreateWindow(options)
     UI.MainContent.Size = UDim2.new(1, -180, 1, 0)
     UI.MainContent.ClipsDescendants = true
 
+    -- Opening Animation
+    task.spawn(function()
+        Tween(UI.MainFrame, 0.6, {Size = UDim2.new(0, 630, 0, 420), Position = UDim2.new(0.5, -315, 0.5, -210), BackgroundTransparency = 0})
+        Tween(MainStroke, 0.6, {Transparency = 0})
+        Tween(UI.LeftPanel, 0.6, {BackgroundTransparency = 0})
+        Tween(LeftStroke, 0.6, {Transparency = 0})
+        Tween(UI.TitleLabel, 0.8, {TextTransparency = 0})
+        Tween(UI.UserPanel, 0.8, {BackgroundTransparency = 0})
+        Tween(UserStroke, 0.8, {Transparency = 0})
+        Tween(UI.UserName, 0.8, {TextTransparency = 0})
+    end)
+
     local dragging, dragInput, dragStart, startPos
-    UI.MainFrame.InputBegan:Connect(function(input)
+    local function UpdateDrag(input)
+        local delta = input.Position - dragStart
+        UI.MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    -- Fixed Dragging: Only allow dragging from LeftPanel or LogoContainer
+    local function StartDragging(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = UI.MainFrame.Position
+            
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
                 end
             end)
         end
-    end)
-    UI.MainFrame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
+    end
+
+    UI.LeftPanel.InputBegan:Connect(StartDragging)
+    UI.LogoContainer.InputBegan:Connect(StartDragging)
+
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            UI.MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            UpdateDrag(input)
         end
     end)
 
@@ -204,7 +240,7 @@ function Library:CreateWindow(options)
         Tab.Page.BorderSizePixel = 0
         Tab.Page.Size = UDim2.new(1, 0, 1, 0)
         Tab.Page.Visible = false
-        Tab.Page.ClipsDescendants = false
+        Tab.Page.ClipsDescendants = true -- Ensure clipping
 
         Tab.LeftColumn = Instance.new("ScrollingFrame")
         Tab.LeftColumn.Name = "LeftColumn"
@@ -215,7 +251,7 @@ function Library:CreateWindow(options)
         Tab.LeftColumn.Size = UDim2.new(0.5, -15, 1, -20)
         Tab.LeftColumn.ScrollBarThickness = 0
         Tab.LeftColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Tab.LeftColumn.ClipsDescendants = true -- Changed to true to fix overflow
+        Tab.LeftColumn.ClipsDescendants = true 
 
         Tab.RightColumn = Instance.new("ScrollingFrame")
         Tab.RightColumn.Name = "RightColumn"
@@ -226,7 +262,7 @@ function Library:CreateWindow(options)
         Tab.RightColumn.Size = UDim2.new(0.5, -15, 1, -20)
         Tab.RightColumn.ScrollBarThickness = 0
         Tab.RightColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Tab.RightColumn.ClipsDescendants = true -- Changed to true to fix overflow
+        Tab.RightColumn.ClipsDescendants = true 
 
         local LeftLayout = Instance.new("UIListLayout")
         LeftLayout.Parent = Tab.LeftColumn
@@ -239,27 +275,66 @@ function Library:CreateWindow(options)
         RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
         LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Tab.LeftColumn.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y)
+            Tab.LeftColumn.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 20)
         end)
 
         RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Tab.RightColumn.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y)
+            Tab.RightColumn.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 20)
+        end)
+
+        Tab.Button.MouseEnter:Connect(function()
+            if UI.CurrentTab ~= Tab then
+                Tween(Tab.Button, 0.2, {TextColor3 = Color3.fromRGB(200, 200, 200), BackgroundTransparency = 0.96})
+            end
+        end)
+
+        Tab.Button.MouseLeave:Connect(function()
+            if UI.CurrentTab ~= Tab then
+                Tween(Tab.Button, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
+            end
         end)
 
         Tab.Button.MouseButton1Click:Connect(function()
             if UI.CurrentTab == Tab then return end
             
             if UI.CurrentTab then
-                UI.CurrentTab.Page.Visible = false
-                Tween(UI.CurrentTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
-                Tween(UI.CurrentTab.Button.Indicator, 0.3, {BackgroundTransparency = 1})
-                if UI.CurrentTab.Icon then
-                    Tween(UI.CurrentTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
+                local oldTab = UI.CurrentTab
+                Tween(oldTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
+                Tween(oldTab.Button.Indicator, 0.3, {BackgroundTransparency = 1})
+                if oldTab.Icon then
+                    Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
                 end
+                
+                -- Fade out old page
+                task.spawn(function()
+                    local canvasGroup = oldTab.Page:FindFirstChild("CanvasGroup") or Instance.new("CanvasGroup", oldTab.Page)
+                    if not oldTab.Page:FindFirstChild("CanvasGroup") then
+                        canvasGroup.Size = UDim2.new(1,0,1,0)
+                        canvasGroup.BackgroundTransparency = 1
+                        for _, child in pairs(oldTab.Page:GetChildren()) do
+                            if child ~= canvasGroup then child.Parent = canvasGroup end
+                        end
+                    end
+                    Tween(canvasGroup, 0.2, {GroupTransparency = 1})
+                    task.delay(0.2, function() oldTab.Page.Visible = false end)
+                end)
             end
             
-            Tab.Page.Visible = true
             UI.CurrentTab = Tab
+            Tab.Page.Visible = true
+            
+            -- Fade in new page
+            local canvasGroup = Tab.Page:FindFirstChild("CanvasGroup") or Instance.new("CanvasGroup", Tab.Page)
+            if not Tab.Page:FindFirstChild("CanvasGroup") then
+                canvasGroup.Size = UDim2.new(1,0,1,0)
+                canvasGroup.BackgroundTransparency = 1
+                for _, child in pairs(Tab.Page:GetChildren()) do
+                    if child ~= canvasGroup then child.Parent = canvasGroup end
+                end
+            end
+            canvasGroup.GroupTransparency = 1
+            Tween(canvasGroup, 0.4, {GroupTransparency = 0})
+
             Tween(Tab.Button, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
             Tween(TabIndicator, 0.3, {BackgroundTransparency = 0})
             if Tab.Icon then
@@ -288,12 +363,21 @@ function Library:CreateWindow(options)
             Section.Frame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
             Section.Frame.BorderSizePixel = 0
             Section.Frame.Size = UDim2.new(1, 0, 0, 40)
-            Section.Frame.ClipsDescendants = true -- Changed to true to fix overflow within sections
+            Section.Frame.ClipsDescendants = true
 
             local SectionStroke = Instance.new("UIStroke")
             SectionStroke.Color = Color3.fromRGB(34, 26, 40)
             SectionStroke.Thickness = 1.2
+            SectionStroke.Transparency = 0.5
             SectionStroke.Parent = Section.Frame
+
+            Section.Frame.MouseEnter:Connect(function()
+                Tween(SectionStroke, 0.3, {Color = accentColor, Transparency = 0.2})
+            end)
+
+            Section.Frame.MouseLeave:Connect(function()
+                Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(34, 26, 40), Transparency = 0.5})
+            end)
 
             Section.TitleLabel = Instance.new("TextLabel")
             Section.TitleLabel.Name = "Title"
@@ -501,17 +585,18 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         sliding = true
                         Update(input)
+                        -- Stop propagation if needed, though in Roblox this is default for buttons/bars
                     end
                 end)
 
                 UserInputService.InputChanged:Connect(function(input)
-                    if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                         Update(input)
                     end
                 end)
 
                 UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         sliding = false
                     end
                 end)
@@ -765,12 +850,16 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
+                            Section.Frame.ZIndex = 50 -- Bring section to front when dropdown is open
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
                         else
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() Dropdown.List.Visible = false end)
+                            task.delay(0.3, function() 
+                                Dropdown.List.Visible = false 
+                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end -- Reset ZIndex
+                            end)
                             Dropdown.Icon.Text = "+"
                         end
                     end
@@ -871,12 +960,16 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
+                            Section.Frame.ZIndex = 50 -- Bring section to front when dropdown is open
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
                         else
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() Dropdown.List.Visible = false end)
+                            task.delay(0.3, function() 
+                                Dropdown.List.Visible = false 
+                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end -- Reset ZIndex
+                            end)
                             Dropdown.Icon.Text = "+"
                         end
                     end
