@@ -56,7 +56,9 @@ function Library:CreateWindow(options)
         Folder = configName
     }
 
-    if not isfolder(UI.Folder) then makefolder(UI.Folder) end
+    if isfolder and makefolder then
+        if not isfolder(UI.Folder) then makefolder(UI.Folder) end
+    end
 
     function UI:SaveConfig(name)
         local config = {}
@@ -69,11 +71,13 @@ function Library:CreateWindow(options)
                 config[flag] = value
             end
         end
-        writefile(UI.Folder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
+        if writefile then
+            writefile(UI.Folder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
+        end
     end
 
     function UI:LoadConfig(name)
-        if isfile(UI.Folder .. "/" .. name .. ".json") then
+        if isfile and readfile and isfile(UI.Folder .. "/" .. name .. ".json") then
             local config = HttpService:JSONDecode(readfile(UI.Folder .. "/" .. name .. ".json"))
             for flag, value in pairs(config) do
                 if UI.Flags[flag] ~= nil then
@@ -88,16 +92,18 @@ function Library:CreateWindow(options)
     end
 
     function UI:DeleteConfig(name)
-        if isfile(UI.Folder .. "/" .. name .. ".json") then
+        if delfile and isfile and isfile(UI.Folder .. "/" .. name .. ".json") then
             delfile(UI.Folder .. "/" .. name .. ".json")
         end
     end
 
     function UI:GetConfigs()
         local configs = {}
-        for _, v in pairs(listfiles(UI.Folder)) do
-            local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
-            if name then table.insert(configs, name) end
+        if listfiles and isfolder and isfolder(UI.Folder) then
+            for _, v in pairs(listfiles(UI.Folder)) do
+                local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
+                if name then table.insert(configs, name) end
+            end
         end
         return configs
     end
@@ -114,7 +120,7 @@ function Library:CreateWindow(options)
             end
         end
     end
-    
+
     UI.ScreenGui = Instance.new("ScreenGui")
     UI.ScreenGui.Name = RandomString(16)
     UI.ScreenGui.ResetOnSpawn = false
@@ -242,12 +248,9 @@ function Library:CreateWindow(options)
         local isThanks = true
         while true do
             task.wait(10)
-            
             local nextText = isThanks and (" <font color=\"rgb(150, 150, 150)\"> • </font> " .. LocalPlayer.Name:lower()) or " <font color=\"rgb(150, 150, 150)\"> • </font> <i>Thanks for using!</i>"
             isThanks = not isThanks
-
             Tween(UI.UserName, 0.5, {Position = UDim2.new(0, 35, 0, 15), TextTransparency = 1})
-            
             task.delay(0.5, function()
                 UI.UserName.Text = nextText
                 UI.UserName.Position = UDim2.new(0, 35, 0, -15)
@@ -351,7 +354,6 @@ function Library:CreateWindow(options)
             dragging = true
             dragStart = input.Position
             startPos = UI.MainFrame.Position
-            
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -371,34 +373,40 @@ function Library:CreateWindow(options)
 
     function UI:CreateTab(name, iconId)
         local Tab = {
-            Sections = {}
+            Sections = {},
+            Button = nil,
+            Page = nil,
+            Content = nil,
+            Indicator = nil,
+            Icon = nil
         }
-        
         table.insert(UI.Tabs, Tab)
-        Tab.Button = Instance.new("TextButton")
-        Tab.Button.Name = name .. "Tab"
-        Tab.Button.Parent = UI.TabContainer
-        Tab.Button.BackgroundColor3 = accentColor
-        Tab.Button.BackgroundTransparency = 1
-        Tab.Button.Size = UDim2.new(1, 0, 0, 34)
-        Tab.Button.Font = Enum.Font.SourceSans
-        Tab.Button.Text = iconId and "      " .. name or name
-        Tab.Button.TextColor3 = Color3.fromRGB(150, 150, 150)
-        Tab.Button.TextSize = 15
-        Tab.Button.AutoButtonColor = false
+
+        local TabBtn = Instance.new("TextButton")
+        TabBtn.Name = tostring(name) .. "Tab"
+        TabBtn.Parent = UI.TabContainer
+        TabBtn.BackgroundColor3 = accentColor
+        TabBtn.BackgroundTransparency = 1
+        TabBtn.Size = UDim2.new(1, 0, 0, 34)
+        TabBtn.Font = Enum.Font.SourceSans
+        TabBtn.Text = iconId and "      " .. tostring(name) or tostring(name)
+        TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+        TabBtn.TextSize = 15
+        TabBtn.AutoButtonColor = false
+        Tab.Button = TabBtn
 
         local TabCorner = Instance.new("UICorner")
         TabCorner.CornerRadius = UDim.new(0, 4)
-        TabCorner.Parent = Tab.Button
+        TabCorner.Parent = TabBtn
 
         local TabIndicator = Instance.new("Frame")
         TabIndicator.Name = "Indicator"
-        TabIndicator.Parent = Tab.Button
-        Tab.Indicator = TabIndicator
+        TabIndicator.Parent = TabBtn
         TabIndicator.BackgroundColor3 = accentColor
         TabIndicator.Position = UDim2.new(0, 0, 0, 0)
         TabIndicator.Size = UDim2.new(0, 2, 1, 0)
         TabIndicator.BackgroundTransparency = 1
+        Tab.Indicator = TabIndicator
 
         local TabIndicatorCorner = Instance.new("UICorner")
         TabIndicatorCorner.CornerRadius = UDim.new(0, 4)
@@ -407,7 +415,7 @@ function Library:CreateWindow(options)
         if iconId then
             local TabIcon = Instance.new("ImageLabel")
             TabIcon.Name = "Icon"
-            TabIcon.Parent = Tab.Button
+            TabIcon.Parent = TabBtn
             TabIcon.BackgroundTransparency = 1
             TabIcon.Position = UDim2.new(0, 8, 0.5, -8)
             TabIcon.Size = UDim2.new(0, 16, 0, 16)
@@ -416,59 +424,57 @@ function Library:CreateWindow(options)
             Tab.Icon = TabIcon
         end
 
-        Tab.Page = Instance.new("Frame")
-        Tab.Page.Name = name .. "Page"
-        Tab.Page.Parent = UI.MainContent
-        Tab.Page.BackgroundTransparency = 1
-        Tab.Page.BorderSizePixel = 0
-        Tab.Page.Size = UDim2.new(1, 0, 1, 0)
-        Tab.Page.Visible = false
-        Tab.Page.ClipsDescendants = true 
+        local TabPage = Instance.new("Frame")
+        TabPage.Name = tostring(name) .. "Page"
+        TabPage.Parent = UI.MainContent
+        TabPage.BackgroundTransparency = 1
+        TabPage.BorderSizePixel = 0
+        TabPage.Size = UDim2.new(1, 0, 1, 0)
+        TabPage.Visible = false
+        TabPage.ClipsDescendants = true 
+        Tab.Page = TabPage
 
-        Tab.Content = Instance.new("ScrollingFrame")
-        Tab.Content.Name = "Content"
-        Tab.Content.Parent = Tab.Page
-        Tab.Content.BackgroundTransparency = 1
-        Tab.Content.BorderSizePixel = 0
-        Tab.Content.Position = UDim2.new(0, 10, 0, 10)
-        Tab.Content.Size = UDim2.new(1, -20, 1, -20)
-        Tab.Content.ScrollBarThickness = 2
-        Tab.Content.ScrollBarImageColor3 = accentColor
-        Tab.Content.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Tab.Content.ClipsDescendants = false
+        local TabContent = Instance.new("ScrollingFrame")
+        TabContent.Name = "Content"
+        TabContent.Parent = TabPage
+        TabContent.BackgroundTransparency = 1
+        TabContent.BorderSizePixel = 0
+        TabContent.Position = UDim2.new(0, 10, 0, 10)
+        TabContent.Size = UDim2.new(1, -20, 1, -20)
+        TabContent.ScrollBarThickness = 2
+        TabContent.ScrollBarImageColor3 = accentColor
+        TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+        TabContent.ClipsDescendants = false
+        Tab.Content = TabContent
 
         local ContentLayout = Instance.new("UIListLayout")
-        ContentLayout.Parent = Tab.Content
+        ContentLayout.Parent = TabContent
         ContentLayout.Padding = UDim.new(0, 12)
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
         ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Tab.Content.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 20)
+            TabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 20)
         end)
 
-        Tab.Button.MouseEnter:Connect(function()
+        TabBtn.MouseEnter:Connect(function()
             if UI.CurrentTab ~= Tab then
-                Tween(Tab.Button, 0.2, {TextColor3 = Color3.fromRGB(200, 200, 200), BackgroundTransparency = 0.96})
+                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(200, 200, 200), BackgroundTransparency = 0.96})
             end
         end)
 
-        Tab.Button.MouseLeave:Connect(function()
+        TabBtn.MouseLeave:Connect(function()
             if UI.CurrentTab ~= Tab then
-                Tween(Tab.Button, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
+                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
             end
         end)
 
-        Tab.Button.MouseButton1Click:Connect(function()
+        TabBtn.MouseButton1Click:Connect(function()
             if UI.CurrentTab == Tab then return end
-            
             if UI.CurrentTab then
                 local oldTab = UI.CurrentTab
                 Tween(oldTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
-                Tween(oldTab.Button.Indicator, 0.3, {BackgroundTransparency = 1})
-                if oldTab.Icon then
-                    Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
-                end
-                
+                if oldTab.Indicator then Tween(oldTab.Indicator, 0.3, {BackgroundTransparency = 1}) end
+                if oldTab.Icon then Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)}) end
                 local oldGroup = oldTab.Page:FindFirstChild("CanvasGroup")
                 if oldGroup then
                     Tween(oldGroup, 0.3, {GroupTransparency = 1, Size = UDim2.new(1, -20, 1, -20), Position = UDim2.new(0, 10, 0, 10)})
@@ -477,74 +483,54 @@ function Library:CreateWindow(options)
                     oldTab.Page.Visible = false
                 end
             end
-            
             UI.CurrentTab = Tab
-            Tab.Page.Visible = true
-            
-            local canvasGroup = Tab.Page:FindFirstChild("CanvasGroup")
+            TabPage.Visible = true
+            local canvasGroup = TabPage:FindFirstChild("CanvasGroup")
             if not canvasGroup then
-                canvasGroup = Instance.new("CanvasGroup", Tab.Page)
+                canvasGroup = Instance.new("CanvasGroup", TabPage)
                 canvasGroup.Name = "CanvasGroup"
                 canvasGroup.Size = UDim2.new(1, 0, 1, 0)
                 canvasGroup.BackgroundTransparency = 1
-                for _, child in pairs(Tab.Page:GetChildren()) do
+                for _, child in pairs(TabPage:GetChildren()) do
                     if child ~= canvasGroup then child.Parent = canvasGroup end
                 end
             end
-            
             canvasGroup.GroupTransparency = 1
             canvasGroup.Size = UDim2.new(1, 40, 1, 40)
             canvasGroup.Position = UDim2.new(0, -20, 0, -20)
-            
             Tween(canvasGroup, 0.4, {GroupTransparency = 0, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)})
-
-            Tween(Tab.Button, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
-            Tween(TabIndicator, 0.3, {BackgroundTransparency = 0})
-            if Tab.Icon then
-                Tween(Tab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(255, 255, 255)})
-            end
+            Tween(TabBtn, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
+            if Tab.Indicator then Tween(Tab.Indicator, 0.3, {BackgroundTransparency = 0}) end
+            if Tab.Icon then Tween(Tab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(255, 255, 255)}) end
         end)
 
-        if #UI.Tabs == 0 then
-            Tab.Page.Visible = true
+        if #UI.Tabs == 1 then
+            TabPage.Visible = true
             UI.CurrentTab = Tab
-            Tab.Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Tab.Button.BackgroundTransparency = 0.92
+            TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TabBtn.BackgroundTransparency = 0.92
             TabIndicator.BackgroundTransparency = 0
-            if Tab.Icon then
-                Tab.Icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-            end
+            if Tab.Icon then Tab.Icon.ImageColor3 = Color3.fromRGB(255, 255, 255) end
         end
 
         function Tab:CreateSection(title)
-            local Section = {
-                Elements = {}
-            }
-            local parent = Tab.Content
-            
+            local Section = { Elements = {} }
             table.insert(Tab.Sections, Section)
+            local parent = Tab.Content
             Section.Frame = Instance.new("Frame")
-            Section.Frame.Name = title .. "Section"
+            Section.Frame.Name = tostring(title) .. "Section"
             Section.Frame.Parent = parent
             Section.Frame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
             Section.Frame.BorderSizePixel = 0
             Section.Frame.Size = UDim2.new(1, 0, 0, 40)
             Section.Frame.ClipsDescendants = false
-
             local SectionStroke = Instance.new("UIStroke")
             SectionStroke.Color = Color3.fromRGB(34, 26, 40)
             SectionStroke.Thickness = 1.2
             SectionStroke.Transparency = 0.5
             SectionStroke.Parent = Section.Frame
-
-            Section.Frame.MouseEnter:Connect(function()
-                Tween(SectionStroke, 0.3, {Color = accentColor, Transparency = 0.2})
-            end)
-
-            Section.Frame.MouseLeave:Connect(function()
-                Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(34, 26, 40), Transparency = 0.5})
-            end)
-
+            Section.Frame.MouseEnter:Connect(function() Tween(SectionStroke, 0.3, {Color = accentColor, Transparency = 0.2}) end)
+            Section.Frame.MouseLeave:Connect(function() Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(34, 26, 40), Transparency = 0.5}) end)
             Section.TitleLabel = Instance.new("TextLabel")
             Section.TitleLabel.Name = "Title"
             Section.TitleLabel.Parent = Section.Frame
@@ -556,7 +542,6 @@ function Library:CreateWindow(options)
             Section.TitleLabel.TextColor3 = accentColor
             Section.TitleLabel.TextSize = 13
             Section.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
             local Container = Instance.new("Frame")
             Container.Name = "Container"
             Container.Parent = Section.Frame
@@ -564,21 +549,16 @@ function Library:CreateWindow(options)
             Container.Position = UDim2.new(0, 12, 0, 35)
             Container.Size = UDim2.new(1, -24, 0, 0)
             Container.ClipsDescendants = false
-
             local ContainerLayout = Instance.new("UIListLayout")
             ContainerLayout.Parent = Container
             ContainerLayout.Padding = UDim.new(0, 6)
-
             ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
                 Container.Size = UDim2.new(1, -24, 0, ContainerLayout.AbsoluteContentSize.Y + 10)
                 Section.Frame.Size = UDim2.new(1, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 45)
             end)
 
             function Section:CreateButton(text, callback)
-                local Button = {
-                    Callback = callback or function() end
-                }
-                
+                local Button = { Callback = callback or function() end }
                 table.insert(Section.Elements, Button)
                 Button.Frame = Instance.new("TextButton")
                 Button.Frame.Name = text .. "Button"
@@ -591,22 +571,12 @@ function Library:CreateWindow(options)
                 Button.Frame.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Button.Frame.TextSize = 14
                 Button.Frame.AutoButtonColor = false
-
                 local BtnStroke = Instance.new("UIStroke")
                 BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                 BtnStroke.Thickness = 1
                 BtnStroke.Parent = Button.Frame
-
-                Button.Frame.MouseEnter:Connect(function()
-                    Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(16, 15, 16)})
-                    Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(50, 40, 60)})
-                end)
-
-                Button.Frame.MouseLeave:Connect(function()
-                    Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(11, 10, 11)})
-                    Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
-                end)
-
+                Button.Frame.MouseEnter:Connect(function() Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(16, 15, 16)}) Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(50, 40, 60)}) end)
+                Button.Frame.MouseLeave:Connect(function() Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(11, 10, 11)}) Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) end)
                 Button.Frame.MouseButton1Click:Connect(function()
                     local ripple = Instance.new("Frame")
                     ripple.Name = "Ripple"
@@ -616,33 +586,23 @@ function Library:CreateWindow(options)
                     ripple.BorderSizePixel = 0
                     ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
                     ripple.Size = UDim2.new(0, 0, 0, 0)
-                    
                     Tween(ripple, 0.4, {Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
                     task.delay(0.4, function() ripple:Destroy() end)
-                    
                     pcall(Button.Callback)
                 end)
-                
                 return Button
             end
 
             function Section:CreateToggle(text, flag, default, callback)
-                local Toggle = {
-                    State = default or false,
-                    Flag = flag,
-                    Callback = callback or function() end
-                }
-                
+                local Toggle = { State = default or false, Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Toggle)
                 if flag then UI.Flags[flag] = Toggle.State end
-
                 Toggle.Frame = Instance.new("TextButton")
                 Toggle.Frame.Name = text .. "Toggle"
                 Toggle.Frame.Parent = Container
                 Toggle.Frame.BackgroundTransparency = 1
                 Toggle.Frame.Size = UDim2.new(1, 0, 0, 28)
                 Toggle.Frame.Text = ""
-
                 Toggle.Label = Instance.new("TextLabel")
                 Toggle.Label.Parent = Toggle.Frame
                 Toggle.Label.BackgroundTransparency = 1
@@ -652,19 +612,16 @@ function Library:CreateWindow(options)
                 Toggle.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Toggle.Label.TextSize = 14
                 Toggle.Label.TextXAlignment = Enum.TextXAlignment.Left
-
                 Toggle.Box = Instance.new("Frame")
                 Toggle.Box.Name = "Box"
                 Toggle.Box.Parent = Toggle.Frame
                 Toggle.Box.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Toggle.Box.Position = UDim2.new(1, -30, 0.5, -8)
                 Toggle.Box.Size = UDim2.new(0, 30, 0, 16)
-
                 local BoxStroke = Instance.new("UIStroke")
                 BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                 BoxStroke.Thickness = 1
                 BoxStroke.Parent = Toggle.Box
-
                 Toggle.Indicator = Instance.new("Frame")
                 Toggle.Indicator.Name = "Indicator"
                 Toggle.Indicator.Parent = Toggle.Box
@@ -672,11 +629,8 @@ function Library:CreateWindow(options)
                 Toggle.Indicator.Position = Toggle.State and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
                 Toggle.Indicator.Size = UDim2.new(0, 12, 0, 12)
                 Toggle.Indicator.BackgroundTransparency = Toggle.State and 0 or 1
-
                 local function Update(manually)
-                    if not manually then
-                        Toggle.State = not Toggle.State
-                    end
+                    if not manually then Toggle.State = not Toggle.State end
                     if flag then UI.Flags[flag] = Toggle.State end
                     if Toggle.State then
                         Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
@@ -687,37 +641,20 @@ function Library:CreateWindow(options)
                     end
                     pcall(Toggle.Callback, Toggle.State)
                 end
-
-                Toggle.Update = function(val)
-                    Toggle.State = val
-                    Update(true)
-                end
-
-                Toggle.Frame.MouseButton1Click:Connect(function()
-                    Update()
-                end)
-
+                Toggle.Update = function(val) Toggle.State = val Update(true) end
+                Toggle.Frame.MouseButton1Click:Connect(function() Update() end)
                 return Toggle
             end
 
             function Section:CreateSlider(text, flag, min, max, default, callback)
-                local Slider = {
-                    Value = default or min,
-                    Min = min,
-                    Max = max,
-                    Flag = flag,
-                    Callback = callback or function() end
-                }
-
+                local Slider = { Value = default or min, Min = min, Max = max, Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Slider)
                 if flag then UI.Flags[flag] = Slider.Value end
-
                 Slider.Frame = Instance.new("Frame")
                 Slider.Frame.Name = text .. "Slider"
                 Slider.Frame.Parent = Container
                 Slider.Frame.BackgroundTransparency = 1
                 Slider.Frame.Size = UDim2.new(1, 0, 0, 40)
-
                 Slider.Label = Instance.new("TextLabel")
                 Slider.Label.Parent = Slider.Frame
                 Slider.Label.BackgroundTransparency = 1
@@ -727,7 +664,6 @@ function Library:CreateWindow(options)
                 Slider.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Slider.Label.TextSize = 14
                 Slider.Label.TextXAlignment = Enum.TextXAlignment.Left
-
                 Slider.ValueLabel = Instance.new("TextLabel")
                 Slider.ValueLabel.Parent = Slider.Frame
                 Slider.ValueLabel.BackgroundTransparency = 1
@@ -738,23 +674,19 @@ function Library:CreateWindow(options)
                 Slider.ValueLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
                 Slider.ValueLabel.TextSize = 13
                 Slider.ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
-
                 Slider.Bar = Instance.new("Frame")
                 Slider.Bar.Parent = Slider.Frame
                 Slider.Bar.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Slider.Bar.Position = UDim2.new(0, 0, 0, 25)
                 Slider.Bar.Size = UDim2.new(1, 0, 0, 6)
-
                 local BarStroke = Instance.new("UIStroke")
                 BarStroke.Color = Color3.fromRGB(34, 26, 40)
                 BarStroke.Parent = Slider.Bar
-
                 Slider.Fill = Instance.new("Frame")
                 Slider.Fill.Parent = Slider.Bar
                 Slider.Fill.BackgroundColor3 = accentColor
                 Slider.Fill.BorderSizePixel = 0
                 Slider.Fill.Size = UDim2.new((Slider.Value - min) / (max - min), 0, 1, 0)
-
                 local function Update(input, manually)
                     local pos
                     if manually then
@@ -769,53 +701,26 @@ function Library:CreateWindow(options)
                     Slider.ValueLabel.Text = tostring(Slider.Value)
                     pcall(Slider.Callback, Slider.Value)
                 end
-
-                Slider.Update = function(val)
-                    Update(val, true)
-                end
-
+                Slider.Update = function(val) Update(val, true) end
                 local sliding = false
-                Slider.Bar.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        sliding = true
-                        Update(input)
-                    end
-                end)
-
-                UserInputService.InputChanged:Connect(function(input)
-                    if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                        Update(input)
-                    end
-                end)
-
-                UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        sliding = false
-                    end
-                end)
-
+                Slider.Bar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true Update(input) end end)
+                UserInputService.InputChanged:Connect(function(input) if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then Update(input) end end)
+                UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
                 return Slider
             end
 
             function Section:CreateTextbox(text, flag, placeholder, callback)
-                local Textbox = {
-                    Flag = flag,
-                    Callback = callback or function() end
-                }
-
+                local Textbox = { Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Textbox)
                 if flag then UI.Flags[flag] = "" end
-
                 Textbox.Frame = Instance.new("Frame")
                 Textbox.Frame.Name = text .. "Textbox"
                 Textbox.Frame.Parent = Container
                 Textbox.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Textbox.Frame.Size = UDim2.new(1, 0, 0, 30)
-
                 local BoxStroke = Instance.new("UIStroke")
                 BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                 BoxStroke.Parent = Textbox.Frame
-
                 Textbox.Input = Instance.new("TextBox")
                 Textbox.Input.Parent = Textbox.Frame
                 Textbox.Input.BackgroundTransparency = 1
@@ -828,36 +733,19 @@ function Library:CreateWindow(options)
                 Textbox.Input.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Textbox.Input.TextSize = 14
                 Textbox.Input.TextXAlignment = Enum.TextXAlignment.Left
-
-                Textbox.Update = function(val)
-                    Textbox.Input.Text = val
-                    if flag then UI.Flags[flag] = val end
-                    pcall(Textbox.Callback, val)
-                end
-
-                Textbox.Input.FocusLost:Connect(function(enter)
-                    if enter then
-                        if flag then UI.Flags[flag] = Textbox.Input.Text end
-                        pcall(Textbox.Callback, Textbox.Input.Text)
-                    end
-                end)
-
+                Textbox.Update = function(val) Textbox.Input.Text = val if flag then UI.Flags[flag] = val end pcall(Textbox.Callback, val) end
+                Textbox.Input.FocusLost:Connect(function(enter) if enter then if flag then UI.Flags[flag] = Textbox.Input.Text end pcall(Textbox.Callback, Textbox.Input.Text) end end)
                 return Textbox
             end
 
             function Section:CreateBind(text, default, callback)
-                local Bind = {
-                    Key = default or Enum.KeyCode.F,
-                    Callback = callback or function() end,
-                    Waiting = false
-                }
-
+                local Bind = { Key = default or Enum.KeyCode.F, Callback = callback or function() end, Waiting = false }
+                table.insert(Section.Elements, Bind)
                 Bind.Frame = Instance.new("Frame")
                 Bind.Frame.Name = text .. "Bind"
                 Bind.Frame.Parent = Container
                 Bind.Frame.BackgroundTransparency = 1
                 Bind.Frame.Size = UDim2.new(1, 0, 0, 28)
-
                 Bind.Label = Instance.new("TextLabel")
                 Bind.Label.Parent = Bind.Frame
                 Bind.Label.BackgroundTransparency = 1
@@ -867,7 +755,6 @@ function Library:CreateWindow(options)
                 Bind.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Bind.Label.TextSize = 14
                 Bind.Label.TextXAlignment = Enum.TextXAlignment.Left
-
                 Bind.Btn = Instance.new("TextButton")
                 Bind.Btn.Parent = Bind.Frame
                 Bind.Btn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
@@ -877,43 +764,22 @@ function Library:CreateWindow(options)
                 Bind.Btn.Text = Bind.Key.Name:upper()
                 Bind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                 Bind.Btn.TextSize = 12
-
                 local BtnStroke = Instance.new("UIStroke")
                 BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                 BtnStroke.Parent = Bind.Btn
-
-                Bind.Btn.MouseButton1Click:Connect(function()
-                    Bind.Waiting = true
-                    Bind.Btn.Text = "..."
-                end)
-
-                UserInputService.InputBegan:Connect(function(input)
-                    if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then
-                        Bind.Key = input.KeyCode
-                        Bind.Btn.Text = Bind.Key.Name:upper()
-                        Bind.Waiting = false
-                    elseif not Bind.Waiting and input.KeyCode == Bind.Key then
-                        pcall(Bind.Callback)
-                    end
-                end)
-
+                Bind.Btn.MouseButton1Click:Connect(function() Bind.Waiting = true Bind.Btn.Text = "..." end)
+                UserInputService.InputBegan:Connect(function(input) if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then Bind.Key = input.KeyCode Bind.Btn.Text = Bind.Key.Name:upper() Bind.Waiting = false elseif not Bind.Waiting and input.KeyCode == Bind.Key then pcall(Bind.Callback) end end)
                 return Bind
             end
 
             function Section:CreateToggleBind(text, defaultState, defaultKey, callback)
-                local ToggleBind = {
-                    State = defaultState or false,
-                    Key = defaultKey or Enum.KeyCode.F,
-                    Callback = callback or function() end,
-                    Waiting = false
-                }
-
+                local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Callback = callback or function() end, Waiting = false }
+                table.insert(Section.Elements, ToggleBind)
                 ToggleBind.Frame = Instance.new("Frame")
                 ToggleBind.Frame.Name = text .. "ToggleBind"
                 ToggleBind.Frame.Parent = Container
                 ToggleBind.Frame.BackgroundTransparency = 1
                 ToggleBind.Frame.Size = UDim2.new(1, 0, 0, 28)
-
                 ToggleBind.Label = Instance.new("TextLabel")
                 ToggleBind.Label.Parent = ToggleBind.Frame
                 ToggleBind.Label.BackgroundTransparency = 1
@@ -923,7 +789,6 @@ function Library:CreateWindow(options)
                 ToggleBind.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 ToggleBind.Label.TextSize = 14
                 ToggleBind.Label.TextXAlignment = Enum.TextXAlignment.Left
-
                 ToggleBind.Box = Instance.new("TextButton")
                 ToggleBind.Box.Name = "Box"
                 ToggleBind.Box.Parent = ToggleBind.Frame
@@ -931,12 +796,10 @@ function Library:CreateWindow(options)
                 ToggleBind.Box.Position = UDim2.new(1, -30, 0.5, -8)
                 ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
                 ToggleBind.Box.Text = ""
-
                 local BoxStroke = Instance.new("UIStroke")
                 BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                 BoxStroke.Thickness = 1
                 BoxStroke.Parent = ToggleBind.Box
-
                 ToggleBind.Indicator = Instance.new("Frame")
                 ToggleBind.Indicator.Name = "Indicator"
                 ToggleBind.Indicator.Parent = ToggleBind.Box
@@ -944,7 +807,6 @@ function Library:CreateWindow(options)
                 ToggleBind.Indicator.Position = ToggleBind.State and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
                 ToggleBind.Indicator.Size = UDim2.new(0, 12, 0, 12)
                 ToggleBind.Indicator.BackgroundTransparency = ToggleBind.State and 0 or 1
-
                 ToggleBind.Btn = Instance.new("TextButton")
                 ToggleBind.Btn.Parent = ToggleBind.Frame
                 ToggleBind.Btn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
@@ -954,11 +816,9 @@ function Library:CreateWindow(options)
                 ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
                 ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                 ToggleBind.Btn.TextSize = 12
-
                 local BtnStroke = Instance.new("UIStroke")
                 BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                 BtnStroke.Parent = ToggleBind.Btn
-
                 local function Update()
                     if ToggleBind.State then
                         Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
@@ -969,17 +829,8 @@ function Library:CreateWindow(options)
                     end
                     pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
                 end
-
-                ToggleBind.Box.MouseButton1Click:Connect(function()
-                    ToggleBind.State = not ToggleBind.State
-                    Update()
-                end)
-
-                ToggleBind.Btn.MouseButton1Click:Connect(function()
-                    ToggleBind.Waiting = true
-                    ToggleBind.Btn.Text = "..."
-                end)
-
+                ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State Update() end)
+                ToggleBind.Btn.MouseButton1Click:Connect(function() ToggleBind.Waiting = true ToggleBind.Btn.Text = "..." end)
                 UserInputService.InputBegan:Connect(function(input)
                     if ToggleBind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then
                         ToggleBind.Key = input.KeyCode
@@ -991,24 +842,20 @@ function Library:CreateWindow(options)
                         Update()
                     end
                 end)
-
                 return ToggleBind
             end
 
             function Section:CreateCodeblock(text, code)
                 local Codeblock = {}
                 local rawCode = code:gsub("<font.->", ""):gsub("</font>", "")
-
                 Codeblock.Frame = Instance.new("Frame")
                 Codeblock.Frame.Name = text .. "Codeblock"
                 Codeblock.Frame.Parent = Container
                 Codeblock.Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
                 Codeblock.Frame.Size = UDim2.new(1, 0, 0, 100)
-
                 local CodeStroke = Instance.new("UIStroke")
                 CodeStroke.Color = Color3.fromRGB(25, 20, 30)
                 CodeStroke.Parent = Codeblock.Frame
-
                 Codeblock.Label = Instance.new("TextLabel")
                 Codeblock.Label.Parent = Codeblock.Frame
                 Codeblock.Label.BackgroundTransparency = 1
@@ -1021,7 +868,6 @@ function Library:CreateWindow(options)
                 Codeblock.Label.TextSize = 12
                 Codeblock.Label.TextXAlignment = Enum.TextXAlignment.Left
                 Codeblock.Label.TextYAlignment = Enum.TextYAlignment.Top
-
                 Codeblock.CopyBtn = Instance.new("TextButton")
                 Codeblock.CopyBtn.Name = "CopyBtn"
                 Codeblock.CopyBtn.Parent = Codeblock.Frame
@@ -1033,51 +879,25 @@ function Library:CreateWindow(options)
                 Codeblock.CopyBtn.TextColor3 = accentColor
                 Codeblock.CopyBtn.TextSize = 12
                 Codeblock.CopyBtn.AutoButtonColor = false
-
                 local CopyStroke = Instance.new("UIStroke")
                 CopyStroke.Color = Color3.fromRGB(35, 30, 45)
                 CopyStroke.Parent = Codeblock.CopyBtn
-
                 local CopyCorner = Instance.new("UICorner")
                 CopyCorner.CornerRadius = UDim.new(0, 4)
                 CopyCorner.Parent = Codeblock.CopyBtn
-
-                Codeblock.CopyBtn.MouseEnter:Connect(function()
-                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(25, 25, 25)})
-                    Tween(CopyStroke, 0.2, {Color = accentColor})
-                end)
-
-                Codeblock.CopyBtn.MouseLeave:Connect(function()
-                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(15, 15, 15)})
-                    Tween(CopyStroke, 0.2, {Color = Color3.fromRGB(35, 30, 45)})
-                end)
-
-                Codeblock.CopyBtn.MouseButton1Click:Connect(function()
-                    if setclipboard then
-                        setclipboard(rawCode)
-                        UI:Notify("UNIFIED", "Code copied to clipboard!")
-                        
-                        Codeblock.CopyBtn.Text = "COPIED"
-                        task.delay(2, function()
-                            Codeblock.CopyBtn.Text = "COPY"
-                        end)
-                    else
-                        UI:Notify("ERROR", "Exploit does not support setclipboard!")
-                    end
-                end)
-
+                Codeblock.CopyBtn.MouseEnter:Connect(function() Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(25, 25, 25)}) Tween(CopyStroke, 0.2, {Color = accentColor}) end)
+                Codeblock.CopyBtn.MouseLeave:Connect(function() Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(15, 15, 15)}) Tween(CopyStroke, 0.2, {Color = Color3.fromRGB(35, 30, 45)}) end)
+                Codeblock.CopyBtn.MouseButton1Click:Connect(function() if setclipboard then setclipboard(rawCode) UI:Notify("UNIFIED", "Code copied to clipboard!") Codeblock.CopyBtn.Text = "COPIED" task.delay(2, function() Codeblock.CopyBtn.Text = "COPY" end) else UI:Notify("ERROR", "Exploit does not support setclipboard!") end end)
                 return Codeblock
             end
 
             function Section:CreateImage(text, id, isLink)
                 local Image = {}
-
                 Image.Frame = Instance.new("Frame")
                 Image.Frame.Name = text .. "Image"
                 Image.Frame.Parent = Container
                 Image.Frame.BackgroundTransparency = 1
                 Image.Frame.Size = UDim2.new(1, 0, 0, 120)
-
                 Image.Label = Instance.new("TextLabel")
                 Image.Label.Parent = Image.Frame
                 Image.Label.BackgroundTransparency = 1
@@ -1086,41 +906,28 @@ function Library:CreateWindow(options)
                 Image.Label.Text = text
                 Image.Label.TextColor3 = Color3.fromRGB(150, 150, 150)
                 Image.Label.TextSize = 12
-
                 Image.Img = Instance.new("ImageLabel")
                 Image.Img.Parent = Image.Frame
                 Image.Img.BackgroundTransparency = 1
                 Image.Img.Position = UDim2.new(0.5, -45, 0, 25)
                 Image.Img.Size = UDim2.new(0, 90, 0, 90)
-                
                 Image.Img.Image = id
-
                 return Image
             end
 
             function Section:CreateDropdown(text, flag, options, default, callback)
-                local Dropdown = {
-                    Options = options or {},
-                    Selected = default,
-                    Flag = flag,
-                    Callback = callback or function() end,
-                    Opened = false
-                }
-
+                local Dropdown = { Options = options or {}, Selected = default, Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Dropdown)
                 if flag then UI.Flags[flag] = Dropdown.Selected end
-
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "Dropdown"
                 Dropdown.Frame.Parent = Container
                 Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
-
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = Color3.fromRGB(34, 26, 40)
                 DropStroke.Parent = Dropdown.Frame
-
                 Dropdown.Label = Instance.new("TextLabel")
                 Dropdown.Label.Parent = Dropdown.Frame
                 Dropdown.Label.BackgroundTransparency = 1
@@ -1131,7 +938,6 @@ function Library:CreateWindow(options)
                 Dropdown.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Dropdown.Label.TextSize = 14
                 Dropdown.Label.TextXAlignment = Enum.TextXAlignment.Left
-
                 Dropdown.Icon = Instance.new("TextLabel")
                 Dropdown.Icon.Parent = Dropdown.Frame
                 Dropdown.Icon.BackgroundTransparency = 1
@@ -1141,7 +947,6 @@ function Library:CreateWindow(options)
                 Dropdown.Icon.Text = "+"
                 Dropdown.Icon.TextColor3 = accentColor
                 Dropdown.Icon.TextSize = 18
-
                 Dropdown.List = Instance.new("Frame")
                 Dropdown.List.Parent = Dropdown.Frame
                 Dropdown.List.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
@@ -1150,28 +955,19 @@ function Library:CreateWindow(options)
                 Dropdown.List.Visible = false
                 Dropdown.List.ClipsDescendants = true
                 Dropdown.List.ZIndex = 100
-
                 local ListStroke = Instance.new("UIStroke")
                 ListStroke.Color = Color3.fromRGB(34, 26, 40)
                 ListStroke.Parent = Dropdown.List
-
                 local ListLayout = Instance.new("UIListLayout")
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
                 local function Update(val, manually)
-                    if not manually then
-                        Dropdown.Selected = val
-                    end
+                    if not manually then Dropdown.Selected = val end
                     if flag then UI.Flags[flag] = Dropdown.Selected end
                     Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
                     pcall(Dropdown.Callback, Dropdown.Selected)
                 end
-
-                Dropdown.Update = function(val)
-                    Update(val, true)
-                end
-
+                Dropdown.Update = function(val) Update(val, true) end
                 for _, option in pairs(Dropdown.Options) do
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Name = option
@@ -1185,19 +981,8 @@ function Library:CreateWindow(options)
                     OptBtn.TextSize = 14
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                     OptBtn.ZIndex = 110
-
-                    OptBtn.MouseButton1Click:Connect(function()
-                        Dropdown.Selected = option
-                        Update()
-                        Dropdown.Opened = false
-                        Dropdown.Frame.ZIndex = 5
-                        Section.Frame.ZIndex = 1
-                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                        task.delay(0.3, function() Dropdown.List.Visible = false end)
-                        Dropdown.Icon.Text = "+"
-                    end)
+                    OptBtn.MouseButton1Click:Connect(function() Dropdown.Selected = option Update() Dropdown.Opened = false Dropdown.Frame.ZIndex = 5 Section.Frame.ZIndex = 1 Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)}) task.delay(0.3, function() Dropdown.List.Visible = false end) Dropdown.Icon.Text = "+" end)
                 end
-
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
@@ -1210,41 +995,27 @@ function Library:CreateWindow(options)
                         else
                             Dropdown.Frame.ZIndex = 5
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() 
-                                Dropdown.List.Visible = false 
-                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end
-                            end)
+                            task.delay(0.3, function() Dropdown.List.Visible = false if not Dropdown.Opened then Section.Frame.ZIndex = 1 end end)
                             Dropdown.Icon.Text = "+"
                         end
                     end
                 end)
-
                 return Dropdown
             end
 
             function Section:CreateMultiDropdown(text, flag, options, default, callback)
-                local Dropdown = {
-                    Options = options or {},
-                    Selected = default or {},
-                    Flag = flag,
-                    Callback = callback or function() end,
-                    Opened = false
-                }
-
+                local Dropdown = { Options = options or {}, Selected = default or {}, Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Dropdown)
                 if flag then UI.Flags[flag] = Dropdown.Selected end
-
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "MultiDropdown"
                 Dropdown.Frame.Parent = Container
                 Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
-
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = Color3.fromRGB(34, 26, 40)
                 DropStroke.Parent = Dropdown.Frame
-
                 Dropdown.Label = Instance.new("TextLabel")
                 Dropdown.Label.Parent = Dropdown.Frame
                 Dropdown.Label.BackgroundTransparency = 1
@@ -1255,7 +1026,6 @@ function Library:CreateWindow(options)
                 Dropdown.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Dropdown.Label.TextSize = 14
                 Dropdown.Label.TextXAlignment = Enum.TextXAlignment.Left
-
                 Dropdown.Icon = Instance.new("TextLabel")
                 Dropdown.Icon.Parent = Dropdown.Frame
                 Dropdown.Icon.BackgroundTransparency = 1
@@ -1265,7 +1035,6 @@ function Library:CreateWindow(options)
                 Dropdown.Icon.Text = "+"
                 Dropdown.Icon.TextColor3 = accentColor
                 Dropdown.Icon.TextSize = 18
-
                 Dropdown.List = Instance.new("Frame")
                 Dropdown.List.Parent = Dropdown.Frame
                 Dropdown.List.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
@@ -1274,20 +1043,16 @@ function Library:CreateWindow(options)
                 Dropdown.List.Visible = false
                 Dropdown.List.ClipsDescendants = true
                 Dropdown.List.ZIndex = 100
-
                 local ListStroke = Instance.new("UIStroke")
                 ListStroke.Color = Color3.fromRGB(34, 26, 40)
                 ListStroke.Parent = Dropdown.List
-
                 local ListLayout = Instance.new("UIListLayout")
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
                 local function Update(manually)
                     if flag then UI.Flags[flag] = Dropdown.Selected end
                     pcall(Dropdown.Callback, Dropdown.Selected)
                 end
-
                 Dropdown.Update = function(val)
                     Dropdown.Selected = val
                     for _, btn in pairs(Dropdown.List:GetChildren()) do
@@ -1297,7 +1062,6 @@ function Library:CreateWindow(options)
                     end
                     Update(true)
                 end
-
                 for _, option in pairs(Dropdown.Options) do
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Name = option
@@ -1311,20 +1075,12 @@ function Library:CreateWindow(options)
                     OptBtn.TextSize = 14
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                     OptBtn.ZIndex = 110
-
                     OptBtn.MouseButton1Click:Connect(function()
                         local index = table.find(Dropdown.Selected, option)
-                        if index then
-                            table.remove(Dropdown.Selected, index)
-                            Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)})
-                        else
-                            table.insert(Dropdown.Selected, option)
-                            Tween(OptBtn, 0.2, {TextColor3 = accentColor})
-                        end
+                        if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
                         Update()
                     end)
                 end
-
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
@@ -1337,26 +1093,17 @@ function Library:CreateWindow(options)
                         else
                             Dropdown.Frame.ZIndex = 5
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() 
-                                Dropdown.List.Visible = false 
-                                if not Dropdown.Opened then Section.Frame.ZIndex = 1 end
-                            end)
+                            task.delay(0.3, function() Dropdown.List.Visible = false if not Dropdown.Opened then Section.Frame.ZIndex = 1 end end)
                             Dropdown.Icon.Text = "+"
                         end
                     end
                 end)
-
                 return Dropdown
             end
-
             return Section
         end
-
-        table.insert(UI.Tabs, Tab)
         return Tab
     end
-
     return UI
 end
-
 return Library
