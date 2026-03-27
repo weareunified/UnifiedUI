@@ -146,6 +146,71 @@ function Library:CreateWindow(options)
     UI.MainContent.Size = UDim2.new(1, -180, 1, 0)
     UI.MainContent.ClipsDescendants = true
 
+    -- Notification System Variables
+    local activeNotifications = {}
+    local notifyYOffset = 0
+
+    function UI:Notify(title, text)
+        local NotifyFrame = Instance.new("Frame")
+        NotifyFrame.Name = "Notification"
+        NotifyFrame.Parent = UI.ScreenGui
+        NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+        NotifyFrame.BorderSizePixel = 0
+        NotifyFrame.Position = UDim2.new(1, 20, 1, -100) -- Start off-screen
+        NotifyFrame.Size = UDim2.new(0, 250, 0, 80)
+        NotifyFrame.ZIndex = 100
+
+        local NotifyStroke = Instance.new("UIStroke")
+        NotifyStroke.Color = accentColor
+        NotifyStroke.Thickness = 1.5
+        NotifyStroke.Parent = NotifyFrame
+
+        local NotifyTitle = Instance.new("TextLabel")
+        NotifyTitle.Parent = NotifyFrame
+        NotifyTitle.BackgroundTransparency = 1
+        NotifyTitle.Position = UDim2.new(0, 12, 0, 10)
+        NotifyTitle.Size = UDim2.new(1, -24, 0, 20)
+        NotifyTitle.Font = Enum.Font.SourceSansBold
+        NotifyTitle.Text = title:upper()
+        NotifyTitle.TextColor3 = accentColor
+        NotifyTitle.TextSize = 14
+        NotifyTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+        local NotifyText = Instance.new("TextLabel")
+        NotifyText.Parent = NotifyFrame
+        NotifyText.BackgroundTransparency = 1
+        NotifyText.Position = UDim2.new(0, 12, 0, 35)
+        NotifyText.Size = UDim2.new(1, -24, 0, 35)
+        NotifyText.Font = Enum.Font.SourceSans
+        NotifyText.Text = text
+        NotifyText.TextColor3 = Color3.fromRGB(200, 200, 200)
+        NotifyText.TextSize = 14
+        NotifyText.TextXAlignment = Enum.TextXAlignment.Left
+        NotifyText.TextWrapped = true
+
+        local function UpdatePositions()
+            for i, v in pairs(activeNotifications) do
+                local targetY = -100 - ((#activeNotifications - i) * 90)
+                Tween(v, 0.4, {Position = UDim2.new(1, -260, 1, targetY)})
+            end
+        end
+
+        table.insert(activeNotifications, NotifyFrame)
+        UpdatePositions()
+
+        task.delay(4, function()
+            local index = table.find(activeNotifications, NotifyFrame)
+            if index then
+                table.remove(activeNotifications, index)
+                Tween(NotifyFrame, 0.4, {Position = UDim2.new(1, 20, 1, NotifyFrame.Position.Y.Offset), BackgroundTransparency = 1})
+                task.delay(0.4, function() 
+                    NotifyFrame:Destroy()
+                end)
+                UpdatePositions()
+            end
+        end)
+    end
+
     -- Opening Animation
     task.spawn(function()
         Tween(UI.MainFrame, 0.6, {Size = UDim2.new(0, 630, 0, 420), Position = UDim2.new(0.5, -315, 0.5, -210), BackgroundTransparency = 0})
@@ -286,35 +351,34 @@ function Library:CreateWindow(options)
                     Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
                 end
                 
-                -- Fade out old page
-                task.spawn(function()
-                    local canvasGroup = oldTab.Page:FindFirstChild("CanvasGroup") or Instance.new("CanvasGroup", oldTab.Page)
-                    if not oldTab.Page:FindFirstChild("CanvasGroup") then
-                        canvasGroup.Size = UDim2.new(1,0,1,0)
-                        canvasGroup.BackgroundTransparency = 1
-                        for _, child in pairs(oldTab.Page:GetChildren()) do
-                            if child ~= canvasGroup then child.Parent = canvasGroup end
-                        end
-                    end
-                    Tween(canvasGroup, 0.2, {GroupTransparency = 1})
-                    task.delay(0.2, function() oldTab.Page.Visible = false end)
-                end)
+                -- Transition: Slide Out & Fade
+                local oldGroup = oldTab.Page:FindFirstChild("CanvasGroup")
+                if oldGroup then
+                    Tween(oldGroup, 0.3, {GroupTransparency = 1, Size = UDim2.new(1, -20, 1, -20), Position = UDim2.new(0, 10, 0, 10)})
+                    task.delay(0.3, function() oldTab.Page.Visible = false end)
+                else
+                    oldTab.Page.Visible = false
+                end
             end
             
             UI.CurrentTab = Tab
             Tab.Page.Visible = true
             
-            -- Fade in new page
+            -- Transition: Slide In & Fade
             local canvasGroup = Tab.Page:FindFirstChild("CanvasGroup") or Instance.new("CanvasGroup", Tab.Page)
             if not Tab.Page:FindFirstChild("CanvasGroup") then
-                canvasGroup.Size = UDim2.new(1,0,1,0)
+                canvasGroup.Size = UDim2.new(1, 0, 1, 0)
                 canvasGroup.BackgroundTransparency = 1
                 for _, child in pairs(Tab.Page:GetChildren()) do
                     if child ~= canvasGroup then child.Parent = canvasGroup end
                 end
             end
+            
             canvasGroup.GroupTransparency = 1
-            Tween(canvasGroup, 0.4, {GroupTransparency = 0})
+            canvasGroup.Size = UDim2.new(1, 40, 1, 40)
+            canvasGroup.Position = UDim2.new(0, -20, 0, -20)
+            
+            Tween(canvasGroup, 0.4, {GroupTransparency = 0, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)})
 
             Tween(Tab.Button, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
             Tween(TabIndicator, 0.3, {BackgroundTransparency = 0})
@@ -679,6 +743,8 @@ function Library:CreateWindow(options)
 
             function Section:CreateCodeblock(text, code)
                 local Codeblock = {}
+                -- Remove HTML tags for raw copying
+                local rawCode = code:gsub("<font.->", ""):gsub("</font>", "")
 
                 Codeblock.Frame = Instance.new("Frame")
                 Codeblock.Frame.Name = text .. "Codeblock"
@@ -702,6 +768,50 @@ function Library:CreateWindow(options)
                 Codeblock.Label.TextSize = 12
                 Codeblock.Label.TextXAlignment = Enum.TextXAlignment.Left
                 Codeblock.Label.TextYAlignment = Enum.TextYAlignment.Top
+
+                Codeblock.CopyBtn = Instance.new("TextButton")
+                Codeblock.CopyBtn.Name = "CopyBtn"
+                Codeblock.CopyBtn.Parent = Codeblock.Frame
+                Codeblock.CopyBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+                Codeblock.CopyBtn.Position = UDim2.new(1, -60, 0, 5)
+                Codeblock.CopyBtn.Size = UDim2.new(0, 55, 0, 20)
+                Codeblock.CopyBtn.Font = Enum.Font.SourceSansBold
+                Codeblock.CopyBtn.Text = "COPY"
+                Codeblock.CopyBtn.TextColor3 = accentColor
+                Codeblock.CopyBtn.TextSize = 12
+                Codeblock.CopyBtn.AutoButtonColor = false
+
+                local CopyStroke = Instance.new("UIStroke")
+                CopyStroke.Color = Color3.fromRGB(35, 30, 45)
+                CopyStroke.Parent = Codeblock.CopyBtn
+
+                local CopyCorner = Instance.new("UICorner")
+                CopyCorner.CornerRadius = UDim.new(0, 4)
+                CopyCorner.Parent = Codeblock.CopyBtn
+
+                Codeblock.CopyBtn.MouseEnter:Connect(function()
+                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(25, 25, 25)})
+                    Tween(CopyStroke, 0.2, {Color = accentColor})
+                end)
+
+                Codeblock.CopyBtn.MouseLeave:Connect(function()
+                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(15, 15, 15)})
+                    Tween(CopyStroke, 0.2, {Color = Color3.fromRGB(35, 30, 45)})
+                end)
+
+                Codeblock.CopyBtn.MouseButton1Click:Connect(function()
+                    if setclipboard then
+                        setclipboard(rawCode)
+                        UI:Notify("UNIFIED", "Code copied to clipboard!")
+                        
+                        Codeblock.CopyBtn.Text = "COPIED"
+                        task.delay(2, function()
+                            Codeblock.CopyBtn.Text = "COPY"
+                        end)
+                    else
+                        UI:Notify("ERROR", "Exploit does not support setclipboard!")
+                    end
+                end)
 
                 return Codeblock
             end
