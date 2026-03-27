@@ -240,46 +240,27 @@ function Library:CreateWindow(options)
         Tab.Page.BorderSizePixel = 0
         Tab.Page.Size = UDim2.new(1, 0, 1, 0)
         Tab.Page.Visible = false
-        Tab.Page.ClipsDescendants = true -- Ensure clipping
+        Tab.Page.ClipsDescendants = true 
 
-        Tab.LeftColumn = Instance.new("ScrollingFrame")
-        Tab.LeftColumn.Name = "LeftColumn"
-        Tab.LeftColumn.Parent = Tab.Page
-        Tab.LeftColumn.BackgroundTransparency = 1
-        Tab.LeftColumn.BorderSizePixel = 0
-        Tab.LeftColumn.Position = UDim2.new(0, 10, 0, 10)
-        Tab.LeftColumn.Size = UDim2.new(0.5, -15, 1, -20)
-        Tab.LeftColumn.ScrollBarThickness = 0
-        Tab.LeftColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Tab.LeftColumn.ClipsDescendants = true 
+        Tab.Content = Instance.new("ScrollingFrame")
+        Tab.Content.Name = "Content"
+        Tab.Content.Parent = Tab.Page
+        Tab.Content.BackgroundTransparency = 1
+        Tab.Content.BorderSizePixel = 0
+        Tab.Content.Position = UDim2.new(0, 10, 0, 10)
+        Tab.Content.Size = UDim2.new(1, -20, 1, -20)
+        Tab.Content.ScrollBarThickness = 2
+        Tab.Content.ScrollBarImageColor3 = accentColor
+        Tab.Content.CanvasSize = UDim2.new(0, 0, 0, 0)
+        Tab.Content.ClipsDescendants = true 
 
-        Tab.RightColumn = Instance.new("ScrollingFrame")
-        Tab.RightColumn.Name = "RightColumn"
-        Tab.RightColumn.Parent = Tab.Page
-        Tab.RightColumn.BackgroundTransparency = 1
-        Tab.RightColumn.BorderSizePixel = 0
-        Tab.RightColumn.Position = UDim2.new(0.5, 5, 0, 10)
-        Tab.RightColumn.Size = UDim2.new(0.5, -15, 1, -20)
-        Tab.RightColumn.ScrollBarThickness = 0
-        Tab.RightColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Tab.RightColumn.ClipsDescendants = true 
+        local ContentLayout = Instance.new("UIListLayout")
+        ContentLayout.Parent = Tab.Content
+        ContentLayout.Padding = UDim.new(0, 12)
+        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-        local LeftLayout = Instance.new("UIListLayout")
-        LeftLayout.Parent = Tab.LeftColumn
-        LeftLayout.Padding = UDim.new(0, 12)
-        LeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-        local RightLayout = Instance.new("UIListLayout")
-        RightLayout.Parent = Tab.RightColumn
-        RightLayout.Padding = UDim.new(0, 12)
-        RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-        LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Tab.LeftColumn.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 20)
-        end)
-
-        RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Tab.RightColumn.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 20)
+        ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            Tab.Content.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 20)
         end)
 
         Tab.Button.MouseEnter:Connect(function()
@@ -353,9 +334,9 @@ function Library:CreateWindow(options)
             end
         end
 
-        function Tab:CreateSection(title, side)
+        function Tab:CreateSection(title)
             local Section = {}
-            local parent = (side == "Right" and Tab.RightColumn or Tab.LeftColumn)
+            local parent = Tab.Content
             
             Section.Frame = Instance.new("Frame")
             Section.Frame.Name = title .. "Section"
