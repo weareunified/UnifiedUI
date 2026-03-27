@@ -157,10 +157,7 @@ function Library:CreateWindow(options)
     local function StartUserPanelLoop()
         local isThanks = true
         while true do
-            for i = 10, 1, -1 do
-                print("UNIFIED | Next text switch in: " .. i)
-                task.wait(1)
-            end
+            task.wait(10)
             
             local nextText = isThanks and (" <font color=\"rgb(150, 150, 150)\"> • </font> " .. LocalPlayer.Name:lower()) or " <font color=\"rgb(150, 150, 150)\"> • </font> <i>Thanks for using!</i>"
             isThanks = not isThanks
