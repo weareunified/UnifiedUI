@@ -913,15 +913,29 @@ function Library:CreateWindow(options)
                 Codeblock.Frame.Name = text .. "Codeblock"
                 Codeblock.Frame.Parent = Container
                 Codeblock.Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
-                Codeblock.Frame.Size = UDim2.new(1, 0, 0, 100)
+                Codeblock.Frame.Size = UDim2.new(1, 0, 0, 120)
+                Codeblock.Frame.ClipsDescendants = true
                 local CodeStroke = Instance.new("UIStroke")
                 CodeStroke.Color = Color3.fromRGB(25, 20, 30)
                 CodeStroke.Parent = Codeblock.Frame
+                
+                local CodeScroll = Instance.new("ScrollingFrame")
+                CodeScroll.Name = "CodeScroll"
+                CodeScroll.Parent = Codeblock.Frame
+                CodeScroll.BackgroundTransparency = 1
+                CodeScroll.BorderSizePixel = 0
+                CodeScroll.Position = UDim2.new(0, 8, 0, 30)
+                CodeScroll.Size = UDim2.new(1, -16, 1, -38)
+                CodeScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+                CodeScroll.ScrollBarThickness = 2
+                CodeScroll.ScrollBarImageColor3 = accentColor
+                CodeScroll.BottomImage = ""
+                CodeScroll.TopImage = ""
+                
                 Codeblock.Label = Instance.new("TextLabel")
-                Codeblock.Label.Parent = Codeblock.Frame
+                Codeblock.Label.Parent = CodeScroll
                 Codeblock.Label.BackgroundTransparency = 1
-                Codeblock.Label.Position = UDim2.new(0, 8, 0, 8)
-                Codeblock.Label.Size = UDim2.new(1, -16, 1, -16)
+                Codeblock.Label.Size = UDim2.new(1, 0, 0, 0)
                 Codeblock.Label.Font = Enum.Font.Code
                 Codeblock.Label.RichText = true
                 Codeblock.Label.Text = highlight(rawCode)
@@ -929,6 +943,23 @@ function Library:CreateWindow(options)
                 Codeblock.Label.TextSize = 12
                 Codeblock.Label.TextXAlignment = Enum.TextXAlignment.Left
                 Codeblock.Label.TextYAlignment = Enum.TextYAlignment.Top
+                Codeblock.Label.AutomaticSize = Enum.AutomaticSize.Y
+
+                Codeblock.Label:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+                    CodeScroll.CanvasSize = UDim2.new(0, 0, 0, Codeblock.Label.AbsoluteSize.Y)
+                end)
+                
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Parent = Codeblock.Frame
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+                TitleLabel.Size = UDim2.new(1, -70, 0, 20)
+                TitleLabel.Font = Enum.Font.SourceSansBold
+                TitleLabel.Text = text
+                TitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                TitleLabel.TextSize = 13
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
                 Codeblock.CopyBtn = Instance.new("TextButton")
                 Codeblock.CopyBtn.Name = "CopyBtn"
                 Codeblock.CopyBtn.Parent = Codeblock.Frame
