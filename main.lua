@@ -898,20 +898,39 @@ function Library:CreateWindow(options)
                     local builtins = {"game", "workspace", "script", "math", "table", "string", "task", "wait", "spawn", "delay", "print", "warn", "error", "pcall", "xpcall", "Instance", "Enum", "Color3", "UDim2", "UDim", "Vector3", "Vector2"}
                     
                     local highlighted = src:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
-                    
-                    highlighted = highlighted:gsub('("[^"]*")', '<font color="#98C379">%1</font>')
-                    highlighted = highlighted:gsub("('[^']*')", '<font color="#98C379">%1</font>')
-                    highlighted = highlighted:gsub("(%[%[.*%]%])", '<font color="#98C379">%1</font>')
-                    highlighted = highlighted:gsub("%-%-.*", '<font color="#5C6370">%0</font>')
-                    
                     local accentHex = toHex(accentColor)
+
+                    -- Use unique markers to avoid nested tag corruption
+                    local tags = {}
+                    local function mark(text)
+                        local id = "\255" .. #tags .. "\255"
+                        table.insert(tags, text)
+                        return id
+                    end
+
+                    -- Highlight strings first
+                    highlighted = highlighted:gsub('("[^"]*")', function(s) return mark('<font color="#98C379">'..s..'</font>') end)
+                    highlighted = highlighted:gsub("('[^']*')", function(s) return mark('<font color="#98C379">'..s..'</font>') end)
+                    highlighted = highlighted:gsub("(%[%[.-%]%])", function(s) return mark('<font color="#98C379">'..s..'</font>') end)
+                    
+                    -- Highlight comments
+                    highlighted = highlighted:gsub("%-%-.*", function(s) return mark('<font color="#5C6370">'..s..'</font>') end)
+                    
+                    -- Highlight keywords and builtins
                     for _, kw in pairs(keywords) do
-                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", '<font color="' .. accentHex .. '">'..kw..'</font>')
+                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", function(s) return mark('<font color="' .. accentHex .. '">'..s..'</font>') end)
                     end
                     for _, bi in pairs(builtins) do
-                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", '<font color="#61AFEF">'..bi..'</font>')
+                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", function(s) return mark('<font color="#61AFEF">'..s..'</font>') end)
                     end
-                    highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", '<font color="#D19A66">%0</font>')
+                    
+                    -- Highlight numbers
+                    highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", function(s) return mark('<font color="#D19A66">'..s..'</font>') end)
+                    
+                    -- Restore tags
+                    for i = #tags, 1, -1 do
+                        highlighted = highlighted:gsub("\255" .. (i-1) .. "\255", tags[i])
+                    end
                     
                     return highlighted
                 end
