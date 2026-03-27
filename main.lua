@@ -317,7 +317,7 @@ function Library:CreateWindow(options)
         Tab.Page.BorderSizePixel = 0
         Tab.Page.Size = UDim2.new(1, 0, 1, 0)
         Tab.Page.Visible = false
-        Tab.Page.ClipsDescendants = false 
+        Tab.Page.ClipsDescendants = true 
 
         Tab.Content = Instance.new("ScrollingFrame")
         Tab.Content.Name = "Content"
