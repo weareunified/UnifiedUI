@@ -431,7 +431,7 @@ function Library:CreateWindow(options)
         TabPage.BorderSizePixel = 0
         TabPage.Size = UDim2.new(1, 0, 1, 0)
         TabPage.Visible = false
-        TabPage.ClipsDescendants = true 
+        TabPage.ClipsDescendants = false
         Tab.Page = TabPage
 
         local TabContent = Instance.new("ScrollingFrame")
@@ -475,30 +475,47 @@ function Library:CreateWindow(options)
                 Tween(oldTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
                 if oldTab.Indicator then Tween(oldTab.Indicator, 0.3, {BackgroundTransparency = 1}) end
                 if oldTab.Icon then Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)}) end
-                local oldGroup = oldTab.Page:FindFirstChild("CanvasGroup")
-                if oldGroup then
-                    Tween(oldGroup, 0.3, {GroupTransparency = 1, Size = UDim2.new(1, -20, 1, -20), Position = UDim2.new(0, 10, 0, 10)})
-                    task.delay(0.3, function() oldTab.Page.Visible = false end)
-                else
-                    oldTab.Page.Visible = false
+                
+                local oldGroup = Instance.new("CanvasGroup", oldTab.Page)
+                oldGroup.Name = "TransitionGroup"
+                oldGroup.Size = UDim2.new(1, 0, 1, 0)
+                oldGroup.BackgroundTransparency = 1
+                for _, child in pairs(oldTab.Page:GetChildren()) do
+                    if child ~= oldGroup then child.Parent = oldGroup end
                 end
+                
+                Tween(oldGroup, 0.3, {GroupTransparency = 1, Size = UDim2.new(1, -20, 1, -20), Position = UDim2.new(0, 10, 0, 10)})
+                task.delay(0.3, function() 
+                    oldTab.Page.Visible = false 
+                    for _, child in pairs(oldGroup:GetChildren()) do
+                        child.Parent = oldTab.Page
+                    end
+                    oldGroup:Destroy()
+                end)
             end
+            
             UI.CurrentTab = Tab
             TabPage.Visible = true
-            local canvasGroup = TabPage:FindFirstChild("CanvasGroup")
-            if not canvasGroup then
-                canvasGroup = Instance.new("CanvasGroup", TabPage)
-                canvasGroup.Name = "CanvasGroup"
-                canvasGroup.Size = UDim2.new(1, 0, 1, 0)
-                canvasGroup.BackgroundTransparency = 1
-                for _, child in pairs(TabPage:GetChildren()) do
-                    if child ~= canvasGroup then child.Parent = canvasGroup end
-                end
+            
+            local newGroup = Instance.new("CanvasGroup", TabPage)
+            newGroup.Name = "TransitionGroup"
+            newGroup.Size = UDim2.new(1, 40, 1, 40)
+            newGroup.Position = UDim2.new(0, -20, 0, -20)
+            newGroup.BackgroundTransparency = 1
+            newGroup.GroupTransparency = 1
+            
+            for _, child in pairs(TabPage:GetChildren()) do
+                if child ~= newGroup then child.Parent = newGroup end
             end
-            canvasGroup.GroupTransparency = 1
-            canvasGroup.Size = UDim2.new(1, 40, 1, 40)
-            canvasGroup.Position = UDim2.new(0, -20, 0, -20)
-            Tween(canvasGroup, 0.4, {GroupTransparency = 0, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)})
+            
+            Tween(newGroup, 0.4, {GroupTransparency = 0, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)})
+            task.delay(0.4, function()
+                for _, child in pairs(newGroup:GetChildren()) do
+                    child.Parent = TabPage
+                end
+                newGroup:Destroy()
+            end)
+            
             Tween(TabBtn, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
             if Tab.Indicator then Tween(Tab.Indicator, 0.3, {BackgroundTransparency = 0}) end
             if Tab.Icon then Tween(Tab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(255, 255, 255)}) end
