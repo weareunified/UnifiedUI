@@ -42,6 +42,7 @@ function Library:CreateWindow(options)
     UI.MainFrame.BorderSizePixel = 0
     UI.MainFrame.Position = UDim2.new(0.5, -315, 0.5, -210)
     UI.MainFrame.Size = UDim2.new(0, 630, 0, 420)
+    UI.MainFrame.ClipsDescendants = true
 
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -124,6 +125,7 @@ function Library:CreateWindow(options)
     UI.MainContent.BackgroundTransparency = 1
     UI.MainContent.Position = UDim2.new(0, 180, 0, 0)
     UI.MainContent.Size = UDim2.new(1, -180, 1, 0)
+    UI.MainContent.ClipsDescendants = true
 
     local dragging, dragInput, dragStart, startPos
     UI.MainFrame.InputBegan:Connect(function(input)
@@ -195,30 +197,53 @@ function Library:CreateWindow(options)
             Tab.Icon = TabIcon
         end
 
-        Tab.Page = Instance.new("ScrollingFrame")
+        Tab.Page = Instance.new("Frame")
         Tab.Page.Name = name .. "Page"
         Tab.Page.Parent = UI.MainContent
         Tab.Page.BackgroundTransparency = 1
         Tab.Page.BorderSizePixel = 0
         Tab.Page.Size = UDim2.new(1, 0, 1, 0)
         Tab.Page.Visible = false
-        Tab.Page.ScrollBarThickness = 0
-        Tab.Page.CanvasSize = UDim2.new(0, 0, 0, 0)
         Tab.Page.ClipsDescendants = false
 
-        local PagePadding = Instance.new("UIPadding")
-        PagePadding.PaddingTop = UDim.new(0, 20)
-        PagePadding.PaddingLeft = UDim.new(0, 20)
-        PagePadding.PaddingRight = UDim.new(0, 20)
-        PagePadding.Parent = Tab.Page
+        Tab.LeftColumn = Instance.new("ScrollingFrame")
+        Tab.LeftColumn.Name = "LeftColumn"
+        Tab.LeftColumn.Parent = Tab.Page
+        Tab.LeftColumn.BackgroundTransparency = 1
+        Tab.LeftColumn.BorderSizePixel = 0
+        Tab.LeftColumn.Position = UDim2.new(0, 10, 0, 10)
+        Tab.LeftColumn.Size = UDim2.new(0.5, -15, 1, -20)
+        Tab.LeftColumn.ScrollBarThickness = 0
+        Tab.LeftColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
+        Tab.LeftColumn.ClipsDescendants = true -- Changed to true to fix overflow
 
-        local PageLayout = Instance.new("UIListLayout")
-        PageLayout.Parent = Tab.Page
-        PageLayout.Padding = UDim.new(0, 12)
-        PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        Tab.RightColumn = Instance.new("ScrollingFrame")
+        Tab.RightColumn.Name = "RightColumn"
+        Tab.RightColumn.Parent = Tab.Page
+        Tab.RightColumn.BackgroundTransparency = 1
+        Tab.RightColumn.BorderSizePixel = 0
+        Tab.RightColumn.Position = UDim2.new(0.5, 5, 0, 10)
+        Tab.RightColumn.Size = UDim2.new(0.5, -15, 1, -20)
+        Tab.RightColumn.ScrollBarThickness = 0
+        Tab.RightColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
+        Tab.RightColumn.ClipsDescendants = true -- Changed to true to fix overflow
 
-        PageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Tab.Page.CanvasSize = UDim2.new(0, 0, 0, PageLayout.AbsoluteContentSize.Y + 40)
+        local LeftLayout = Instance.new("UIListLayout")
+        LeftLayout.Parent = Tab.LeftColumn
+        LeftLayout.Padding = UDim.new(0, 12)
+        LeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        local RightLayout = Instance.new("UIListLayout")
+        RightLayout.Parent = Tab.RightColumn
+        RightLayout.Padding = UDim.new(0, 12)
+        RightLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            Tab.LeftColumn.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y)
+        end)
+
+        RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            Tab.RightColumn.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y)
         end)
 
         Tab.Button.MouseButton1Click:Connect(function()
@@ -253,16 +278,17 @@ function Library:CreateWindow(options)
             end
         end
 
-        function Tab:CreateSection(title)
+        function Tab:CreateSection(title, side)
             local Section = {}
+            local parent = (side == "Right" and Tab.RightColumn or Tab.LeftColumn)
             
             Section.Frame = Instance.new("Frame")
             Section.Frame.Name = title .. "Section"
-            Section.Frame.Parent = Tab.Page
+            Section.Frame.Parent = parent
             Section.Frame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
             Section.Frame.BorderSizePixel = 0
             Section.Frame.Size = UDim2.new(1, 0, 0, 40)
-            Section.Frame.ClipsDescendants = false
+            Section.Frame.ClipsDescendants = true -- Changed to true to fix overflow within sections
 
             local SectionStroke = Instance.new("UIStroke")
             SectionStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -287,7 +313,7 @@ function Library:CreateWindow(options)
             Container.BackgroundTransparency = 1
             Container.Position = UDim2.new(0, 12, 0, 35)
             Container.Size = UDim2.new(1, -24, 0, 0)
-            Container.ClipsDescendants = false
+            Container.ClipsDescendants = true -- Changed to true to fix overflow within component container
 
             local ContainerLayout = Instance.new("UIListLayout")
             ContainerLayout.Parent = Container
