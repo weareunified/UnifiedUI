@@ -301,7 +301,7 @@ function Library:CreateWindow(options)
         Tab.Page.BorderSizePixel = 0
         Tab.Page.Size = UDim2.new(1, 0, 1, 0)
         Tab.Page.Visible = false
-        Tab.Page.ClipsDescendants = true 
+        Tab.Page.ClipsDescendants = false 
 
         Tab.Content = Instance.new("ScrollingFrame")
         Tab.Content.Name = "Content"
@@ -359,8 +359,10 @@ function Library:CreateWindow(options)
             UI.CurrentTab = Tab
             Tab.Page.Visible = true
             
-            local canvasGroup = Tab.Page:FindFirstChild("CanvasGroup") or Instance.new("CanvasGroup", Tab.Page)
-            if not Tab.Page:FindFirstChild("CanvasGroup") then
+            local canvasGroup = Tab.Page:FindFirstChild("CanvasGroup")
+            if not canvasGroup then
+                canvasGroup = Instance.new("CanvasGroup", Tab.Page)
+                canvasGroup.Name = "CanvasGroup"
                 canvasGroup.Size = UDim2.new(1, 0, 1, 0)
                 canvasGroup.BackgroundTransparency = 1
                 for _, child in pairs(Tab.Page:GetChildren()) do
