@@ -897,26 +897,21 @@ function Library:CreateWindow(options)
                     local keywords = {"local", "function", "if", "then", "else", "elseif", "end", "for", "in", "do", "while", "repeat", "until", "return", "break", "nil", "true", "false", "and", "or", "not"}
                     local builtins = {"game", "workspace", "script", "math", "table", "string", "task", "wait", "spawn", "delay", "print", "warn", "error", "pcall", "xpcall", "Instance", "Enum", "Color3", "UDim2", "UDim", "Vector3", "Vector2"}
                     
-                    -- Escape special characters for RichText
                     local highlighted = src:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
                     local accentHex = toHex(accentColor)
 
                     local tags = {}
                     local function mark(t)
-                        local id = "\255" .. #tags .. "\255"
+                        local id = "___TAG" .. #tags .. "___"
                         table.insert(tags, t)
                         return id
                     end
 
-                    -- Highlight strings (including long brackets)
                     highlighted = highlighted:gsub('("[^"]*")', function(s) return mark('<font color="#98C379">'..s..'</font>') end)
                     highlighted = highlighted:gsub("('[^']*')", function(s) return mark('<font color="#98C379">'..s..'</font>') end)
                     highlighted = highlighted:gsub("(%[%[.-%]%])", function(s) return mark('<font color="#98C379">'..s..'</font>') end)
-                    
-                    -- Highlight comments
                     highlighted = highlighted:gsub("%-%-.*", function(s) return mark('<font color="#5C6370">'..s..'</font>') end)
                     
-                    -- Highlight keywords and builtins (only whole words)
                     for _, kw in pairs(keywords) do
                         highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", function(s) return mark('<font color="' .. accentHex .. '">'..s..'</font>') end)
                     end
@@ -924,12 +919,10 @@ function Library:CreateWindow(options)
                         highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", function(s) return mark('<font color="#61AFEF">'..s..'</font>') end)
                     end
                     
-                    -- Highlight numbers (only outside tags)
                     highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", function(s) return mark('<font color="#D19A66">'..s..'</font>') end)
                     
-                    -- Final pass to restore all markers
                     for i = #tags, 1, -1 do
-                        highlighted = highlighted:gsub("\255" .. (i-1) .. "\255", tags[i])
+                        highlighted = highlighted:gsub("___TAG" .. (i-1) .. "___", tags[i])
                     end
                     
                     return highlighted
