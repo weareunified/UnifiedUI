@@ -889,22 +889,29 @@ function Library:CreateWindow(options)
                 local Codeblock = {}
                 local rawCode = code:gsub("<font.->", ""):gsub("</font>", "")
                 
+                local function toHex(color)
+                    return string.format("#%02X%02X%02X", math.floor(color.R * 255), math.floor(color.G * 255), math.floor(color.B * 255))
+                end
+
                 local function highlight(src)
                     local keywords = {"local", "function", "if", "then", "else", "elseif", "end", "for", "in", "do", "while", "repeat", "until", "return", "break", "nil", "true", "false", "and", "or", "not"}
                     local builtins = {"game", "workspace", "script", "math", "table", "string", "task", "wait", "spawn", "delay", "print", "warn", "error", "pcall", "xpcall", "Instance", "Enum", "Color3", "UDim2", "UDim", "Vector3", "Vector2"}
                     
-                    local highlighted = src
-                    highlighted = highlighted:gsub('("[^"]*")', '<font color="rgb(152, 195, 121)">%1</font>')
-                    highlighted = highlighted:gsub("('[^']*')", '<font color="rgb(152, 195, 121)">%1</font>')
-                    highlighted = highlighted:gsub("%-%-.*", '<font color="rgb(92, 99, 112)">%0</font>')
+                    local highlighted = src:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
                     
+                    highlighted = highlighted:gsub('("[^"]*")', '<font color="#98C379">%1</font>')
+                    highlighted = highlighted:gsub("('[^']*')", '<font color="#98C379">%1</font>')
+                    highlighted = highlighted:gsub("(%[%[.*%]%])", '<font color="#98C379">%1</font>')
+                    highlighted = highlighted:gsub("%-%-.*", '<font color="#5C6370">%0</font>')
+                    
+                    local accentHex = toHex(accentColor)
                     for _, kw in pairs(keywords) do
-                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", '<font color="rgb(' .. math.floor(accentColor.R*255) .. ',' .. math.floor(accentColor.G*255) .. ',' .. math.floor(accentColor.B*255) .. ')">'..kw..'</font>')
+                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", '<font color="' .. accentHex .. '">'..kw..'</font>')
                     end
                     for _, bi in pairs(builtins) do
-                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", '<font color="rgb(97, 175, 239)">'..bi..'</font>')
+                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", '<font color="#61AFEF">'..bi..'</font>')
                     end
-                    highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", '<font color="rgb(209, 154, 102)">%0</font>')
+                    highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", '<font color="#D19A66">%0</font>')
                     
                     return highlighted
                 end
