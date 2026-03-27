@@ -125,17 +125,32 @@ function Library:CreateWindow(options)
     UserStroke.Transparency = 1
     UserStroke.Parent = UI.UserPanel
 
+    UI.UserImage = Instance.new("ImageLabel")
+    UI.UserImage.Name = "UserImage"
+    UI.UserImage.Parent = UI.UserPanel
+    UI.UserImage.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    UI.UserImage.Position = UDim2.new(0, 5, 0.5, -12)
+    UI.UserImage.Size = UDim2.new(0, 24, 0, 24)
+    UI.UserImage.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+    UI.UserImage.BackgroundTransparency = 1
+    UI.UserImage.ImageTransparency = 1
+
+    local UserImageCorner = Instance.new("UICorner")
+    UserImageCorner.CornerRadius = UDim.new(1, 0)
+    UserImageCorner.Parent = UI.UserImage
+
     UI.UserName = Instance.new("TextLabel")
     UI.UserName.Name = "UserName"
     UI.UserName.Parent = UI.UserPanel
     UI.UserName.BackgroundTransparency = 1
-    UI.UserName.Position = UDim2.new(0, 10, 0, 0)
-    UI.UserName.Size = UDim2.new(1, -20, 1, 0)
+    UI.UserName.Position = UDim2.new(0, 35, 0, 0)
+    UI.UserName.Size = UDim2.new(1, -35, 1, 0)
     UI.UserName.Font = Enum.Font.SourceSans
-    UI.UserName.Text = LocalPlayer.Name:lower()
+    UI.UserName.Text = LocalPlayer.Name:lower() .. " <font color=\"rgb(150, 150, 150)\"> • </font> by Unified Production"
     UI.UserName.TextColor3 = Color3.fromRGB(180, 180, 180)
-    UI.UserName.TextSize = 14
+    UI.UserName.TextSize = 13
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
+    UI.UserName.RichText = true
     UI.UserName.TextTransparency = 1
 
     UI.MainContent = Instance.new("Frame")
@@ -218,6 +233,7 @@ function Library:CreateWindow(options)
         Tween(UI.UserPanel, 0.8, {BackgroundTransparency = 0})
         Tween(UserStroke, 0.8, {Transparency = 0})
         Tween(UI.UserName, 0.8, {TextTransparency = 0})
+        Tween(UI.UserImage, 0.8, {ImageTransparency = 0})
     end)
 
     local dragging, dragInput, dragStart, startPos
