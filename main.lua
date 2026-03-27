@@ -78,9 +78,9 @@ function Library:CreateWindow(options)
 
     function UI:LoadConfig(name)
         if isfile and readfile and isfile(UI.Folder .. "/" .. name .. ".json") then
-            local config = HttpService:JSONDecode(readfile(UI.Folder .. "/" .. name .. ".json"))
-            for flag, value in pairs(config) do
-                if UI.Flags[flag] ~= nil then
+            local success, config = pcall(function() return HttpService:JSONDecode(readfile(UI.Folder .. "/" .. name .. ".json")) end)
+            if success and type(config) == "table" then
+                for flag, value in pairs(config) do
                     if type(value) == "table" and #value == 3 then
                         UI:SetFlag(flag, Color3.new(unpack(value)))
                     else
@@ -738,9 +738,10 @@ function Library:CreateWindow(options)
                 return Textbox
             end
 
-            function Section:CreateBind(text, default, callback)
-                local Bind = { Key = default or Enum.KeyCode.F, Callback = callback or function() end, Waiting = false }
+            function Section:CreateBind(text, flag, default, callback)
+                local Bind = { Key = default or Enum.KeyCode.F, Flag = flag, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, Bind)
+                if flag then UI.Flags[flag] = Bind.Key.Name end
                 Bind.Frame = Instance.new("Frame")
                 Bind.Frame.Name = text .. "Bind"
                 Bind.Frame.Parent = Container
@@ -767,14 +768,24 @@ function Library:CreateWindow(options)
                 local BtnStroke = Instance.new("UIStroke")
                 BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                 BtnStroke.Parent = Bind.Btn
+                Bind.Update = function(val)
+                    if typeof(val) == "string" then
+                        Bind.Key = Enum.KeyCode[val]
+                    else
+                        Bind.Key = val
+                    end
+                    Bind.Btn.Text = Bind.Key.Name:upper()
+                    if flag then UI.Flags[flag] = Bind.Key.Name end
+                end
                 Bind.Btn.MouseButton1Click:Connect(function() Bind.Waiting = true Bind.Btn.Text = "..." end)
-                UserInputService.InputBegan:Connect(function(input) if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then Bind.Key = input.KeyCode Bind.Btn.Text = Bind.Key.Name:upper() Bind.Waiting = false elseif not Bind.Waiting and input.KeyCode == Bind.Key then pcall(Bind.Callback) end end)
+                UserInputService.InputBegan:Connect(function(input) if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then Bind.Key = input.KeyCode Bind.Btn.Text = Bind.Key.Name:upper() Bind.Waiting = false if flag then UI.Flags[flag] = Bind.Key.Name end elseif not Bind.Waiting and input.KeyCode == Bind.Key then pcall(Bind.Callback) end end)
                 return Bind
             end
 
-            function Section:CreateToggleBind(text, defaultState, defaultKey, callback)
-                local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Callback = callback or function() end, Waiting = false }
+            function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
+                local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Flag = flag, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, ToggleBind)
+                if flag then UI.Flags[flag] = {ToggleBind.State, ToggleBind.Key.Name} end
                 ToggleBind.Frame = Instance.new("Frame")
                 ToggleBind.Frame.Name = text .. "ToggleBind"
                 ToggleBind.Frame.Parent = Container
@@ -819,7 +830,7 @@ function Library:CreateWindow(options)
                 local BtnStroke = Instance.new("UIStroke")
                 BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                 BtnStroke.Parent = ToggleBind.Btn
-                local function Update()
+                local function Update(manually)
                     if ToggleBind.State then
                         Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
                         Tween(BoxStroke, 0.2, {Color = accentColor})
@@ -827,7 +838,18 @@ function Library:CreateWindow(options)
                         Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
                         Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
                     end
+                    if flag then UI.Flags[flag] = {ToggleBind.State, ToggleBind.Key.Name} end
                     pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
+                end
+                ToggleBind.Update = function(val)
+                    if type(val) == "table" then
+                        ToggleBind.State = val[1]
+                        if typeof(val[2]) == "string" then ToggleBind.Key = Enum.KeyCode[val[2]] else ToggleBind.Key = val[2] end
+                    else
+                        ToggleBind.State = val
+                    end
+                    ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                    Update(true)
                 end
                 ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State Update() end)
                 ToggleBind.Btn.MouseButton1Click:Connect(function() ToggleBind.Waiting = true ToggleBind.Btn.Text = "..." end)
@@ -977,7 +999,9 @@ function Library:CreateWindow(options)
                     Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
                     pcall(Dropdown.Callback, Dropdown.Selected)
                 end
-                Dropdown.Update = function(val) Update(val, true) end
+                Dropdown.Update = function(val)
+                    Update(val, true)
+                end
                 for _, option in pairs(Dropdown.Options) do
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Name = option
@@ -1072,8 +1096,15 @@ function Library:CreateWindow(options)
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 local function Update(manually)
                     if flag then UI.Flags[flag] = Dropdown.Selected end
+                    local selectedCount = #Dropdown.Selected
+                    if selectedCount == 0 then
+                        Dropdown.Label.Text = text .. ": ..."
+                    else
+                        Dropdown.Label.Text = text .. ": (" .. selectedCount .. ") selected"
+                    end
                     pcall(Dropdown.Callback, Dropdown.Selected)
                 end
+                Update(true)
                 Dropdown.Update = function(val)
                     Dropdown.Selected = val
                     for _, btn in pairs(Dropdown.List:GetChildren()) do
