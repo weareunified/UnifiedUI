@@ -152,6 +152,24 @@ function Library:CreateWindow(options)
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
     UI.UserName.RichText = true
     UI.UserName.TextTransparency = 1
+    UI.UserName.ClipsDescendants = false
+
+    local function StartUserPanelLoop()
+        local isThanks = true
+        while task.wait(10) do
+            local nextText = isThanks and (" <font color=\"rgb(150, 150, 150)\"> • </font> " .. LocalPlayer.Name:lower()) or " <font color=\"rgb(150, 150, 150)\"> • </font> <i>Thanks for using!</i>"
+            isThanks = not isThanks
+
+            Tween(UI.UserName, 0.5, {Position = UDim2.new(0, 35, 0, 15), TextTransparency = 1})
+            
+            task.delay(0.5, function()
+                UI.UserName.Text = nextText
+                UI.UserName.Position = UDim2.new(0, 35, 0, -15)
+                Tween(UI.UserName, 0.5, {Position = UDim2.new(0, 35, 0, 0), TextTransparency = 0})
+            end)
+        end
+    end
+    task.spawn(StartUserPanelLoop)
 
     UI.MainContent = Instance.new("Frame")
     UI.MainContent.Name = "MainContent"
