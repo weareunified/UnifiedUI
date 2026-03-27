@@ -925,6 +925,16 @@ function Library:CreateWindow(options)
                 Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
+                local function ResetAllZIndex()
+                    for _, s in pairs(Tab.Sections) do
+                        s.Frame.ZIndex = 1
+                        for _, e in pairs(s.Elements) do
+                            if e.Frame and (e.Frame.Name:find("Dropdown") or e.Frame.Name:find("MultiDropdown")) then
+                                e.Frame.ZIndex = 5
+                            end
+                        end
+                    end
+                end
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = Color3.fromRGB(34, 26, 40)
                 DropStroke.Parent = Dropdown.Frame
@@ -981,21 +991,22 @@ function Library:CreateWindow(options)
                     OptBtn.TextSize = 14
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                     OptBtn.ZIndex = 110
-                    OptBtn.MouseButton1Click:Connect(function() Dropdown.Selected = option Update() Dropdown.Opened = false Dropdown.Frame.ZIndex = 5 Section.Frame.ZIndex = 1 Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)}) task.delay(0.3, function() Dropdown.List.Visible = false end) Dropdown.Icon.Text = "+" end)
+                    OptBtn.MouseButton1Click:Connect(function() Dropdown.Selected = option Update() Dropdown.Opened = false ResetAllZIndex() Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)}) task.delay(0.3, function() Dropdown.List.Visible = false end) Dropdown.Icon.Text = "+" end)
                 end
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
+                            ResetAllZIndex()
                             Dropdown.Frame.ZIndex = 100
                             Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
                         else
-                            Dropdown.Frame.ZIndex = 5
+                            ResetAllZIndex()
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() Dropdown.List.Visible = false if not Dropdown.Opened then Section.Frame.ZIndex = 1 end end)
+                            task.delay(0.3, function() Dropdown.List.Visible = false end)
                             Dropdown.Icon.Text = "+"
                         end
                     end
@@ -1013,6 +1024,16 @@ function Library:CreateWindow(options)
                 Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
+                local function ResetAllZIndex()
+                    for _, s in pairs(Tab.Sections) do
+                        s.Frame.ZIndex = 1
+                        for _, e in pairs(s.Elements) do
+                            if e.Frame and (e.Frame.Name:find("Dropdown") or e.Frame.Name:find("MultiDropdown")) then
+                                e.Frame.ZIndex = 5
+                            end
+                        end
+                    end
+                end
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = Color3.fromRGB(34, 26, 40)
                 DropStroke.Parent = Dropdown.Frame
@@ -1085,15 +1106,16 @@ function Library:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
                         if Dropdown.Opened then
+                            ResetAllZIndex()
                             Dropdown.Frame.ZIndex = 100
                             Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                             Dropdown.Icon.Text = "-"
                         else
-                            Dropdown.Frame.ZIndex = 5
+                            ResetAllZIndex()
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() Dropdown.List.Visible = false if not Dropdown.Opened then Section.Frame.ZIndex = 1 end end)
+                            task.delay(0.3, function() Dropdown.List.Visible = false end)
                             Dropdown.Icon.Text = "+"
                         end
                     end
