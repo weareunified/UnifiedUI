@@ -124,6 +124,7 @@ function Library:CreateWindow(options)
     end
 
     function UI:SaveConfig(name)
+        if not name or name == "" or name == "No Configs" then return end
         local config = {}
         for flag, value in pairs(UI.Flags) do
             if typeof(value) == "Color3" then
@@ -134,46 +135,60 @@ function Library:CreateWindow(options)
                 config[flag] = value
             end
         end
-        if writefile then
-            writefile(UI.ConfigFolder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
-        end
+        local success, err = pcall(function()
+            if writefile then
+                if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
+                writefile(UI.ConfigFolder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
+            end
+        end)
+        if not success then warn("UI Error (SaveConfig): " .. tostring(err)) end
     end
 
     local function CreateDefaultConfig()
         task.spawn(function()
             task.wait(1)
-            if writefile and not isfile(UI.ConfigFolder .. "/default.json") then
-                UI:SaveConfig("default")
-            end
+            pcall(function()
+                if writefile and isfile and not isfile(UI.ConfigFolder .. "/default.json") then
+                    UI:SaveConfig("default")
+                end
+            end)
         end)
     end
     CreateDefaultConfig()
 
     function UI:LoadConfig(name)
+        if not name or name == "" or name == "No Configs" then return end
         local path = UI.ConfigFolder .. "/" .. name .. ".json"
         
-        if isfile and readfile and isfile(path) then
-            local success, config = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
-            if success and type(config) == "table" then
-                for flag, value in pairs(config) do
-                    if UI.Components[flag] then
-                        UI.Components[flag]:Update(value)
-                    else
-                        if type(value) == "table" and #value == 3 then
-                            UI.Flags[flag] = Color3.new(unpack(value))
+        local success, err = pcall(function()
+            if isfile and readfile and isfile(path) then
+                local decodeSuccess, config = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
+                if decodeSuccess and type(config) == "table" then
+                    for flag, value in pairs(config) do
+                        if UI.Components and UI.Components[flag] then
+                            pcall(function() UI.Components[flag]:Update(value) end)
                         else
-                            UI.Flags[flag] = value
+                            if type(value) == "table" and #value == 3 then
+                                UI.Flags[flag] = Color3.new(unpack(value))
+                            else
+                                UI.Flags[flag] = value
+                            end
                         end
                     end
                 end
             end
-        end
+        end)
+        if not success then warn("UI Error (LoadConfig): " .. tostring(err)) end
     end
 
     function UI:DeleteConfig(name)
-        if delfile and isfile and isfile(UI.ConfigFolder .. "/" .. name .. ".json") then
-            delfile(UI.ConfigFolder .. "/" .. name .. ".json")
-        end
+        if not name or name == "" or name == "No Configs" then return end
+        local success, err = pcall(function()
+            if delfile and isfile and isfile(UI.ConfigFolder .. "/" .. name .. ".json") then
+                delfile(UI.ConfigFolder .. "/" .. name .. ".json")
+            end
+        end)
+        if not success then warn("UI Error (DeleteConfig): " .. tostring(err)) end
     end
 
     function UI:GetConfigs()
@@ -1090,15 +1105,17 @@ function Library:CreateWindow(options)
                 BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                 BtnStroke.Parent = ToggleBind.Btn
                 local function Update(manually)
-                    if ToggleBind.State then
-                        Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
-                        Tween(BoxStroke, 0.2, {Color = accentColor})
-                    else
-                        Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
-                        Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
-                    end
-                    UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name}
-                    pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
+                    pcall(function()
+                        if ToggleBind.State then
+                            Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
+                            Tween(BoxStroke, 0.2, {Color = accentColor})
+                        else
+                            Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
+                            Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
+                        end
+                        UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name}
+                        pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
+                    end)
                 end
                 ToggleBind.Update = function(val)
                     if type(val) == "table" then
@@ -1581,25 +1598,27 @@ function Library:CreateWindow(options)
                 end
 
                 local function Update(val, isOptions)
-                    if isOptions and type(val) == "table" then
-                        Dropdown.Options = val
-                        CreateOptions()
-                        if Dropdown.Opened then
-                            local targetSize = math.max(#Dropdown.Options, 1) * 25
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                            RefreshCanvasSize()
-                            task.delay(0.35, RefreshCanvasSize)
+                    pcall(function()
+                        if isOptions and type(val) == "table" then
+                            Dropdown.Options = val
+                            CreateOptions()
+                            if Dropdown.Opened then
+                                local targetSize = math.max(#Dropdown.Options, 1) * 25
+                                Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                                RefreshCanvasSize()
+                                task.delay(0.35, RefreshCanvasSize)
+                            end
+                            return
                         end
-                        return
-                    end
 
-                    if val ~= nil and not isOptions then
-                        Dropdown.Selected = val
-                    end
-                    
-                    UI.Flags[flag or text] = Dropdown.Selected
-                    Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
-                    pcall(Dropdown.Callback, Dropdown.Selected)
+                        if val ~= nil and not isOptions then
+                            Dropdown.Selected = val
+                        end
+                        
+                        UI.Flags[flag or text] = Dropdown.Selected
+                        Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
+                        pcall(Dropdown.Callback, Dropdown.Selected)
+                    end)
                 end
 
                 Dropdown.Update = Update
