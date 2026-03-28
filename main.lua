@@ -184,6 +184,8 @@ function Library:CreateWindow(options)
                 if name then table.insert(configs, name) end
             end
         end
+        -- Ensure table is not empty for dropdown
+        if #configs == 0 then table.insert(configs, "No Configs") end
         return configs
     end
 
@@ -1537,7 +1539,7 @@ function Library:CreateWindow(options)
                         Dropdown.Frame.ZIndex = 100
                         Section.Frame.ZIndex = 10
                         Dropdown.List.Visible = true
-                        local targetSize = #Dropdown.Options * 25
+                        local targetSize = math.max(#Dropdown.Options, 1) * 25
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                         Dropdown.Icon.Text = "-"
                     else
