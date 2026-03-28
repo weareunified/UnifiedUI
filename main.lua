@@ -1375,7 +1375,6 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
 				pcall(function()
 					if cfgDropdown and cfgDropdown.Refresh then
 						cfgDropdown:Refresh(UI:GetConfigs())
-						cfgDropdown:SetOpened(cfgDropdown.Opened)
 					end
 				end)
             end)
@@ -1386,7 +1385,6 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
 				pcall(function()
 					if cfgDropdown and cfgDropdown.Refresh then
 						cfgDropdown:Refresh(UI:GetConfigs())
-						cfgDropdown:SetOpened(cfgDropdown.Opened)
 					end
 				end)
             end)
@@ -1404,7 +1402,6 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
 					if cfgDropdown and cfgDropdown.Refresh then
 						cfgDropdown:Refresh(UI:GetConfigs())
 						cfgDropdown:Set("default")
-						cfgDropdown:SetOpened(cfgDropdown.Opened)
 					end
 				end)
             end)
