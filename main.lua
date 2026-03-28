@@ -1325,6 +1325,16 @@ function Library:CreateWindow(options)
                 PickerStroke.Transparency = 1
                 PickerStroke.Parent = Colorpicker.PickerFrame
 
+                Colorpicker.InputBlocker = Instance.new("TextButton")
+                Colorpicker.InputBlocker.Name = "InputBlocker"
+                Colorpicker.InputBlocker.Parent = Colorpicker.PickerFrame
+                Colorpicker.InputBlocker.BackgroundTransparency = 1
+                Colorpicker.InputBlocker.BorderSizePixel = 0
+                Colorpicker.InputBlocker.Size = UDim2.new(1, 0, 1, 0)
+                Colorpicker.InputBlocker.Text = ""
+                Colorpicker.InputBlocker.AutoButtonColor = false
+                Colorpicker.InputBlocker.ZIndex = 100
+
                 Colorpicker.SatVal = Instance.new("ImageLabel")
                 Colorpicker.SatVal.Name = "SatVal"
                 Colorpicker.SatVal.Parent = Colorpicker.PickerFrame
@@ -1397,6 +1407,9 @@ function Library:CreateWindow(options)
                 local DarknessCursorStroke = Instance.new("UIStroke")
                 DarknessCursorStroke.Color = Color3.fromRGB(0, 0, 0)
                 DarknessCursorStroke.Parent = Colorpicker.DarknessCursor
+
+                Colorpicker.InputBlocker.MouseButton1Click:Connect(function()
+                end)
 
                 local function UpdateColor()
                     Colorpicker.Color = Color3.fromHSV(Colorpicker.H, Colorpicker.S, Colorpicker.V)
