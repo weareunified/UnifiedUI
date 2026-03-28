@@ -165,7 +165,7 @@ function Library:CreateWindow(options)
     UI.MainFrame.BorderSizePixel = 0
     UI.MainFrame.Position = UDim2.new(0.5, -315, 0.5, -210)
     UI.MainFrame.Size = UDim2.new(0, 630, 0, 420)
-    UI.MainFrame.ClipsDescendants = true
+    UI.MainFrame.ClipsDescendants = false
     UI.MainFrame.BackgroundTransparency = 0
 
     local MainStroke = Instance.new("UIStroke")
