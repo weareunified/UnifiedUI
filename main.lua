@@ -1411,7 +1411,7 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
     _G.UnifiedUI = UI
 
     if not (_G and _G.UNIFIED_UI_NO_BOOT) then
-        UI:CreateWindow()
+        Library:CreateWindow()
 
         local tabOrder = {
             {Name = "Settings"},
