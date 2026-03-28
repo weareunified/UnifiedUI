@@ -1156,25 +1156,33 @@ function Library:CreateWindow(options)
                 if isLink then
                     task.spawn(function()
                         local url = id
+                        -- Universal URL handling
                         if url:find("imgur.com") and not url:find("i.imgur.com") then
                             url = url:gsub("imgur.com", "i.imgur.com")
-                        end
-                        if url:find("i.imgur.com") and not (url:find(".png") or url:find(".jpg") or url:find(".jpeg") or url:find(".webp")) then
-                            url = url .. ".png"
+                            if not (url:find(".png") or url:find(".jpg") or url:find(".jpeg") or url:find(".webp")) then
+                                url = url .. ".png"
+                            end
                         end
 
                         local success, res = pcall(function() return game:HttpGet(url) end)
                         if success and res then
-                            local ext = url:match("%.(%w+)$") or "png"
-                            local name = "Unified/Assets/" .. RandomString(8) .. "." .. ext
+                            -- Generate a unique filename based on URL hash to avoid re-downloading if possible, or just random
+                            local hash = 0
+                            for i = 1, #url do hash = (hash * 31 + string.byte(url, i)) % 2^31 end
+                            
+                            local extension = url:match("%.(%w+)%??") or "png"
+                            if #extension > 4 then extension = "png" end -- fallback for long query strings
+                            
+                            local fileName = "Unified/Assets/" .. tostring(hash) .. "." .. extension
                             if not isfolder("Unified/Assets") then makefolder("Unified/Assets") end
                             
-                            local writeSuccess, writeError = pcall(function() writefile(name, res) end)
-                            if writeSuccess then
-                                local assetFunc = getcustomasset or getsynasset
-                                if assetFunc then
-                                    Image.Img.Image = assetFunc(name)
-                                end
+                            if not isfile(fileName) then
+                                writefile(fileName, res)
+                            end
+                            
+                            local assetFunc = getcustomasset or getsynasset or (drawing and drawing.new and function(path) return "rbxasset://" .. path end)
+                            if assetFunc then
+                                Image.Img.Image = assetFunc(fileName)
                             end
                         end
                     end)
