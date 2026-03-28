@@ -1130,7 +1130,7 @@ function Library:CreateWindow(options)
                 local rawCode = tostring(code):gsub("<[^>]+>", "")
                 
                 Codeblock.Frame = Instance.new("Frame")
-                Codeblock.Fram  e.Name = text .. "Codeblock"
+                Codeblock.Frame.Name = text .. "Codeblock"
                 Codeblock.Frame.Parent = Container
                 Codeblock.Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
                 Codeblock.Frame.Size = UDim2.new(1, 0, 0, 120)
