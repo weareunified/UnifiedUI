@@ -180,11 +180,11 @@ function Library:CreateWindow(options)
         local configs = {}
         if listfiles and isfolder and isfolder(UI.ConfigFolder) then
             for _, v in pairs(listfiles(UI.ConfigFolder)) do
-                local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
+                -- Improved regex to handle all path types and extract filename
+                local name = v:gsub("%.json$", ""):match("([^/\\]+)$") or v:gsub("%.json$", "")
                 if name then table.insert(configs, name) end
             end
         end
-        -- Ensure table is not empty for dropdown
         if #configs == 0 then table.insert(configs, "No Configs") end
         return configs
     end
