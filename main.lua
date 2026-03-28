@@ -58,11 +58,15 @@ function Library:CreateWindow(options)
         CurrentTab = nil,
         Tabs = {},
         Flags = {},
-        Folder = configName
+        Folder = "Unified",
+        ConfigFolder = "Unified/Configs",
+        DefaultFolder = "Unified/Default"
     }
 
     if isfolder and makefolder then
         if not isfolder(UI.Folder) then makefolder(UI.Folder) end
+        if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
+        if not isfolder(UI.DefaultFolder) then makefolder(UI.DefaultFolder) end
     end
 
     function UI:SaveConfig(name)
@@ -77,13 +81,18 @@ function Library:CreateWindow(options)
             end
         end
         if writefile then
-            writefile(UI.Folder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
+            writefile(UI.ConfigFolder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
         end
     end
 
     function UI:LoadConfig(name)
-        if isfile and readfile and isfile(UI.Folder .. "/" .. name .. ".json") then
-            local success, config = pcall(function() return HttpService:JSONDecode(readfile(UI.Folder .. "/" .. name .. ".json")) end)
+        local path = UI.ConfigFolder .. "/" .. name .. ".json"
+        if not isfile(path) then
+            path = UI.DefaultFolder .. "/" .. name .. ".json"
+        end
+        
+        if isfile and readfile and isfile(path) then
+            local success, config = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
             if success and type(config) == "table" then
                 for flag, value in pairs(config) do
                     if type(value) == "table" and #value == 3 then
@@ -97,17 +106,25 @@ function Library:CreateWindow(options)
     end
 
     function UI:DeleteConfig(name)
-        if delfile and isfile and isfile(UI.Folder .. "/" .. name .. ".json") then
-            delfile(UI.Folder .. "/" .. name .. ".json")
+        if delfile and isfile and isfile(UI.ConfigFolder .. "/" .. name .. ".json") then
+            delfile(UI.ConfigFolder .. "/" .. name .. ".json")
         end
     end
 
     function UI:GetConfigs()
         local configs = {}
-        if listfiles and isfolder and isfolder(UI.Folder) then
-            for _, v in pairs(listfiles(UI.Folder)) do
-                local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
-                if name then table.insert(configs, name) end
+        if listfiles and isfolder then
+            if isfolder(UI.ConfigFolder) then
+                for _, v in pairs(listfiles(UI.ConfigFolder)) do
+                    local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
+                    if name then table.insert(configs, name) end
+                end
+            end
+            if isfolder(UI.DefaultFolder) then
+                for _, v in pairs(listfiles(UI.DefaultFolder)) do
+                    local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
+                    if name and not table.find(configs, name) then table.insert(configs, name) end
+                end
             end
         end
         return configs
@@ -383,7 +400,7 @@ function Library:CreateWindow(options)
             logHash = (logHash * 31 + string.byte(logString, i)) % 2^31
         end
         
-        local hashFile = "UnifiedConfigs/LastChangelog.txt"
+        local hashFile = "Unified/LastChangelog.txt"
         if isfile and readfile and isfile(hashFile) then
             if readfile(hashFile) == tostring(logHash) then
                 return
