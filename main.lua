@@ -57,6 +57,7 @@ function Library:CreateWindow(options)
         CurrentTab = nil,
         Tabs = {},
         Flags = {},
+        Components = {},
         Folder = "Unified",
         ConfigFolder = "Unified/Configs"
     }
@@ -99,10 +100,14 @@ function Library:CreateWindow(options)
             local success, config = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
             if success and type(config) == "table" then
                 for flag, value in pairs(config) do
-                    if type(value) == "table" and #value == 3 then
-                        UI:SetFlag(flag, Color3.new(unpack(value)))
+                    if UI.Components[flag] then
+                        UI.Components[flag]:Update(value)
                     else
-                        UI:SetFlag(flag, value)
+                        if type(value) == "table" and #value == 3 then
+                            UI.Flags[flag] = Color3.new(unpack(value))
+                        else
+                            UI.Flags[flag] = value
+                        end
                     end
                 end
             end
@@ -793,6 +798,7 @@ function Library:CreateWindow(options)
                     pcall(Toggle.Callback, Toggle.State)
                 end
                 Toggle.Update = function(val) Toggle.State = val Update(true) end
+                UI.Components[flag or text] = Toggle
                 Toggle.Frame.MouseButton1Click:Connect(function() Update() end)
                 return Toggle
             end
@@ -853,6 +859,7 @@ function Library:CreateWindow(options)
                     pcall(Slider.Callback, Slider.Value)
                 end
                 Slider.Update = function(val) Update(val, true) end
+                UI.Components[flag or text] = Slider
                 local sliding = false
                 Slider.Bar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true Update(input) end end)
                 UserInputService.InputChanged:Connect(function(input) if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then Update(input) end end)
@@ -885,6 +892,7 @@ function Library:CreateWindow(options)
                 Textbox.Input.TextSize = 14
                 Textbox.Input.TextXAlignment = Enum.TextXAlignment.Left
                 Textbox.Update = function(val) Textbox.Input.Text = val if flag then UI.Flags[flag] = val end pcall(Textbox.Callback, val) end
+                UI.Components[flag or text] = Textbox
                 Textbox.Input.FocusLost:Connect(function(enter) if enter then if flag then UI.Flags[flag] = Textbox.Input.Text end pcall(Textbox.Callback, Textbox.Input.Text) end end)
                 return Textbox
             end
@@ -928,6 +936,7 @@ function Library:CreateWindow(options)
                     Bind.Btn.Text = Bind.Key.Name:upper()
                     if flag then UI.Flags[flag] = Bind.Key.Name end
                 end
+                UI.Components[flag or text] = Bind
                 Bind.Btn.MouseButton1Click:Connect(function() Bind.Waiting = true Bind.Btn.Text = "..." end)
                 UserInputService.InputBegan:Connect(function(input) if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then Bind.Key = input.KeyCode Bind.Btn.Text = Bind.Key.Name:upper() Bind.Waiting = false if flag then UI.Flags[flag] = Bind.Key.Name end elseif not Bind.Waiting and input.KeyCode == Bind.Key then pcall(Bind.Callback) end end)
                 return Bind
@@ -1002,6 +1011,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
                     Update(true)
                 end
+                UI.Components[flag or text] = ToggleBind
                 ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State Update() end)
                 ToggleBind.Btn.MouseButton1Click:Connect(function() ToggleBind.Waiting = true ToggleBind.Btn.Text = "..." end)
                 UserInputService.InputBegan:Connect(function(input)
@@ -1221,9 +1231,8 @@ function Library:CreateWindow(options)
                     Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
                     pcall(Dropdown.Callback, Dropdown.Selected)
                 end
-                Dropdown.Update = function(val)
-                    Update(val, true)
-                end
+                Dropdown.Update = function(val) Update(val, true) end
+                UI.Components[flag or text] = Dropdown
                 for _, option in pairs(Dropdown.Options) do
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Name = option
@@ -1336,6 +1345,7 @@ function Library:CreateWindow(options)
                     end
                     Update(true)
                 end
+                UI.Components[flag or text] = Dropdown
                 for _, option in pairs(Dropdown.Options) do
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Name = option
