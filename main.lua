@@ -52,21 +52,16 @@ function Library:CreateWindow(options)
     options = options or {}
     local windowTitle = options.Name or "UNIFIED"
     local accentColor = options.AccentColor or Color3.fromRGB(207, 165, 255)
-    local configName = options.ConfigName or "UnifiedConfig"
     
     local UI = {
         CurrentTab = nil,
         Tabs = {},
         Flags = {},
-        Folder = "Unified",
-        ConfigFolder = "Unified/Configs",
-        DefaultFolder = "Unified/Default"
+        Folder = "Unified"
     }
 
     if isfolder and makefolder then
         if not isfolder(UI.Folder) then makefolder(UI.Folder) end
-        if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
-        if not isfolder(UI.DefaultFolder) then makefolder(UI.DefaultFolder) end
     end
 
     function UI:SaveConfig(name)
@@ -81,15 +76,12 @@ function Library:CreateWindow(options)
             end
         end
         if writefile then
-            writefile(UI.ConfigFolder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
+            writefile(UI.Folder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
         end
     end
 
     function UI:LoadConfig(name)
-        local path = UI.ConfigFolder .. "/" .. name .. ".json"
-        if not isfile(path) then
-            path = UI.DefaultFolder .. "/" .. name .. ".json"
-        end
+        local path = UI.Folder .. "/" .. name .. ".json"
         
         if isfile and readfile and isfile(path) then
             local success, config = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
@@ -106,25 +98,17 @@ function Library:CreateWindow(options)
     end
 
     function UI:DeleteConfig(name)
-        if delfile and isfile and isfile(UI.ConfigFolder .. "/" .. name .. ".json") then
-            delfile(UI.ConfigFolder .. "/" .. name .. ".json")
+        if delfile and isfile and isfile(UI.Folder .. "/" .. name .. ".json") then
+            delfile(UI.Folder .. "/" .. name .. ".json")
         end
     end
 
     function UI:GetConfigs()
         local configs = {}
-        if listfiles and isfolder then
-            if isfolder(UI.ConfigFolder) then
-                for _, v in pairs(listfiles(UI.ConfigFolder)) do
-                    local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
-                    if name then table.insert(configs, name) end
-                end
-            end
-            if isfolder(UI.DefaultFolder) then
-                for _, v in pairs(listfiles(UI.DefaultFolder)) do
-                    local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
-                    if name and not table.find(configs, name) then table.insert(configs, name) end
-                end
+        if listfiles and isfolder and isfolder(UI.Folder) then
+            for _, v in pairs(listfiles(UI.Folder)) do
+                local name = v:match("([^/]+)%.json$") or v:match("([^\\]+)%.json$")
+                if name then table.insert(configs, name) end
             end
         end
         return configs
