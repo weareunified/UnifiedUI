@@ -1333,7 +1333,7 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
                 Colorpicker.Frame.MouseButton1Click:Connect(function() SetOpened(not Colorpicker.Opened) end)
                 local picking = false
                 ColorWheel.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then picking = true UpdateColor(input) end end)
-                UserInputService.InputChanged:Connect(function(input) if picking and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateColor(input) end end)
+                UserInputService.InputChanged:Connect(function(input) if picking and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then Update(input) end end)
                 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then picking = false end end)
                 Colorpicker.Update = function(val) Colorpicker.Value = val Colorpicker.ColorDisplay.BackgroundColor3 = val UI.Flags[flag or text] = val pcall(Colorpicker.Callback, val) end
                 UI.Components[flag or text] = Colorpicker
@@ -1373,8 +1373,9 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
                 UI:LoadConfig(name)
                 UI:Notify("Config", "Loaded: " .. tostring(name), 2.5)
 				pcall(function()
-					if cfgDropdown and cfgDropdown.Refresh then
-						cfgDropdown:Refresh(UI:GetConfigs())
+					if cfgDropdown and cfgDropdown.Update then
+						cfgDropdown:Update(UI:GetConfigs(), true)
+						cfgDropdown:SetOpened(cfgDropdown.Opened)
 					end
 				end)
             end)
@@ -1383,8 +1384,9 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
                 UI:SaveConfig(name)
                 UI:Notify("Config", "Saved: " .. tostring(name), 2.5)
 				pcall(function()
-					if cfgDropdown and cfgDropdown.Refresh then
-						cfgDropdown:Refresh(UI:GetConfigs())
+					if cfgDropdown and cfgDropdown.Update then
+						cfgDropdown:Update(UI:GetConfigs(), true)
+						cfgDropdown:SetOpened(cfgDropdown.Opened)
 					end
 				end)
             end)
@@ -1399,9 +1401,10 @@ NotifyTitle.Font = Enum.Font.SourceSansBold
                 selectedCfg = "default"
                 nameInput = "default"
 				pcall(function()
-					if cfgDropdown and cfgDropdown.Refresh then
-						cfgDropdown:Refresh(UI:GetConfigs())
+					if cfgDropdown and cfgDropdown.Update then
+						cfgDropdown:Update(UI:GetConfigs(), true)
 						cfgDropdown:Set("default")
+						cfgDropdown:SetOpened(cfgDropdown.Opened)
 					end
 				end)
             end)
