@@ -1371,11 +1371,11 @@ function Library:CreateWindow(options)
                 local HueGradient = Instance.new("UIGradient")
                 HueGradient.Color = ColorSequence.new({
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-                    ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255, 0, 255)),
-                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.166, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)),
                     ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
-                    ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 255, 0)),
-                    ColorSequenceKeypoint.new(0.82, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(0.666, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)),
                     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
                 })
                 HueGradient.Rotation = 90
