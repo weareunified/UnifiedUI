@@ -372,6 +372,97 @@ function Library:CreateWindow(options)
         end
     end)
 
+    function UI:CreateChangelog(logs)
+        local ChangelogFrame = Instance.new("Frame")
+        ChangelogFrame.Name = "Changelog"
+        ChangelogFrame.Parent = UI.MainFrame.Parent
+        ChangelogFrame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
+        ChangelogFrame.BorderSizePixel = 0
+        ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
+        ChangelogFrame.Size = UDim2.new(0, 180, 0, 300)
+        ChangelogFrame.BackgroundTransparency = 1
+        
+        local ClCorner = Instance.new("UICorner")
+        ClCorner.CornerRadius = UDim.new(0, 6)
+        ClCorner.Parent = ChangelogFrame
+        
+        local ClStroke = Instance.new("UIStroke")
+        ClStroke.Color = Color3.fromRGB(34, 26, 40)
+        ClStroke.Thickness = 1.2
+        ClStroke.Transparency = 1
+        ClStroke.Parent = ChangelogFrame
+
+        local ClTitle = Instance.new("TextLabel")
+        ClTitle.Parent = ChangelogFrame
+        ClTitle.BackgroundTransparency = 1
+        ClTitle.Position = UDim2.new(0, 10, 0, 8)
+        ClTitle.Size = UDim2.new(1, -20, 0, 25)
+        ClTitle.Font = Enum.Font.SourceSansBold
+        ClTitle.Text = "Changelog"
+        ClTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+        ClTitle.TextSize = 16
+        ClTitle.TextXAlignment = Enum.TextXAlignment.Left
+        ClTitle.TextTransparency = 1
+
+        local ClContent = Instance.new("ScrollingFrame")
+        ClContent.Parent = ChangelogFrame
+        ClContent.BackgroundTransparency = 1
+        ClContent.BorderSizePixel = 0
+        ClContent.Position = UDim2.new(0, 10, 0, 35)
+        ClContent.Size = UDim2.new(1, -20, 1, -45)
+        ClContent.ScrollBarThickness = 2
+        ClContent.ScrollBarImageColor3 = accentColor
+        ClContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+        
+        local ClLayout = Instance.new("UIListLayout")
+        ClLayout.Parent = ClContent
+        ClLayout.Padding = UDim.new(0, 6)
+        ClLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        ClLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            ClContent.CanvasSize = UDim2.new(0, 0, 0, ClLayout.AbsoluteContentSize.Y)
+        end)
+
+        for _, log in pairs(logs) do
+            local LogLabel = Instance.new("TextLabel")
+            LogLabel.Parent = ClContent
+            LogLabel.BackgroundTransparency = 1
+            LogLabel.Size = UDim2.new(1, 0, 0, 0)
+            LogLabel.Font = Enum.Font.SourceSans
+            LogLabel.Text = log
+            LogLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
+            LogLabel.TextSize = 14
+            LogLabel.TextXAlignment = Enum.TextXAlignment.Left
+            LogLabel.TextWrapped = true
+            LogLabel.AutomaticSize = Enum.AutomaticSize.Y
+            LogLabel.TextTransparency = 1
+            
+            -- Color prefix
+            if log:find("^%[%+%]") then
+                LogLabel.RichText = true
+                LogLabel.Text = '<font color="#98C379">[+]</font>' .. log:sub(4)
+            elseif log:find("^%[%-%]") then
+                LogLabel.RichText = true
+                LogLabel.Text = '<font color="#E06C75">[-]</font>' .. log:sub(4)
+            elseif log:find("^%[%/%]") then
+                LogLabel.RichText = true
+                LogLabel.Text = '<font color="#61AFEF">[/]</font>' .. log:sub(4)
+            end
+            
+            task.delay(0.4, function() Tween(LogLabel, 0.5, {TextTransparency = 0}) end)
+        end
+
+        UI.MainFrame:GetPropertyChangedSignal("Position"):Connect(function()
+            ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
+        end)
+
+        Tween(ChangelogFrame, 0.6, {BackgroundTransparency = 0})
+        Tween(ClStroke, 0.6, {Transparency = 0})
+        Tween(ClTitle, 0.8, {TextTransparency = 0})
+        
+        return ChangelogFrame
+    end
+
     function UI:CreateTab(name, iconId)
         local Tab = {
             Sections = {},
@@ -900,25 +991,35 @@ function Library:CreateWindow(options)
                     local highlighted = src:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
                     local accentHex = toHex(accentColor)
 
-                    highlighted = highlighted:gsub('("[^"]*")', '<font color="#98C379">%1</font>')
-                    highlighted = highlighted:gsub("('[^']*')", '<font color="#98C379">%1</font>')
-                    highlighted = highlighted:gsub("(%[%[.-%]%])", '<font color="#98C379">%1</font>')
-                    highlighted = highlighted:gsub("%-%-.*", '<font color="#5C6370">%0</font>')
+                    -- Use a more reliable replacement order and pattern
+                    local replacements = {}
+                    local function protect(s)
+                        local key = "\255" .. #replacements .. "\255"
+                        table.insert(replacements, s)
+                        return key
+                    end
+
+                    -- Strings and Comments first
+                    highlighted = highlighted:gsub('("[^"]*")', function(s) return protect('<font color="#98C379">'..s..'</font>') end)
+                    highlighted = highlighted:gsub("('[^']*')", function(s) return protect('<font color="#98C379">'..s..'</font>') end)
+                    highlighted = highlighted:gsub("(%[%[.-%]%])", function(s) return protect('<font color="#98C379">'..s..'</font>') end)
+                    highlighted = highlighted:gsub("%-%-.*", function(s) return protect('<font color="#5C6370">'..s..'</font>') end)
                     
+                    -- Keywords and Builtins
                     for _, kw in pairs(keywords) do
-                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", '<font color="' .. accentHex .. '">'..kw..'</font>')
+                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", function(s) return protect('<font color="' .. accentHex .. '">'..s..'</font>') end)
                     end
                     for _, bi in pairs(builtins) do
-                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", '<font color="#61AFEF">'..bi..'</font>')
+                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", function(s) return protect('<font color="#61AFEF">'..s..'</font>') end)
                     end
                     
-                    -- Only highlight numbers that are NOT inside a font tag's color attribute
-                    highlighted = highlighted:gsub("(%f[%d]%d+%f[%D])", function(num)
-                        return '<font color="#D19A66">'..num..'</font>'
-                    end)
+                    -- Numbers
+                    highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", function(s) return protect('<font color="#D19A66">'..s..'</font>') end)
                     
-                    -- Clean up double-highlighted numbers inside font tags (the "TAG" issue)
-                    highlighted = highlighted:gsub('(<font color="#%w+">)<font color="#D19A66">(%d+)</font>', "%1%2")
+                    -- Restore all protected segments
+                    for i = #replacements, 1, -1 do
+                        highlighted = highlighted:gsub("\255" .. (i-1) .. "\255", replacements[i])
+                    end
                     
                     return highlighted
                 end
