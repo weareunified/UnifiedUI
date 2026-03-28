@@ -273,8 +273,8 @@ function Library:CreateWindow(options)
     UI.TitleLabel.Name = "TitleLabel"
     UI.TitleLabel.Parent = UI.LogoContainer
     UI.TitleLabel.BackgroundTransparency = 1
-    UI.TitleLabel.Position = UDim2.new(0, 20, 0, 0)
-    UI.TitleLabel.Size = UDim2.new(1, -20, 1, 0)
+    UI.TitleLabel.Position = UDim2.new(0, 15, 0, 0)
+    UI.TitleLabel.Size = UDim2.new(1, -15, 1, 0)
     UI.TitleLabel.Font = Enum.Font.SourceSansBold
     UI.TitleLabel.Text = windowTitle
     UI.TitleLabel.TextColor3 = accentColor
