@@ -366,6 +366,48 @@ function Library:CreateWindow(options)
         Tween(UI.UserImage, 0.8, {ImageTransparency = 0})
     end)
 
+    UI.FooterBar = Instance.new("Frame")
+    UI.FooterBar.Name = "FooterBar"
+    UI.FooterBar.Parent = UI.MainFrame
+    UI.FooterBar.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+    UI.FooterBar.Position = UDim2.new(0, 10, 1, 5)
+    UI.FooterBar.Size = UDim2.new(1, -20, 0, 22)
+    UI.FooterBar.BorderSizePixel = 0
+    
+    local FooterCorner = Instance.new("UICorner")
+    FooterCorner.CornerRadius = UDim.new(0, 4)
+    FooterCorner.Parent = UI.FooterBar
+    
+    local FooterStroke = Instance.new("UIStroke")
+    FooterStroke.Color = Color3.fromRGB(34, 26, 40)
+    FooterStroke.Thickness = 1
+    FooterStroke.Parent = UI.FooterBar
+    
+    UI.FooterText = Instance.new("TextLabel")
+    UI.FooterText.Name = "Status"
+    UI.FooterText.Parent = UI.FooterBar
+    UI.FooterText.BackgroundTransparency = 1
+    UI.FooterText.Position = UDim2.new(0, 10, 0, 0)
+    UI.FooterText.Size = UDim2.new(1, -20, 1, 0)
+    UI.FooterText.Font = Enum.Font.SourceSans
+    UI.FooterText.Text = "Checking library status..."
+    UI.FooterText.TextColor3 = Color3.fromRGB(150, 150, 150)
+    UI.FooterText.TextSize = 12
+    UI.FooterText.TextXAlignment = Enum.TextXAlignment.Left
+
+    task.spawn(function()
+        local currentHash = "v1.0.0" 
+        local success, latest = pcall(function() return game:HttpGet("https://raw.githubusercontent.com/weareunified/UnifiedUI/refs/heads/main/version.txt") end)
+        
+        if success and latest and latest:gsub("%s+", "") ~= currentHash then
+            UI.FooterText.Text = "Library updated! Re-Execute to apply new features"
+            UI.FooterText.TextColor3 = accentColor
+        else
+            UI.FooterText.Text = "Library operational!"
+            UI.FooterText.TextColor3 = Color3.fromRGB(150, 150, 150)
+        end
+    end)
+
     local dragging, dragInput, dragStart, startPos
     local function UpdateDrag(input)
         local delta = input.Position - dragStart
