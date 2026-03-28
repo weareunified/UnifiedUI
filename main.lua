@@ -569,7 +569,8 @@ function Library:CreateWindow(options)
         TabContent.ScrollBarThickness = 2
         TabContent.ScrollBarImageColor3 = accentColor
         TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-        TabContent.ClipsDescendants = false
+        TabContent.ClipsDescendants = true
+        TabContent.ZIndex = 10
         Tab.Content = TabContent
 
         local ContentLayout = Instance.new("UIListLayout")
