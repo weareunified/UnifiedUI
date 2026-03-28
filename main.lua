@@ -1213,6 +1213,27 @@ function Library:CreateWindow(options)
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+                local function SetOpened(opened)
+                    Dropdown.Opened = opened
+                    if opened then
+                        ResetAllZIndex()
+                        Dropdown.Frame.ZIndex = 100
+                        Section.Frame.ZIndex = 10
+                        Dropdown.List.Visible = true
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                        Dropdown.Icon.Text = "-"
+                    else
+                        ResetAllZIndex()
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
+                        task.delay(0.3, function() 
+                            if not Dropdown.Opened then 
+                                Dropdown.List.Visible = false 
+                            end 
+                        end)
+                        Dropdown.Icon.Text = "+"
+                    end
+                end
+
                 local function CreateOptions()
                     for _, child in pairs(Dropdown.List:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
@@ -1232,11 +1253,7 @@ function Library:CreateWindow(options)
                         OptBtn.ZIndex = 110
                         OptBtn.MouseButton1Click:Connect(function() 
                             Dropdown.Update(option) 
-                            Dropdown.Opened = false 
-                            ResetAllZIndex() 
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)}) 
-                            task.delay(0.3, function() Dropdown.List.Visible = false end) 
-                            Dropdown.Icon.Text = "+" 
+                            SetOpened(false)
                         end)
                     end
                 end
@@ -1266,20 +1283,7 @@ function Library:CreateWindow(options)
                 CreateOptions()
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        Dropdown.Opened = not Dropdown.Opened
-                        if Dropdown.Opened then
-                            ResetAllZIndex()
-                            Dropdown.Frame.ZIndex = 100
-                            Section.Frame.ZIndex = 10
-                            Dropdown.List.Visible = true
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
-                            Dropdown.Icon.Text = "-"
-                        else
-                            ResetAllZIndex()
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() Dropdown.List.Visible = false end)
-                            Dropdown.Icon.Text = "+"
-                        end
+                        SetOpened(not Dropdown.Opened)
                     end
                 end)
                 return Dropdown
@@ -1342,6 +1346,27 @@ function Library:CreateWindow(options)
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+                local function SetOpened(opened)
+                    Dropdown.Opened = opened
+                    if opened then
+                        ResetAllZIndex()
+                        Dropdown.Frame.ZIndex = 100
+                        Section.Frame.ZIndex = 10
+                        Dropdown.List.Visible = true
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                        Dropdown.Icon.Text = "-"
+                    else
+                        ResetAllZIndex()
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
+                        task.delay(0.3, function() 
+                            if not Dropdown.Opened then 
+                                Dropdown.List.Visible = false 
+                            end 
+                        end)
+                        Dropdown.Icon.Text = "+"
+                    end
+                end
+
                 local function CreateOptions()
                     for _, child in pairs(Dropdown.List:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
@@ -1403,20 +1428,7 @@ function Library:CreateWindow(options)
                 CreateOptions()
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        Dropdown.Opened = not Dropdown.Opened
-                        if Dropdown.Opened then
-                            ResetAllZIndex()
-                            Dropdown.Frame.ZIndex = 100
-                            Section.Frame.ZIndex = 10
-                            Dropdown.List.Visible = true
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
-                            Dropdown.Icon.Text = "-"
-                        else
-                            ResetAllZIndex()
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() Dropdown.List.Visible = false end)
-                            Dropdown.Icon.Text = "+"
-                        end
+                        SetOpened(not Dropdown.Opened)
                     end
                 end)
                 return Dropdown
