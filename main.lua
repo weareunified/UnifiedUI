@@ -1362,11 +1362,24 @@ function Library:CreateWindow(options)
                 Colorpicker.Hue.Name = "Hue"
                 Colorpicker.Hue.Parent = Colorpicker.PickerFrame
                 Colorpicker.Hue.Active = true
+                Colorpicker.Hue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Colorpicker.Hue.BackgroundTransparency = 1
                 Colorpicker.Hue.Position = UDim2.new(1, -30, 0, 10)
                 Colorpicker.Hue.Size = UDim2.new(0, 20, 0, 130)
-                Colorpicker.Hue.Image = "rbxassetid://3641079629"
-                Colorpicker.Hue.ImageTransparency = 1
+                Colorpicker.Hue.Image = ""
                 Colorpicker.Hue.ZIndex = 101
+                local HueGradient = Instance.new("UIGradient")
+                HueGradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+                    ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255, 0, 255)),
+                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+                    ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 255, 0)),
+                    ColorSequenceKeypoint.new(0.82, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+                })
+                HueGradient.Rotation = 90
+                HueGradient.Parent = Colorpicker.Hue
 
                 Colorpicker.HueCursor = Instance.new("Frame")
                 Colorpicker.HueCursor.Name = "Cursor"
@@ -1459,11 +1472,11 @@ function Library:CreateWindow(options)
                         Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 180), BackgroundTransparency = 0, Position = UDim2.new(0, 0, 1, 5)})
                         Tween(PickerStroke, 0.22, {Transparency = 0})
                         Tween(Colorpicker.SatVal, 0.22, {BackgroundTransparency = 0, ImageTransparency = 0})
-                        Tween(Colorpicker.Hue, 0.22, {ImageTransparency = 0})
+                        Tween(Colorpicker.Hue, 0.22, {BackgroundTransparency = 0})
                         Tween(Colorpicker.Darkness, 0.22, {BackgroundTransparency = 0})
                     else
                         Tween(Colorpicker.SatVal, 0.18, {BackgroundTransparency = 1, ImageTransparency = 1})
-                        Tween(Colorpicker.Hue, 0.18, {ImageTransparency = 1})
+                        Tween(Colorpicker.Hue, 0.18, {BackgroundTransparency = 1})
                         Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
                         Tween(PickerStroke, 0.18, {Transparency = 1})
                         Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Position = UDim2.new(0, 0, 1, 0)})
