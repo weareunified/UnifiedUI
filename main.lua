@@ -58,6 +58,7 @@ function Library:CreateWindow(options)
         Tabs = {},
         Flags = {},
         DefaultFlags = {},
+        FlagTypes = {},
         Components = {},
         Folder = "Unified",
         ConfigFolder = "Unified/Configs",
@@ -88,10 +89,91 @@ function Library:CreateWindow(options)
         return value
     end
 
-    local function SetInitialFlag(flagName, value)
-        UI.Flags[flagName] = value
+    local function SetInitialFlag(flagName, value, flagType)
+        UI.Flags[flagName] = CloneValue(value)
+        if flagType then
+            UI.FlagTypes[flagName] = flagType
+        end
         if UI.DefaultFlags[flagName] == nil then
-            UI.DefaultFlags[flagName] = CloneValue(value)
+            UI.DefaultFlags[flagName] = {
+                Value = CloneValue(value)
+            }
+        end
+    end
+
+    local function SerializeConfigValue(flagName, value)
+        local flagType = UI.FlagTypes[flagName]
+
+        if flagType == "colorpicker" and typeof(value) == "Color3" then
+            return {
+                Type = "Color3",
+                Value = {value.R, value.G, value.B}
+            }
+        end
+
+        if flagType == "multidropdown" and type(value) == "table" then
+            return {
+                Type = "MultiDropdown",
+                Value = CloneValue(value)
+            }
+        end
+
+        if flagType == "togglebind" and type(value) == "table" then
+            return {
+                Type = "ToggleBind",
+                Value = CloneValue(value)
+            }
+        end
+
+        if typeof(value) == "Color3" then
+            return {
+                Type = "Color3",
+                Value = {value.R, value.G, value.B}
+            }
+        end
+
+        return CloneValue(value)
+    end
+
+    local function DeserializeConfigValue(flagName, value)
+        local flagType = UI.FlagTypes[flagName]
+
+        if type(value) == "table" and value.Type and value.Value ~= nil then
+            if value.Type == "Color3" and type(value.Value) == "table" and #value.Value == 3 then
+                return Color3.new(unpack(value.Value))
+            end
+
+            if value.Type == "MultiDropdown" or value.Type == "ToggleBind" then
+                return CloneValue(value.Value)
+            end
+
+            return CloneValue(value.Value)
+        end
+
+        if flagType == "colorpicker" and type(value) == "table" and #value == 3 and type(value[1]) == "number" then
+            return Color3.new(unpack(value))
+        end
+
+        if (flagType == "multidropdown" or flagType == "togglebind") and type(value) == "table" then
+            return CloneValue(value)
+        end
+
+        return value
+    end
+
+    local function ApplyFlagValue(flagName, value)
+        if UI.Components and UI.Components[flagName] then
+            pcall(function()
+                UI.Components[flagName]:Update(CloneValue(value))
+            end)
+        else
+            UI.Flags[flagName] = CloneValue(value)
+        end
+    end
+
+    local function RestoreDefaultFlags()
+        for flagName, data in pairs(UI.DefaultFlags) do
+            ApplyFlagValue(flagName, data.Value)
         end
     end
 
@@ -151,13 +233,7 @@ function Library:CreateWindow(options)
         if not name or name == "" or name == "No Configs" then return end
         local config = {}
         for flag, value in pairs(UI.Flags) do
-            if typeof(value) == "Color3" then
-                config[flag] = {value.R, value.G, value.B}
-            elseif typeof(value) == "EnumItem" then
-                config[flag] = {tostring(value)}
-            else
-                config[flag] = value
-            end
+            config[flag] = SerializeConfigValue(flag, value)
         end
         local success, err = pcall(function()
             if writefile then
@@ -186,29 +262,16 @@ function Library:CreateWindow(options)
         
         local success, err = pcall(function()
             if name == "default" and next(UI.DefaultFlags) ~= nil then
-                for flag, value in pairs(UI.DefaultFlags) do
-                    if UI.Components and UI.Components[flag] then
-                        pcall(function() UI.Components[flag]:Update(CloneValue(value)) end)
-                    else
-                        UI.Flags[flag] = CloneValue(value)
-                    end
-                end
+                RestoreDefaultFlags()
                 return
             end
 
             if isfile and readfile and isfile(path) then
                 local decodeSuccess, config = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
                 if decodeSuccess and type(config) == "table" then
+                    RestoreDefaultFlags()
                     for flag, value in pairs(config) do
-                        if UI.Components and UI.Components[flag] then
-                            pcall(function() UI.Components[flag]:Update(value) end)
-                        else
-                            if type(value) == "table" and #value == 3 then
-                                UI.Flags[flag] = Color3.new(unpack(value))
-                            else
-                                UI.Flags[flag] = value
-                            end
-                        end
+                        ApplyFlagValue(flag, DeserializeConfigValue(flag, value))
                     end
                 end
             end
@@ -909,7 +972,7 @@ function Library:CreateWindow(options)
             function Section:CreateToggle(text, flag, default, callback)
                 local Toggle = { State = default or false, Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Toggle)
-                SetInitialFlag(flag or text, Toggle.State)
+                SetInitialFlag(flag or text, Toggle.State, "toggle")
                 Toggle.Frame = Instance.new("TextButton")
                 Toggle.Frame.Name = text .. "Toggle"
                 Toggle.Frame.Parent = Container
@@ -963,7 +1026,7 @@ function Library:CreateWindow(options)
             function Section:CreateSlider(text, flag, min, max, default, callback)
                 local Slider = { Value = default or min, Min = min, Max = max, Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Slider)
-                SetInitialFlag(flag or text, Slider.Value)
+                SetInitialFlag(flag or text, Slider.Value, "slider")
                 Slider.Frame = Instance.new("Frame")
                 Slider.Frame.Name = text .. "Slider"
                 Slider.Frame.Parent = Container
@@ -1027,7 +1090,7 @@ function Library:CreateWindow(options)
             function Section:CreateTextbox(text, flag, placeholder, callback)
                 local Textbox = { Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Textbox)
-                SetInitialFlag(flag or text, "")
+                SetInitialFlag(flag or text, "", "textbox")
                 Textbox.Frame = Instance.new("Frame")
                 Textbox.Frame.Name = text .. "Textbox"
                 Textbox.Frame.Parent = Container
@@ -1057,7 +1120,7 @@ function Library:CreateWindow(options)
             function Section:CreateBind(text, flag, default, callback)
                 local Bind = { Key = default or Enum.KeyCode.F, Flag = flag, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, Bind)
-                SetInitialFlag(flag or text, Bind.Key.Name)
+                SetInitialFlag(flag or text, Bind.Key.Name, "bind")
                 Bind.Frame = Instance.new("Frame")
                 Bind.Frame.Name = text .. "Bind"
                 Bind.Frame.Parent = Container
@@ -1102,7 +1165,7 @@ function Library:CreateWindow(options)
             function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
                 local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Flag = flag, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, ToggleBind)
-                SetInitialFlag(flag or text, {ToggleBind.State, ToggleBind.Key.Name})
+                SetInitialFlag(flag or text, {ToggleBind.State, ToggleBind.Key.Name}, "togglebind")
                 ToggleBind.Frame = Instance.new("Frame")
                 ToggleBind.Frame.Name = text .. "ToggleBind"
                 ToggleBind.Frame.Parent = Container
@@ -1292,7 +1355,7 @@ function Library:CreateWindow(options)
             function Section:CreateColorpicker(text, flag, default, callback)
                 local Colorpicker = { Color = default or Color3.fromRGB(255, 255, 255), Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Colorpicker)
-                SetInitialFlag(flag or text, Colorpicker.Color)
+                SetInitialFlag(flag or text, Colorpicker.Color, "colorpicker")
                 
                 local h, s, v = Color3.toHSV(Colorpicker.Color)
                 Colorpicker.H, Colorpicker.S, Colorpicker.V = h, s, v
@@ -1547,7 +1610,7 @@ function Library:CreateWindow(options)
             function Section:CreateDropdown(text, flag, options, default, callback)
                 local Dropdown = { Options = options or {}, Selected = default, Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Dropdown)
-                SetInitialFlag(flag or text, Dropdown.Selected)
+                SetInitialFlag(flag or text, Dropdown.Selected, "dropdown")
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "Dropdown"
                 Dropdown.Frame.Parent = Container
@@ -1696,7 +1759,7 @@ function Library:CreateWindow(options)
             function Section:CreateMultiDropdown(text, flag, options, default, callback)
                 local Dropdown = { Options = options or {}, Selected = default or {}, Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Dropdown)
-                SetInitialFlag(flag or text, Dropdown.Selected)
+                SetInitialFlag(flag or text, Dropdown.Selected, "multidropdown")
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "MultiDropdown"
                 Dropdown.Frame.Parent = Container
