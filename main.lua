@@ -1229,7 +1229,7 @@ function Library:CreateWindow(options)
                 Colorpicker.PickerFrame.Parent = Colorpicker.Frame
                 Colorpicker.PickerFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 5)
-                Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 150)
+                Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 180)
                 Colorpicker.PickerFrame.Visible = false
                 Colorpicker.PickerFrame.ZIndex = 100
                 local PickerStroke = Instance.new("UIStroke")
@@ -1241,7 +1241,7 @@ function Library:CreateWindow(options)
                 Colorpicker.SatVal.Parent = Colorpicker.PickerFrame
                 Colorpicker.SatVal.BackgroundColor3 = Color3.fromHSV(Colorpicker.H, 1, 1)
                 Colorpicker.SatVal.Position = UDim2.new(0, 10, 0, 10)
-                Colorpicker.SatVal.Size = UDim2.new(1, -50, 1, -20)
+                Colorpicker.SatVal.Size = UDim2.new(1, -50, 0, 130)
                 Colorpicker.SatVal.Image = "rbxassetid://4155801252"
                 Colorpicker.SatVal.ZIndex = 101
 
@@ -1260,7 +1260,7 @@ function Library:CreateWindow(options)
                 Colorpicker.Hue.Name = "Hue"
                 Colorpicker.Hue.Parent = Colorpicker.PickerFrame
                 Colorpicker.Hue.Position = UDim2.new(1, -30, 0, 10)
-                Colorpicker.Hue.Size = UDim2.new(0, 20, 1, -20)
+                Colorpicker.Hue.Size = UDim2.new(0, 20, 0, 130)
                 Colorpicker.Hue.Image = "rbxassetid://3641079629"
                 Colorpicker.Hue.ZIndex = 101
 
@@ -1275,10 +1275,41 @@ function Library:CreateWindow(options)
                 HueCursorStroke.Color = Color3.fromRGB(0, 0, 0)
                 HueCursorStroke.Parent = Colorpicker.HueCursor
 
+                Colorpicker.Darkness = Instance.new("Frame")
+                Colorpicker.Darkness.Name = "Darkness"
+                Colorpicker.Darkness.Parent = Colorpicker.PickerFrame
+                Colorpicker.Darkness.Position = UDim2.new(0, 10, 0, 150)
+                Colorpicker.Darkness.Size = UDim2.new(1, -20, 0, 15)
+                Colorpicker.Darkness.ZIndex = 101
+                local DarknessGradient = Instance.new("UIGradient")
+                DarknessGradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+                })
+                DarknessGradient.Parent = Colorpicker.Darkness
+                local DarknessStroke = Instance.new("UIStroke")
+                DarknessStroke.Color = Color3.fromRGB(34, 26, 40)
+                DarknessStroke.Parent = Colorpicker.Darkness
+
+                Colorpicker.DarknessCursor = Instance.new("Frame")
+                Colorpicker.DarknessCursor.Name = "Cursor"
+                Colorpicker.DarknessCursor.Parent = Colorpicker.Darkness
+                Colorpicker.DarknessCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Colorpicker.DarknessCursor.Position = UDim2.new(1 - Colorpicker.V, -1, 0, -2)
+                Colorpicker.DarknessCursor.Size = UDim2.new(0, 2, 1, 4)
+                Colorpicker.DarknessCursor.ZIndex = 102
+                local DarknessCursorStroke = Instance.new("UIStroke")
+                DarknessCursorStroke.Color = Color3.fromRGB(0, 0, 0)
+                DarknessCursorStroke.Parent = Colorpicker.DarknessCursor
+
                 local function UpdateColor()
                     Colorpicker.Color = Color3.fromHSV(Colorpicker.H, Colorpicker.S, Colorpicker.V)
                     Colorpicker.Box.BackgroundColor3 = Colorpicker.Color
                     Colorpicker.SatVal.BackgroundColor3 = Color3.fromHSV(Colorpicker.H, 1, 1)
+                    DarknessGradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromHSV(Colorpicker.H, Colorpicker.S, 1)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+                    })
                     UI.Flags[flag or text] = Colorpicker.Color
                     pcall(Colorpicker.Callback, Colorpicker.Color)
                 end
@@ -1289,6 +1320,7 @@ function Library:CreateWindow(options)
                     Colorpicker.S = pos
                     Colorpicker.V = pos2
                     Colorpicker.SatValCursor.Position = UDim2.new(pos, -2, 1 - pos2, -2)
+                    Colorpicker.DarknessCursor.Position = UDim2.new(1 - pos2, -1, 0, -2)
                     UpdateColor()
                 end
 
@@ -1299,6 +1331,14 @@ function Library:CreateWindow(options)
                     UpdateColor()
                 end
 
+                local function UpdateDarkness(input)
+                    local pos = math.clamp((input.Position.X - Colorpicker.Darkness.AbsolutePosition.X) / Colorpicker.Darkness.AbsoluteSize.X, 0, 1)
+                    Colorpicker.V = 1 - pos
+                    Colorpicker.DarknessCursor.Position = UDim2.new(pos, -1, 0, -2)
+                    Colorpicker.SatValCursor.Position = UDim2.new(Colorpicker.S, -2, pos, -2)
+                    UpdateColor()
+                end
+
                 local function SetOpened(opened)
                     Colorpicker.Opened = opened
                     if opened then
@@ -1306,7 +1346,7 @@ function Library:CreateWindow(options)
                         Colorpicker.Frame.ZIndex = 100
                         Section.Frame.ZIndex = 10
                         Colorpicker.PickerFrame.Visible = true
-                        Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 150)})
+                        Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 180)})
                     else
                         Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                         task.delay(0.3, function() if not Colorpicker.Opened then Colorpicker.PickerFrame.Visible = false end end)
@@ -1325,6 +1365,11 @@ function Library:CreateWindow(options)
                 UserInputService.InputChanged:Connect(function(input) if hueDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateHue(input) end end)
                 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then hueDragging = false end end)
 
+                local darknessDragging = false
+                Colorpicker.Darkness.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then darknessDragging = true UpdateDarkness(input) end end)
+                UserInputService.InputChanged:Connect(function(input) if darknessDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateDarkness(input) end end)
+                UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then darknessDragging = false end end)
+
                 Colorpicker.Update = function(val)
                     if typeof(val) == "table" then
                         Colorpicker.Color = Color3.new(unpack(val))
@@ -1335,6 +1380,7 @@ function Library:CreateWindow(options)
                     Colorpicker.H, Colorpicker.S, Colorpicker.V = h, s, v
                     Colorpicker.SatValCursor.Position = UDim2.new(s, -2, 1 - v, -2)
                     Colorpicker.HueCursor.Position = UDim2.new(0, -2, h, -1)
+                    Colorpicker.DarknessCursor.Position = UDim2.new(1 - v, -1, 0, -2)
                     UpdateColor()
                 end
                 UI.Components[flag or text] = Colorpicker
