@@ -373,14 +373,31 @@ function Library:CreateWindow(options)
     end)
 
     function UI:CreateChangelog(logs)
+        local logString = table.concat(logs, "\n")
+        local logHash = 0
+        for i = 1, #logString do
+            logHash = (logHash * 31 + string.byte(logString, i)) % 2^31
+        end
+        
+        local hashFile = "UnifiedConfigs/LastChangelog.txt"
+        if isfile and readfile and isfile(hashFile) then
+            if readfile(hashFile) == tostring(logHash) then
+                return
+            end
+        end
+        if writefile then
+            writefile(hashFile, tostring(logHash))
+        end
+
         local ChangelogFrame = Instance.new("Frame")
         ChangelogFrame.Name = "Changelog"
         ChangelogFrame.Parent = UI.MainFrame.Parent
         ChangelogFrame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
         ChangelogFrame.BorderSizePixel = 0
         ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
-        ChangelogFrame.Size = UDim2.new(0, 180, 0, 300)
+        ChangelogFrame.Size = UDim2.new(0, 200, 0, 0)
         ChangelogFrame.BackgroundTransparency = 1
+        ChangelogFrame.ClipsDescendants = true
         
         local ClCorner = Instance.new("UICorner")
         ClCorner.CornerRadius = UDim.new(0, 6)
@@ -395,8 +412,8 @@ function Library:CreateWindow(options)
         local ClTitle = Instance.new("TextLabel")
         ClTitle.Parent = ChangelogFrame
         ClTitle.BackgroundTransparency = 1
-        ClTitle.Position = UDim2.new(0, 10, 0, 8)
-        ClTitle.Size = UDim2.new(1, -20, 0, 25)
+        ClTitle.Position = UDim2.new(0, 12, 0, 10)
+        ClTitle.Size = UDim2.new(1, -24, 0, 20)
         ClTitle.Font = Enum.Font.SourceSansBold
         ClTitle.Text = "Changelog"
         ClTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -408,8 +425,8 @@ function Library:CreateWindow(options)
         ClContent.Parent = ChangelogFrame
         ClContent.BackgroundTransparency = 1
         ClContent.BorderSizePixel = 0
-        ClContent.Position = UDim2.new(0, 10, 0, 35)
-        ClContent.Size = UDim2.new(1, -20, 1, -45)
+        ClContent.Position = UDim2.new(0, 12, 0, 35)
+        ClContent.Size = UDim2.new(1, -24, 1, -45)
         ClContent.ScrollBarThickness = 2
         ClContent.ScrollBarImageColor3 = accentColor
         ClContent.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -437,7 +454,6 @@ function Library:CreateWindow(options)
             LogLabel.AutomaticSize = Enum.AutomaticSize.Y
             LogLabel.TextTransparency = 1
             
-            -- Color prefix
             if log:find("^%[%+%]") then
                 LogLabel.RichText = true
                 LogLabel.Text = '<font color="#98C379">[+]</font>' .. log:sub(4)
@@ -449,16 +465,25 @@ function Library:CreateWindow(options)
                 LogLabel.Text = '<font color="#61AFEF">[/]</font>' .. log:sub(4)
             end
             
-            task.delay(0.4, function() Tween(LogLabel, 0.5, {TextTransparency = 0}) end)
+            task.delay(0.6, function() Tween(LogLabel, 0.5, {TextTransparency = 0}) end)
         end
 
         UI.MainFrame:GetPropertyChangedSignal("Position"):Connect(function()
             ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
         end)
 
-        Tween(ChangelogFrame, 0.6, {BackgroundTransparency = 0})
+        Tween(ChangelogFrame, 0.6, {BackgroundTransparency = 0, Size = UDim2.new(0, 200, 0, 300)})
         Tween(ClStroke, 0.6, {Transparency = 0})
         Tween(ClTitle, 0.8, {TextTransparency = 0})
+
+        task.delay(5, function()
+            Tween(ClTitle, 0.5, {TextTransparency = 1})
+            Tween(ClStroke, 0.5, {Transparency = 1})
+            Tween(ChangelogFrame, 0.6, {BackgroundTransparency = 1, Size = UDim2.new(0, 200, 0, 0)})
+            task.delay(0.6, function()
+                ChangelogFrame:Destroy()
+            end)
+        end)
         
         return ChangelogFrame
     end
@@ -991,21 +1016,18 @@ function Library:CreateWindow(options)
                     local highlighted = src:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
                     local accentHex = toHex(accentColor)
 
-                    -- Use a more reliable replacement order and pattern
                     local replacements = {}
                     local function protect(s)
-                        local key = "\255" .. #replacements .. "\255"
+                        local key = "___MKR" .. #replacements .. "___"
                         table.insert(replacements, s)
                         return key
                     end
 
-                    -- Strings and Comments first
                     highlighted = highlighted:gsub('("[^"]*")', function(s) return protect('<font color="#98C379">'..s..'</font>') end)
                     highlighted = highlighted:gsub("('[^']*')", function(s) return protect('<font color="#98C379">'..s..'</font>') end)
                     highlighted = highlighted:gsub("(%[%[.-%]%])", function(s) return protect('<font color="#98C379">'..s..'</font>') end)
                     highlighted = highlighted:gsub("%-%-.*", function(s) return protect('<font color="#5C6370">'..s..'</font>') end)
                     
-                    -- Keywords and Builtins
                     for _, kw in pairs(keywords) do
                         highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", function(s) return protect('<font color="' .. accentHex .. '">'..s..'</font>') end)
                     end
@@ -1013,12 +1035,10 @@ function Library:CreateWindow(options)
                         highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", function(s) return protect('<font color="#61AFEF">'..s..'</font>') end)
                     end
                     
-                    -- Numbers
                     highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", function(s) return protect('<font color="#D19A66">'..s..'</font>') end)
                     
-                    -- Restore all protected segments
                     for i = #replacements, 1, -1 do
-                        highlighted = highlighted:gsub("\255" .. (i-1) .. "\255", replacements[i])
+                        highlighted = highlighted:gsub("___MKR" .. (i-1) .. "___", replacements[i])
                     end
                     
                     return highlighted
