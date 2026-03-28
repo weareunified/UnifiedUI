@@ -1509,8 +1509,8 @@ function Library:CreateWindow(options)
                 return Colorpicker
             end
 
-            function Section:CreateDropdown(text, flag, options, default, callback)
-                local Dropdown = { Options = options or {}, Selected = default, Flag = flag, Callback = callback or function() end, Opened = false }
+            function Section:CreateDropdown(text, flag, options, default, callback, refreshCallback)
+                local Dropdown = { Options = options or {}, Selected = default, Flag = flag, Callback = callback or function() end, RefreshCallback = refreshCallback, Opened = false }
                 table.insert(Section.Elements, Dropdown)
                 UI.Flags[flag or text] = Dropdown.Selected
                 Dropdown.Frame = Instance.new("Frame")
@@ -1527,12 +1527,42 @@ function Library:CreateWindow(options)
                 Dropdown.Label.Parent = Dropdown.Frame
                 Dropdown.Label.BackgroundTransparency = 1
                 Dropdown.Label.Position = UDim2.new(0, 10, 0, 0)
-                Dropdown.Label.Size = UDim2.new(1, -30, 1, 0)
+                Dropdown.Label.Size = UDim2.new(1, -55, 1, 0)
                 Dropdown.Label.Font = Enum.Font.SourceSans
                 Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
                 Dropdown.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Dropdown.Label.TextSize = 14
                 Dropdown.Label.TextXAlignment = Enum.TextXAlignment.Left
+
+                local function CreateRefresh()
+                    if Dropdown.RefreshIcon then Dropdown.RefreshIcon:Destroy() end
+                    if not Dropdown.RefreshCallback then return end
+
+                    Dropdown.RefreshIcon = Instance.new("ImageButton")
+                    Dropdown.RefreshIcon.Name = "Refresh"
+                    Dropdown.RefreshIcon.Parent = Dropdown.Frame
+                    Dropdown.RefreshIcon.BackgroundTransparency = 1
+                    Dropdown.RefreshIcon.Position = UDim2.new(1, -50, 0.5, -8)
+                    Dropdown.RefreshIcon.Size = UDim2.new(0, 16, 0, 16)
+                    Dropdown.RefreshIcon.Image = "rbxassetid://6031080350"
+                    Dropdown.RefreshIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
+                    
+                    Dropdown.RefreshIcon.MouseButton1Click:Connect(function()
+                        Tween(Dropdown.RefreshIcon, 0.3, {Rotation = Dropdown.RefreshIcon.Rotation + 360})
+                        local newOptions = Dropdown.RefreshCallback()
+                        if newOptions then
+                            Dropdown:Update(newOptions, true)
+                        end
+                    end)
+                end
+
+                Dropdown.SetRefresh = function(cb)
+                    Dropdown.RefreshCallback = cb
+                    CreateRefresh()
+                end
+
+                if Dropdown.RefreshCallback then CreateRefresh() end
+
                 Dropdown.Icon = Instance.new("TextLabel")
                 Dropdown.Icon.Parent = Dropdown.Frame
                 Dropdown.Icon.BackgroundTransparency = 1
@@ -1657,8 +1687,8 @@ function Library:CreateWindow(options)
                 return Dropdown
             end
 
-            function Section:CreateMultiDropdown(text, flag, options, default, callback)
-                local Dropdown = { Options = options or {}, Selected = default or {}, Flag = flag, Callback = callback or function() end, Opened = false }
+            function Section:CreateMultiDropdown(text, flag, options, default, callback, refreshCallback)
+                local Dropdown = { Options = options or {}, Selected = default or {}, Flag = flag, Callback = callback or function() end, RefreshCallback = refreshCallback, Opened = false }
                 table.insert(Section.Elements, Dropdown)
                 UI.Flags[flag or text] = Dropdown.Selected
                 Dropdown.Frame = Instance.new("Frame")
@@ -1675,12 +1705,42 @@ function Library:CreateWindow(options)
                 Dropdown.Label.Parent = Dropdown.Frame
                 Dropdown.Label.BackgroundTransparency = 1
                 Dropdown.Label.Position = UDim2.new(0, 10, 0, 0)
-                Dropdown.Label.Size = UDim2.new(1, -30, 1, 0)
+                Dropdown.Label.Size = UDim2.new(1, -55, 1, 0)
                 Dropdown.Label.Font = Enum.Font.SourceSans
                 Dropdown.Label.Text = text .. ": ..."
                 Dropdown.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Dropdown.Label.TextSize = 14
                 Dropdown.Label.TextXAlignment = Enum.TextXAlignment.Left
+
+                local function CreateRefresh()
+                    if Dropdown.RefreshIcon then Dropdown.RefreshIcon:Destroy() end
+                    if not Dropdown.RefreshCallback then return end
+
+                    Dropdown.RefreshIcon = Instance.new("ImageButton")
+                    Dropdown.RefreshIcon.Name = "Refresh"
+                    Dropdown.RefreshIcon.Parent = Dropdown.Frame
+                    Dropdown.RefreshIcon.BackgroundTransparency = 1
+                    Dropdown.RefreshIcon.Position = UDim2.new(1, -50, 0.5, -8)
+                    Dropdown.RefreshIcon.Size = UDim2.new(0, 16, 0, 16)
+                    Dropdown.RefreshIcon.Image = "rbxassetid://6031080350"
+                    Dropdown.RefreshIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
+                    
+                    Dropdown.RefreshIcon.MouseButton1Click:Connect(function()
+                        Tween(Dropdown.RefreshIcon, 0.3, {Rotation = Dropdown.RefreshIcon.Rotation + 360})
+                        local newOptions = Dropdown.RefreshCallback()
+                        if newOptions then
+                            Dropdown:Update(newOptions, true)
+                        end
+                    end)
+                end
+
+                Dropdown.SetRefresh = function(cb)
+                    Dropdown.RefreshCallback = cb
+                    CreateRefresh()
+                end
+
+                if Dropdown.RefreshCallback then CreateRefresh() end
+
                 Dropdown.Icon = Instance.new("TextLabel")
                 Dropdown.Icon.Parent = Dropdown.Frame
                 Dropdown.Icon.BackgroundTransparency = 1
