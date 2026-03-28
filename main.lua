@@ -59,8 +59,64 @@ function Library:CreateWindow(options)
         Flags = {},
         Components = {},
         Folder = "Unified",
-        ConfigFolder = "Unified/Configs"
+        ConfigFolder = "Unified/Configs",
+        Colors = {
+            Accent = accentColor,
+            MainBackground = Color3.fromRGB(9, 8, 9),
+            SidebarBackground = Color3.fromRGB(7, 7, 7),
+            SectionBackground = Color3.fromRGB(7, 7, 7),
+            ElementBackground = Color3.fromRGB(11, 10, 11),
+            MainText = Color3.fromRGB(200, 200, 200),
+            SubText = Color3.fromRGB(150, 150, 150)
+        }
     }
+
+    function UI:UpdateColor(type, color)
+        if UI.Colors[type] then
+            UI.Colors[type] = color
+            
+            if type == "Accent" then
+                accentColor = color
+                UI.TitleLabel.TextColor3 = color
+                UI.AccentBar.BackgroundColor3 = color
+                for _, tab in pairs(UI.Tabs) do
+                    if UI.CurrentTab == tab then
+                        tab.Button.BackgroundColor3 = color
+                        if tab.Indicator then tab.Indicator.BackgroundColor3 = color end
+                    end
+                    if tab.Content then
+                        tab.Content.ScrollBarImageColor3 = color
+                    end
+                    for _, section in pairs(tab.Sections) do
+                        section.TitleLabel.TextColor3 = color
+                        -- Update all elements accent color if needed
+                    end
+                end
+            elseif type == "MainBackground" then
+                UI.MainFrame.BackgroundColor3 = color
+            elseif type == "SidebarBackground" then
+                 UI.LeftPanel.BackgroundColor3 = color
+             elseif type == "SectionBackground" then
+                 for _, tab in pairs(UI.Tabs) do
+                     for _, section in pairs(tab.Sections) do
+                         section.Frame.BackgroundColor3 = color
+                     end
+                 end
+             elseif type == "ElementBackground" then
+                 for _, tab in pairs(UI.Tabs) do
+                     for _, section in pairs(tab.Sections) do
+                         for _, element in pairs(section.Elements) do
+                             if element.Frame and not (element.Frame.Name:find("Dropdown") or element.Frame.Name:find("MultiDropdown")) then
+                                 element.Frame.BackgroundColor3 = color
+                             end
+                         end
+                     end
+                 end
+             elseif type == "MainText" then
+                -- This would require iterating through many elements
+            end
+        end
+    end
 
     if isfolder and makefolder then
         if not isfolder(UI.Folder) then makefolder(UI.Folder) end
@@ -161,7 +217,7 @@ function Library:CreateWindow(options)
     UI.MainFrame = Instance.new("Frame")
     UI.MainFrame.Name = "MainFrame"
     UI.MainFrame.Parent = UI.ScreenGui
-    UI.MainFrame.BackgroundColor3 = Color3.fromRGB(9, 8, 9)
+    UI.MainFrame.BackgroundColor3 = UI.Colors.MainBackground
     UI.MainFrame.BorderSizePixel = 0
     UI.MainFrame.Position = UDim2.new(0.5, -315, 0.5, -210)
     UI.MainFrame.Size = UDim2.new(0, 630, 0, 420)
@@ -195,7 +251,7 @@ function Library:CreateWindow(options)
     UI.LeftPanel = Instance.new("Frame")
     UI.LeftPanel.Name = "LeftPanel"
     UI.LeftPanel.Parent = UI.MainFrame
-    UI.LeftPanel.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
+    UI.LeftPanel.BackgroundColor3 = UI.Colors.SidebarBackground
     UI.LeftPanel.BorderSizePixel = 0
     UI.LeftPanel.Size = UDim2.new(0, 180, 1, 0)
     UI.LeftPanel.BackgroundTransparency = 0
@@ -695,7 +751,7 @@ function Library:CreateWindow(options)
             Section.Frame = Instance.new("Frame")
             Section.Frame.Name = tostring(title) .. "Section"
             Section.Frame.Parent = parent
-            Section.Frame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
+            Section.Frame.BackgroundColor3 = UI.Colors.SectionBackground
             Section.Frame.BorderSizePixel = 0
             Section.Frame.Size = UDim2.new(1, 0, 0, 40)
             Section.Frame.ClipsDescendants = false
@@ -738,7 +794,7 @@ function Library:CreateWindow(options)
                 Button.Frame = Instance.new("TextButton")
                 Button.Frame.Name = text .. "Button"
                 Button.Frame.Parent = Container
-                Button.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Button.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                 Button.Frame.BorderSizePixel = 0
                 Button.Frame.Size = UDim2.new(1, 0, 0, 28)
                 Button.Frame.Font = Enum.Font.SourceSans
@@ -790,7 +846,7 @@ function Library:CreateWindow(options)
                 Toggle.Box = Instance.new("Frame")
                 Toggle.Box.Name = "Box"
                 Toggle.Box.Parent = Toggle.Frame
-                Toggle.Box.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Toggle.Box.BackgroundColor3 = UI.Colors.ElementBackground
                 Toggle.Box.Position = UDim2.new(1, -30, 0.5, -8)
                 Toggle.Box.Size = UDim2.new(0, 30, 0, 16)
                 local BoxStroke = Instance.new("UIStroke")
@@ -852,7 +908,7 @@ function Library:CreateWindow(options)
                 Slider.ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
                 Slider.Bar = Instance.new("Frame")
                 Slider.Bar.Parent = Slider.Frame
-                Slider.Bar.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Slider.Bar.BackgroundColor3 = UI.Colors.ElementBackground
                 Slider.Bar.Position = UDim2.new(0, 0, 0, 25)
                 Slider.Bar.Size = UDim2.new(1, 0, 0, 6)
                 local BarStroke = Instance.new("UIStroke")
@@ -893,7 +949,7 @@ function Library:CreateWindow(options)
                 Textbox.Frame = Instance.new("Frame")
                 Textbox.Frame.Name = text .. "Textbox"
                 Textbox.Frame.Parent = Container
-                Textbox.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Textbox.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                 Textbox.Frame.Size = UDim2.new(1, 0, 0, 30)
                 local BoxStroke = Instance.new("UIStroke")
                 BoxStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -936,7 +992,7 @@ function Library:CreateWindow(options)
                 Bind.Label.TextXAlignment = Enum.TextXAlignment.Left
                 Bind.Btn = Instance.new("TextButton")
                 Bind.Btn.Parent = Bind.Frame
-                Bind.Btn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Bind.Btn.BackgroundColor3 = UI.Colors.ElementBackground
                 Bind.Btn.Position = UDim2.new(1, -50, 0.5, -10)
                 Bind.Btn.Size = UDim2.new(0, 50, 0, 20)
                 Bind.Btn.Font = Enum.Font.SourceSans
@@ -982,7 +1038,7 @@ function Library:CreateWindow(options)
                 ToggleBind.Box = Instance.new("TextButton")
                 ToggleBind.Box.Name = "Box"
                 ToggleBind.Box.Parent = ToggleBind.Frame
-                ToggleBind.Box.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                ToggleBind.Box.BackgroundColor3 = UI.Colors.ElementBackground
                 ToggleBind.Box.Position = UDim2.new(1, -30, 0.5, -8)
                 ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
                 ToggleBind.Box.Text = ""
@@ -999,7 +1055,7 @@ function Library:CreateWindow(options)
                 ToggleBind.Indicator.BackgroundTransparency = ToggleBind.State and 0 or 1
                 ToggleBind.Btn = Instance.new("TextButton")
                 ToggleBind.Btn.Parent = ToggleBind.Frame
-                ToggleBind.Btn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                ToggleBind.Btn.BackgroundColor3 = UI.Colors.ElementBackground
                 ToggleBind.Btn.Position = UDim2.new(1, -90, 0.5, -10)
                 ToggleBind.Btn.Size = UDim2.new(0, 50, 0, 20)
                 ToggleBind.Btn.Font = Enum.Font.SourceSans
@@ -1227,7 +1283,7 @@ function Library:CreateWindow(options)
                 Colorpicker.PickerFrame = Instance.new("Frame")
                 Colorpicker.PickerFrame.Name = "PickerFrame"
                 Colorpicker.PickerFrame.Parent = Colorpicker.Frame
-                Colorpicker.PickerFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Colorpicker.PickerFrame.BackgroundColor3 = UI.Colors.ElementBackground
                 Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 5)
                 Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 180)
                 Colorpicker.PickerFrame.Visible = false
@@ -1394,7 +1450,7 @@ function Library:CreateWindow(options)
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "Dropdown"
                 Dropdown.Frame.Parent = Container
-                Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Dropdown.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
                 
@@ -1518,7 +1574,7 @@ function Library:CreateWindow(options)
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "MultiDropdown"
                 Dropdown.Frame.Parent = Container
-                Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Dropdown.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
                 
