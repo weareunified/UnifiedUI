@@ -193,13 +193,21 @@ function Library:CreateWindow(options)
 
     function UI:GetConfigs()
         local configs = {}
-        if listfiles and isfolder and isfolder(UI.ConfigFolder) then
-            for _, v in pairs(listfiles(UI.ConfigFolder)) do
-                -- Improved regex to handle all path types and extract filename
-                local name = v:gsub("%.json$", ""):match("([^/\\]+)$") or v:gsub("%.json$", "")
-                if name then table.insert(configs, name) end
+        local success, err = pcall(function()
+            if listfiles and isfolder and isfolder(UI.ConfigFolder) then
+                local files = listfiles(UI.ConfigFolder)
+                if files then
+                    for _, v in pairs(files) do
+                        -- Robust extraction: handle paths, separators, and extensions
+                        local name = v:match("([^/\\]+)%.json$") or v:match("([^/\\]+)$")
+                        if name and name ~= "" then 
+                            table.insert(configs, name) 
+                        end
+                    end
+                end
             end
-        end
+        end)
+        if not success then warn("UI Error (GetConfigs): " .. tostring(err)) end
         if #configs == 0 then table.insert(configs, "No Configs") end
         return configs
     end
@@ -1602,6 +1610,17 @@ function Library:CreateWindow(options)
                         if isOptions and type(val) == "table" then
                             Dropdown.Options = val
                             CreateOptions()
+                            
+                            -- Ensure the selected value is still valid
+                            local exists = false
+                            for _, opt in ipairs(Dropdown.Options) do
+                                if opt == Dropdown.Selected then exists = true break end
+                            end
+                            if not exists then 
+                                Dropdown.Selected = nil
+                                Dropdown.Label.Text = text .. ": None"
+                            end
+
                             if Dropdown.Opened then
                                 local targetSize = math.max(#Dropdown.Options, 1) * 25
                                 Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
