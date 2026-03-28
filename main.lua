@@ -1403,8 +1403,10 @@ function Library:CreateWindow(options)
                         Section.Frame.ZIndex = 10
                         Colorpicker.PickerFrame.Visible = true
                         Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 180)})
+                        Tween(Colorpicker.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 208)})
                     else
                         Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
+                        Tween(Colorpicker.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 28)})
                         task.delay(0.3, function() if not Colorpicker.Opened then Colorpicker.PickerFrame.Visible = false end end)
                     end
                 end
@@ -1498,11 +1500,14 @@ function Library:CreateWindow(options)
                         Dropdown.Frame.ZIndex = 100
                         Section.Frame.ZIndex = 10
                         Dropdown.List.Visible = true
-                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                        local targetSize = #Dropdown.Options * 25
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30 + targetSize + 5)})
                         Dropdown.Icon.Text = "-"
                     else
                         ResetAllZIndex()
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
+                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30)})
                         task.delay(0.3, function() 
                             if not Dropdown.Opened then 
                                 Dropdown.List.Visible = false 
@@ -1622,11 +1627,14 @@ function Library:CreateWindow(options)
                         Dropdown.Frame.ZIndex = 100
                         Section.Frame.ZIndex = 10
                         Dropdown.List.Visible = true
-                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                        local targetSize = #Dropdown.Options * 25
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30 + targetSize + 5)})
                         Dropdown.Icon.Text = "-"
                     else
                         ResetAllZIndex()
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
+                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30)})
                         task.delay(0.3, function() 
                             if not Dropdown.Opened then 
                                 Dropdown.List.Visible = false 
