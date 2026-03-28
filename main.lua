@@ -739,7 +739,7 @@ function Library:CreateWindow(options)
             function Section:CreateToggle(text, flag, default, callback)
                 local Toggle = { State = default or false, Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Toggle)
-                if flag then UI.Flags[flag] = Toggle.State end
+                UI.Flags[flag or text] = Toggle.State
                 Toggle.Frame = Instance.new("TextButton")
                 Toggle.Frame.Name = text .. "Toggle"
                 Toggle.Frame.Parent = Container
@@ -774,7 +774,7 @@ function Library:CreateWindow(options)
                 Toggle.Indicator.BackgroundTransparency = Toggle.State and 0 or 1
                 local function Update(manually)
                     if not manually then Toggle.State = not Toggle.State end
-                    if flag then UI.Flags[flag] = Toggle.State end
+                    UI.Flags[flag or text] = Toggle.State
                     if Toggle.State then
                         Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
                         Tween(BoxStroke, 0.2, {Color = accentColor})
@@ -793,7 +793,7 @@ function Library:CreateWindow(options)
             function Section:CreateSlider(text, flag, min, max, default, callback)
                 local Slider = { Value = default or min, Min = min, Max = max, Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Slider)
-                if flag then UI.Flags[flag] = Slider.Value end
+                UI.Flags[flag or text] = Slider.Value
                 Slider.Frame = Instance.new("Frame")
                 Slider.Frame.Name = text .. "Slider"
                 Slider.Frame.Parent = Container
@@ -840,7 +840,7 @@ function Library:CreateWindow(options)
                         pos = math.clamp((input.Position.X - Slider.Bar.AbsolutePosition.X) / Slider.Bar.AbsoluteSize.X, 0, 1)
                         Slider.Value = math.floor(min + (max - min) * pos)
                     end
-                    if flag then UI.Flags[flag] = Slider.Value end
+                    UI.Flags[flag or text] = Slider.Value
                     Slider.Fill.Size = UDim2.new(pos, 0, 1, 0)
                     Slider.ValueLabel.Text = tostring(Slider.Value)
                     pcall(Slider.Callback, Slider.Value)
@@ -857,7 +857,7 @@ function Library:CreateWindow(options)
             function Section:CreateTextbox(text, flag, placeholder, callback)
                 local Textbox = { Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Textbox)
-                if flag then UI.Flags[flag] = "" end
+                UI.Flags[flag or text] = ""
                 Textbox.Frame = Instance.new("Frame")
                 Textbox.Frame.Name = text .. "Textbox"
                 Textbox.Frame.Parent = Container
@@ -878,16 +878,16 @@ function Library:CreateWindow(options)
                 Textbox.Input.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Textbox.Input.TextSize = 14
                 Textbox.Input.TextXAlignment = Enum.TextXAlignment.Left
-                Textbox.Update = function(val) Textbox.Input.Text = val if flag then UI.Flags[flag] = val end pcall(Textbox.Callback, val) end
+                Textbox.Update = function(val) Textbox.Input.Text = val UI.Flags[flag or text] = val pcall(Textbox.Callback, val) end
                 UI.Components[flag or text] = Textbox
-                Textbox.Input.FocusLost:Connect(function(enter) if enter then if flag then UI.Flags[flag] = Textbox.Input.Text end pcall(Textbox.Callback, Textbox.Input.Text) end end)
+                Textbox.Input.FocusLost:Connect(function() UI.Flags[flag or text] = Textbox.Input.Text pcall(Textbox.Callback, Textbox.Input.Text) end)
                 return Textbox
             end
 
             function Section:CreateBind(text, flag, default, callback)
                 local Bind = { Key = default or Enum.KeyCode.F, Flag = flag, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, Bind)
-                if flag then UI.Flags[flag] = Bind.Key.Name end
+                UI.Flags[flag or text] = Bind.Key.Name
                 Bind.Frame = Instance.new("Frame")
                 Bind.Frame.Name = text .. "Bind"
                 Bind.Frame.Parent = Container
@@ -921,18 +921,18 @@ function Library:CreateWindow(options)
                         Bind.Key = val
                     end
                     Bind.Btn.Text = Bind.Key.Name:upper()
-                    if flag then UI.Flags[flag] = Bind.Key.Name end
+                    UI.Flags[flag or text] = Bind.Key.Name
                 end
                 UI.Components[flag or text] = Bind
                 Bind.Btn.MouseButton1Click:Connect(function() Bind.Waiting = true Bind.Btn.Text = "..." end)
-                UserInputService.InputBegan:Connect(function(input) if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then Bind.Key = input.KeyCode Bind.Btn.Text = Bind.Key.Name:upper() Bind.Waiting = false if flag then UI.Flags[flag] = Bind.Key.Name end elseif not Bind.Waiting and input.KeyCode == Bind.Key then pcall(Bind.Callback) end end)
+                UserInputService.InputBegan:Connect(function(input) if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then Bind.Key = input.KeyCode Bind.Btn.Text = Bind.Key.Name:upper() Bind.Waiting = false UI.Flags[flag or text] = Bind.Key.Name elseif not Bind.Waiting and input.KeyCode == Bind.Key then pcall(Bind.Callback) end end)
                 return Bind
             end
 
             function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
                 local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Flag = flag, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, ToggleBind)
-                if flag then UI.Flags[flag] = {ToggleBind.State, ToggleBind.Key.Name} end
+                UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name}
                 ToggleBind.Frame = Instance.new("Frame")
                 ToggleBind.Frame.Name = text .. "ToggleBind"
                 ToggleBind.Frame.Parent = Container
@@ -985,7 +985,7 @@ function Library:CreateWindow(options)
                         Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
                         Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
                     end
-                    if flag then UI.Flags[flag] = {ToggleBind.State, ToggleBind.Key.Name} end
+                    UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name}
                     pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
                 end
                 ToggleBind.Update = function(val)
@@ -1159,7 +1159,7 @@ function Library:CreateWindow(options)
             function Section:CreateDropdown(text, flag, options, default, callback)
                 local Dropdown = { Options = options or {}, Selected = default, Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Dropdown)
-                if flag then UI.Flags[flag] = Dropdown.Selected end
+                UI.Flags[flag or text] = Dropdown.Selected
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "Dropdown"
                 Dropdown.Frame.Parent = Container
@@ -1247,7 +1247,7 @@ function Library:CreateWindow(options)
                         Dropdown.Selected = val
                     end
                     
-                    if flag then UI.Flags[flag] = Dropdown.Selected end
+                    UI.Flags[flag or text] = Dropdown.Selected
                     Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
                     pcall(Dropdown.Callback, Dropdown.Selected)
                 end
@@ -1301,7 +1301,7 @@ function Library:CreateWindow(options)
             function Section:CreateMultiDropdown(text, flag, options, default, callback)
                 local Dropdown = { Options = options or {}, Selected = default or {}, Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Dropdown)
-                if flag then UI.Flags[flag] = Dropdown.Selected end
+                UI.Flags[flag or text] = Dropdown.Selected
                 Dropdown.Frame = Instance.new("Frame")
                 Dropdown.Frame.Name = text .. "MultiDropdown"
                 Dropdown.Frame.Parent = Container
@@ -1391,7 +1391,7 @@ function Library:CreateWindow(options)
                         end
                     end
                     
-                    if flag then UI.Flags[flag] = Dropdown.Selected end
+                    UI.Flags[flag or text] = Dropdown.Selected
                     local selectedCount = #Dropdown.Selected
                     if selectedCount == 0 then
                         Dropdown.Label.Text = text .. ": ..."
