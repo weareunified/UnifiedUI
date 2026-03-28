@@ -661,13 +661,34 @@ function Library:CreateWindow(options)
         TabContent.ZIndex = 10
         Tab.Content = TabContent
 
+        local function RefreshCanvasSize()
+            local targetHeight = 20
+
+            for _, section in pairs(Tab.Sections) do
+                local sectionBottom = (section.Frame.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + section.Frame.AbsoluteSize.Y
+                targetHeight = math.max(targetHeight, sectionBottom + 20)
+
+                for _, element in pairs(section.Elements) do
+                    if element.Opened and element.Frame then
+                        local popup = element.List or element.PickerFrame
+                        if popup and popup.Visible then
+                            local popupBottom = (popup.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + popup.AbsoluteSize.Y
+                            targetHeight = math.max(targetHeight, popupBottom + 20)
+                        end
+                    end
+                end
+            end
+
+            TabContent.CanvasSize = UDim2.new(0, 0, 0, targetHeight)
+        end
+
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.Parent = TabContent
         ContentLayout.Padding = UDim.new(0, 12)
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
         ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            TabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 20)
+            RefreshCanvasSize()
         end)
 
         TabBtn.MouseEnter:Connect(function()
@@ -1403,12 +1424,12 @@ function Library:CreateWindow(options)
                         Section.Frame.ZIndex = 10
                         Colorpicker.PickerFrame.Visible = true
                         Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 180)})
-                        Tween(Colorpicker.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 208)})
                     else
                         Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                        Tween(Colorpicker.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 28)})
                         task.delay(0.3, function() if not Colorpicker.Opened then Colorpicker.PickerFrame.Visible = false end end)
                     end
+                    RefreshCanvasSize()
+                    task.delay(0.35, RefreshCanvasSize)
                 end
 
                 Colorpicker.Frame.MouseButton1Click:Connect(function() SetOpened(not Colorpicker.Opened) end)
@@ -1502,12 +1523,10 @@ function Library:CreateWindow(options)
                         Dropdown.List.Visible = true
                         local targetSize = #Dropdown.Options * 25
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30 + targetSize + 5)})
                         Dropdown.Icon.Text = "-"
                     else
                         ResetAllZIndex()
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30)})
                         task.delay(0.3, function() 
                             if not Dropdown.Opened then 
                                 Dropdown.List.Visible = false 
@@ -1515,6 +1534,8 @@ function Library:CreateWindow(options)
                         end)
                         Dropdown.Icon.Text = "+"
                     end
+                    RefreshCanvasSize()
+                    task.delay(0.35, RefreshCanvasSize)
                 end
 
                 local function CreateOptions()
@@ -1547,6 +1568,8 @@ function Library:CreateWindow(options)
                         CreateOptions()
                         if Dropdown.Opened then
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                            RefreshCanvasSize()
+                            task.delay(0.35, RefreshCanvasSize)
                         end
                         return
                     end
@@ -1629,12 +1652,10 @@ function Library:CreateWindow(options)
                         Dropdown.List.Visible = true
                         local targetSize = #Dropdown.Options * 25
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30 + targetSize + 5)})
                         Dropdown.Icon.Text = "-"
                     else
                         ResetAllZIndex()
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                        Tween(Dropdown.Frame, 0.3, {Size = UDim2.new(1, 0, 0, 30)})
                         task.delay(0.3, function() 
                             if not Dropdown.Opened then 
                                 Dropdown.List.Visible = false 
@@ -1642,6 +1663,8 @@ function Library:CreateWindow(options)
                         end)
                         Dropdown.Icon.Text = "+"
                     end
+                    RefreshCanvasSize()
+                    task.delay(0.35, RefreshCanvasSize)
                 end
 
                 local function CreateOptions()
@@ -1675,6 +1698,8 @@ function Library:CreateWindow(options)
                         CreateOptions()
                         if Dropdown.Opened then
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                            RefreshCanvasSize()
+                            task.delay(0.35, RefreshCanvasSize)
                         end
                         return
                     end
