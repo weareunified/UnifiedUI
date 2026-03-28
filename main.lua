@@ -1152,7 +1152,35 @@ function Library:CreateWindow(options)
                 Image.Img.BackgroundTransparency = 1
                 Image.Img.Position = UDim2.new(0.5, -45, 0, 25)
                 Image.Img.Size = UDim2.new(0, 90, 0, 90)
-                Image.Img.Image = id
+                
+                if isLink then
+                    task.spawn(function()
+                        local url = id
+                        if url:find("imgur.com") and not url:find("i.imgur.com") then
+                            url = url:gsub("imgur.com", "i.imgur.com")
+                        end
+                        if url:find("i.imgur.com") and not (url:find(".png") or url:find(".jpg") or url:find(".jpeg") or url:find(".webp")) then
+                            url = url .. ".png"
+                        end
+
+                        local success, res = pcall(function() return game:HttpGet(url) end)
+                        if success and res then
+                            local ext = url:match("%.(%w+)$") or "png"
+                            local name = "Unified/Assets/" .. RandomString(8) .. "." .. ext
+                            if not isfolder("Unified/Assets") then makefolder("Unified/Assets") end
+                            
+                            local writeSuccess, writeError = pcall(function() writefile(name, res) end)
+                            if writeSuccess then
+                                local assetFunc = getcustomasset or getsynasset
+                                if assetFunc then
+                                    Image.Img.Image = assetFunc(name)
+                                end
+                            end
+                        end
+                    end)
+                else
+                    Image.Img.Image = id
+                end
                 return Image
             end
 
