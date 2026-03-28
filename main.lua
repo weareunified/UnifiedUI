@@ -1152,43 +1152,7 @@ function Library:CreateWindow(options)
                 Image.Img.BackgroundTransparency = 1
                 Image.Img.Position = UDim2.new(0.5, -45, 0, 25)
                 Image.Img.Size = UDim2.new(0, 90, 0, 90)
-                
-                if isLink then
-                    task.spawn(function()
-                        local url = id
-                        -- Universal URL handling
-                        if url:find("imgur.com") and not url:find("i.imgur.com") then
-                            url = url:gsub("imgur.com", "i.imgur.com")
-                            if not (url:find(".png") or url:find(".jpg") or url:find(".jpeg") or url:find(".webp")) then
-                                url = url .. ".png"
-                            end
-                        end
-
-                        local success, res = pcall(function() return game:HttpGet(url) end)
-                        if success and res then
-                            -- Generate a unique filename based on URL hash to avoid re-downloading if possible, or just random
-                            local hash = 0
-                            for i = 1, #url do hash = (hash * 31 + string.byte(url, i)) % 2^31 end
-                            
-                            local extension = url:match("%.(%w+)%??") or "png"
-                            if #extension > 4 then extension = "png" end -- fallback for long query strings
-                            
-                            local fileName = "Unified/Assets/" .. tostring(hash) .. "." .. extension
-                            if not isfolder("Unified/Assets") then makefolder("Unified/Assets") end
-                            
-                            if not isfile(fileName) then
-                                writefile(fileName, res)
-                            end
-                            
-                            local assetFunc = getcustomasset or getsynasset or (drawing and drawing.new and function(path) return "rbxasset://" .. path end)
-                            if assetFunc then
-                                Image.Img.Image = assetFunc(fileName)
-                            end
-                        end
-                    end)
-                else
-                    Image.Img.Image = id
-                end
+                Image.Img.Image = id
                 return Image
             end
 
