@@ -1582,18 +1582,23 @@ function Library:CreateWindow(options)
                 end
 
                 local function CreateOptions()
+                    -- Clear existing options first
                     for _, child in pairs(Dropdown.List:GetChildren()) do
-                        if child:IsA("TextButton") then child:Destroy() end
+                        if child:IsA("TextButton") then
+                            child:Destroy()
+                        end
                     end
+                    
+                    -- Create new options
                     for _, option in ipairs(Dropdown.Options) do
                         local OptBtn = Instance.new("TextButton")
-                        OptBtn.Name = option
+                        OptBtn.Name = tostring(option)
                         OptBtn.Parent = Dropdown.List
                         OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                         OptBtn.BorderSizePixel = 0
                         OptBtn.Size = UDim2.new(1, 0, 0, 25)
                         OptBtn.Font = Enum.Font.SourceSans
-                        OptBtn.Text = "  " .. option
+                        OptBtn.Text = "  " .. tostring(option)
                         OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
                         OptBtn.TextSize = 14
                         OptBtn.TextXAlignment = Enum.TextXAlignment.Left
