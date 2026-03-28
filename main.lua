@@ -507,6 +507,17 @@ function Library:CreateWindow(options)
         }
         table.insert(UI.Tabs, Tab)
 
+        local function ResetAllZIndex()
+            for _, s in pairs(Tab.Sections) do
+                s.Frame.ZIndex = 1
+                for _, e in pairs(s.Elements) do
+                    if e.Frame and (e.Frame.Name:find("Dropdown") or e.Frame.Name:find("MultiDropdown") or e.Frame.Name:find("Colorpicker")) then
+                        e.Frame.ZIndex = 5
+                    end
+                end
+            end
+        end
+
         local TabBtn = Instance.new("TextButton")
         TabBtn.Name = tostring(name) .. "Tab"
         TabBtn.Parent = UI.TabContainer
@@ -1156,6 +1167,159 @@ function Library:CreateWindow(options)
                 return Image
             end
 
+            function Section:CreateColorpicker(text, flag, default, callback)
+                local Colorpicker = { Color = default or Color3.fromRGB(255, 255, 255), Flag = flag, Callback = callback or function() end, Opened = false }
+                table.insert(Section.Elements, Colorpicker)
+                UI.Flags[flag or text] = Colorpicker.Color
+                
+                local h, s, v = Color3.toHSV(Colorpicker.Color)
+                Colorpicker.H, Colorpicker.S, Colorpicker.V = h, s, v
+
+                Colorpicker.Frame = Instance.new("TextButton")
+                Colorpicker.Frame.Name = text .. "Colorpicker"
+                Colorpicker.Frame.Parent = Container
+                Colorpicker.Frame.BackgroundTransparency = 1
+                Colorpicker.Frame.Size = UDim2.new(1, 0, 0, 28)
+                Colorpicker.Frame.Text = ""
+                
+                Colorpicker.Label = Instance.new("TextLabel")
+                Colorpicker.Label.Parent = Colorpicker.Frame
+                Colorpicker.Label.BackgroundTransparency = 1
+                Colorpicker.Label.Size = UDim2.new(1, -40, 1, 0)
+                Colorpicker.Label.Font = Enum.Font.SourceSans
+                Colorpicker.Label.Text = text
+                Colorpicker.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+                Colorpicker.Label.TextSize = 14
+                Colorpicker.Label.TextXAlignment = Enum.TextXAlignment.Left
+
+                Colorpicker.Box = Instance.new("Frame")
+                Colorpicker.Box.Name = "Box"
+                Colorpicker.Box.Parent = Colorpicker.Frame
+                Colorpicker.Box.BackgroundColor3 = Colorpicker.Color
+                Colorpicker.Box.Position = UDim2.new(1, -30, 0.5, -8)
+                Colorpicker.Box.Size = UDim2.new(0, 30, 0, 16)
+                local BoxStroke = Instance.new("UIStroke")
+                BoxStroke.Color = Color3.fromRGB(34, 26, 40)
+                BoxStroke.Thickness = 1
+                BoxStroke.Parent = Colorpicker.Box
+                
+                Colorpicker.PickerFrame = Instance.new("Frame")
+                Colorpicker.PickerFrame.Name = "PickerFrame"
+                Colorpicker.PickerFrame.Parent = Colorpicker.Frame
+                Colorpicker.PickerFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 5)
+                Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 150)
+                Colorpicker.PickerFrame.Visible = false
+                Colorpicker.PickerFrame.ZIndex = 100
+                local PickerStroke = Instance.new("UIStroke")
+                PickerStroke.Color = Color3.fromRGB(34, 26, 40)
+                PickerStroke.Parent = Colorpicker.PickerFrame
+
+                Colorpicker.SatVal = Instance.new("ImageLabel")
+                Colorpicker.SatVal.Name = "SatVal"
+                Colorpicker.SatVal.Parent = Colorpicker.PickerFrame
+                Colorpicker.SatVal.BackgroundColor3 = Color3.fromHSV(Colorpicker.H, 1, 1)
+                Colorpicker.SatVal.Position = UDim2.new(0, 10, 0, 10)
+                Colorpicker.SatVal.Size = UDim2.new(1, -50, 1, -20)
+                Colorpicker.SatVal.Image = "rbxassetid://4155801252"
+                Colorpicker.SatVal.ZIndex = 101
+
+                Colorpicker.SatValCursor = Instance.new("Frame")
+                Colorpicker.SatValCursor.Name = "Cursor"
+                Colorpicker.SatValCursor.Parent = Colorpicker.SatVal
+                Colorpicker.SatValCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Colorpicker.SatValCursor.Position = UDim2.new(Colorpicker.S, -2, 1 - Colorpicker.V, -2)
+                Colorpicker.SatValCursor.Size = UDim2.new(0, 4, 0, 4)
+                Colorpicker.SatValCursor.ZIndex = 102
+                local CursorStroke = Instance.new("UIStroke")
+                CursorStroke.Color = Color3.fromRGB(0, 0, 0)
+                CursorStroke.Parent = Colorpicker.SatValCursor
+
+                Colorpicker.Hue = Instance.new("ImageLabel")
+                Colorpicker.Hue.Name = "Hue"
+                Colorpicker.Hue.Parent = Colorpicker.PickerFrame
+                Colorpicker.Hue.Position = UDim2.new(1, -30, 0, 10)
+                Colorpicker.Hue.Size = UDim2.new(0, 20, 1, -20)
+                Colorpicker.Hue.Image = "rbxassetid://3641079629"
+                Colorpicker.Hue.ZIndex = 101
+
+                Colorpicker.HueCursor = Instance.new("Frame")
+                Colorpicker.HueCursor.Name = "Cursor"
+                Colorpicker.HueCursor.Parent = Colorpicker.Hue
+                Colorpicker.HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Colorpicker.HueCursor.Position = UDim2.new(0, -2, Colorpicker.H, -1)
+                Colorpicker.HueCursor.Size = UDim2.new(1, 4, 0, 2)
+                Colorpicker.HueCursor.ZIndex = 102
+                local HueCursorStroke = Instance.new("UIStroke")
+                HueCursorStroke.Color = Color3.fromRGB(0, 0, 0)
+                HueCursorStroke.Parent = Colorpicker.HueCursor
+
+                local function UpdateColor()
+                    Colorpicker.Color = Color3.fromHSV(Colorpicker.H, Colorpicker.S, Colorpicker.V)
+                    Colorpicker.Box.BackgroundColor3 = Colorpicker.Color
+                    Colorpicker.SatVal.BackgroundColor3 = Color3.fromHSV(Colorpicker.H, 1, 1)
+                    UI.Flags[flag or text] = Colorpicker.Color
+                    pcall(Colorpicker.Callback, Colorpicker.Color)
+                end
+
+                local function UpdateSatVal(input)
+                    local pos = math.clamp((input.Position.X - Colorpicker.SatVal.AbsolutePosition.X) / Colorpicker.SatVal.AbsoluteSize.X, 0, 1)
+                    local pos2 = 1 - math.clamp((input.Position.Y - Colorpicker.SatVal.AbsolutePosition.Y) / Colorpicker.SatVal.AbsoluteSize.Y, 0, 1)
+                    Colorpicker.S = pos
+                    Colorpicker.V = pos2
+                    Colorpicker.SatValCursor.Position = UDim2.new(pos, -2, 1 - pos2, -2)
+                    UpdateColor()
+                end
+
+                local function UpdateHue(input)
+                    local pos = math.clamp((input.Position.Y - Colorpicker.Hue.AbsolutePosition.Y) / Colorpicker.Hue.AbsoluteSize.Y, 0, 1)
+                    Colorpicker.H = pos
+                    Colorpicker.HueCursor.Position = UDim2.new(0, -2, pos, -1)
+                    UpdateColor()
+                end
+
+                local function SetOpened(opened)
+                    Colorpicker.Opened = opened
+                    if opened then
+                        ResetAllZIndex()
+                        Colorpicker.Frame.ZIndex = 100
+                        Section.Frame.ZIndex = 10
+                        Colorpicker.PickerFrame.Visible = true
+                        Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 150)})
+                    else
+                        Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
+                        task.delay(0.3, function() if not Colorpicker.Opened then Colorpicker.PickerFrame.Visible = false end end)
+                    end
+                end
+
+                Colorpicker.Frame.MouseButton1Click:Connect(function() SetOpened(not Colorpicker.Opened) end)
+
+                local satvalDragging = false
+                Colorpicker.SatVal.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then satvalDragging = true UpdateSatVal(input) end end)
+                UserInputService.InputChanged:Connect(function(input) if satvalDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateSatVal(input) end end)
+                UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then satvalDragging = false end end)
+
+                local hueDragging = false
+                Colorpicker.Hue.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then hueDragging = true UpdateHue(input) end end)
+                UserInputService.InputChanged:Connect(function(input) if hueDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateHue(input) end end)
+                UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then hueDragging = false end end)
+
+                Colorpicker.Update = function(val)
+                    if typeof(val) == "table" then
+                        Colorpicker.Color = Color3.new(unpack(val))
+                    else
+                        Colorpicker.Color = val
+                    end
+                    local h, s, v = Color3.toHSV(Colorpicker.Color)
+                    Colorpicker.H, Colorpicker.S, Colorpicker.V = h, s, v
+                    Colorpicker.SatValCursor.Position = UDim2.new(s, -2, 1 - v, -2)
+                    Colorpicker.HueCursor.Position = UDim2.new(0, -2, h, -1)
+                    UpdateColor()
+                end
+                UI.Components[flag or text] = Colorpicker
+                return Colorpicker
+            end
+
             function Section:CreateDropdown(text, flag, options, default, callback)
                 local Dropdown = { Options = options or {}, Selected = default, Flag = flag, Callback = callback or function() end, Opened = false }
                 table.insert(Section.Elements, Dropdown)
@@ -1166,16 +1330,7 @@ function Library:CreateWindow(options)
                 Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
-                local function ResetAllZIndex()
-                    for _, s in pairs(Tab.Sections) do
-                        s.Frame.ZIndex = 1
-                        for _, e in pairs(s.Elements) do
-                            if e.Frame and (e.Frame.Name:find("Dropdown") or e.Frame.Name:find("MultiDropdown")) then
-                                e.Frame.ZIndex = 5
-                            end
-                        end
-                    end
-                end
+                
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = Color3.fromRGB(34, 26, 40)
                 DropStroke.Parent = Dropdown.Frame
@@ -1299,16 +1454,7 @@ function Library:CreateWindow(options)
                 Dropdown.Frame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
                 Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                 Dropdown.Frame.ZIndex = 5
-                local function ResetAllZIndex()
-                    for _, s in pairs(Tab.Sections) do
-                        s.Frame.ZIndex = 1
-                        for _, e in pairs(s.Elements) do
-                            if e.Frame and (e.Frame.Name:find("Dropdown") or e.Frame.Name:find("MultiDropdown")) then
-                                e.Frame.ZIndex = 5
-                            end
-                        end
-                    end
-                end
+                
                 local DropStroke = Instance.new("UIStroke")
                 DropStroke.Color = Color3.fromRGB(34, 26, 40)
                 DropStroke.Parent = Dropdown.Frame
