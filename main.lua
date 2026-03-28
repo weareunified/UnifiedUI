@@ -166,13 +166,12 @@ function Library:CreateWindow(options)
     UI.MainFrame.Position = UDim2.new(0.5, -315, 0.5, -210)
     UI.MainFrame.Size = UDim2.new(0, 630, 0, 420)
     UI.MainFrame.ClipsDescendants = true
-    UI.MainFrame.BackgroundTransparency = 1
-    UI.MainFrame.Size = UDim2.new(0, 600, 0, 400)
+    UI.MainFrame.BackgroundTransparency = 0
 
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = Color3.fromRGB(34, 26, 40)
     MainStroke.Thickness = 1.5
-    MainStroke.Transparency = 1
+    MainStroke.Transparency = 0
     MainStroke.Parent = UI.MainFrame
 
     UI.LeftPanel = Instance.new("Frame")
@@ -181,13 +180,13 @@ function Library:CreateWindow(options)
     UI.LeftPanel.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
     UI.LeftPanel.BorderSizePixel = 0
     UI.LeftPanel.Size = UDim2.new(0, 180, 1, 0)
-    UI.LeftPanel.BackgroundTransparency = 1
+    UI.LeftPanel.BackgroundTransparency = 0
 
     local LeftStroke = Instance.new("UIStroke")
     LeftStroke.Color = Color3.fromRGB(34, 26, 40)
     LeftStroke.Thickness = 1.5
     LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    LeftStroke.Transparency = 1
+    LeftStroke.Transparency = 0
     LeftStroke.Parent = UI.LeftPanel
 
     UI.LogoContainer = Instance.new("Frame")
@@ -206,8 +205,7 @@ function Library:CreateWindow(options)
     UI.TitleLabel.Text = windowTitle
     UI.TitleLabel.TextColor3 = accentColor
     UI.TitleLabel.TextSize = 22
-    UI.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    UI.TitleLabel.TextTransparency = 1
+    UI.TitleLabel.TextTransparency = 0
 
     UI.TabContainer = Instance.new("ScrollingFrame")
     UI.TabContainer.Name = "TabContainer"
@@ -230,12 +228,12 @@ function Library:CreateWindow(options)
     UI.UserPanel.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
     UI.UserPanel.Position = UDim2.new(0, 10, 1, -50)
     UI.UserPanel.Size = UDim2.new(1, -20, 0, 40)
-    UI.UserPanel.BackgroundTransparency = 1
+    UI.UserPanel.BackgroundTransparency = 0
 
     local UserStroke = Instance.new("UIStroke")
     UserStroke.Color = Color3.fromRGB(34, 26, 40)
     UserStroke.Thickness = 1
-    UserStroke.Transparency = 1
+    UserStroke.Transparency = 0
     UserStroke.Parent = UI.UserPanel
 
     UI.UserImage = Instance.new("ImageLabel")
@@ -246,7 +244,7 @@ function Library:CreateWindow(options)
     UI.UserImage.Size = UDim2.new(0, 24, 0, 24)
     UI.UserImage.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
     UI.UserImage.BackgroundTransparency = 1
-    UI.UserImage.ImageTransparency = 1
+    UI.UserImage.ImageTransparency = 0
 
     local UserImageCorner = Instance.new("UICorner")
     UserImageCorner.CornerRadius = UDim.new(1, 0)
@@ -264,7 +262,7 @@ function Library:CreateWindow(options)
     UI.UserName.TextSize = 13
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
     UI.UserName.RichText = true
-    UI.UserName.TextTransparency = 1
+    UI.UserName.TextTransparency = 0
     UI.UserName.ClipsDescendants = false
 
     local function StartUserPanelLoop()
@@ -353,18 +351,6 @@ function Library:CreateWindow(options)
             end
         end)
     end
-
-    task.spawn(function()
-        Tween(UI.MainFrame, 0.6, {Size = UDim2.new(0, 630, 0, 420), Position = UDim2.new(0.5, -315, 0.5, -210), BackgroundTransparency = 0})
-        Tween(MainStroke, 0.6, {Transparency = 0})
-        Tween(UI.LeftPanel, 0.6, {BackgroundTransparency = 0})
-        Tween(LeftStroke, 0.6, {Transparency = 0})
-        Tween(UI.TitleLabel, 0.8, {TextTransparency = 0})
-        Tween(UI.UserPanel, 0.8, {BackgroundTransparency = 0})
-        Tween(UserStroke, 0.8, {Transparency = 0})
-        Tween(UI.UserName, 0.8, {TextTransparency = 0})
-        Tween(UI.UserImage, 0.8, {ImageTransparency = 0})
-    end)
 
     UI.FooterBar = Instance.new("Frame")
     UI.FooterBar.Name = "FooterBar"
