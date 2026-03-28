@@ -1560,7 +1560,7 @@ function Library:CreateWindow(options)
                     for _, child in pairs(Dropdown.List:GetChildren()) do
                         if child:IsA("TextButton") then child:Destroy() end
                     end
-                    for _, option in pairs(Dropdown.Options) do
+                    for _, option in ipairs(Dropdown.Options) do
                         local OptBtn = Instance.new("TextButton")
                         OptBtn.Name = option
                         OptBtn.Parent = Dropdown.List
@@ -1585,7 +1585,8 @@ function Library:CreateWindow(options)
                         Dropdown.Options = val
                         CreateOptions()
                         if Dropdown.Opened then
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                            local targetSize = math.max(#Dropdown.Options, 1) * 25
+                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                             RefreshCanvasSize()
                             task.delay(0.35, RefreshCanvasSize)
                         end
