@@ -352,6 +352,15 @@ function Library:CreateWindow(options)
         end)
     end
 
+    task.spawn(function()
+        local currentHash = "v1.0.0" 
+        local success, latest = pcall(function() return game:HttpGet("https://raw.githubusercontent.com/weareunified/UnifiedUI/refs/heads/main/version.txt?t=" .. tick(), true) end)
+        
+        if success and latest and latest:gsub("%s+", "") ~= currentHash then
+            UI:Notify("UNIFIED", "Library updated! Re-Execute to apply new features.")
+        end
+    end)
+
     local dragging, dragInput, dragStart, startPos
     local function UpdateDrag(input)
         local delta = input.Position - dragStart
