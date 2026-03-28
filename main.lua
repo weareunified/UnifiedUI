@@ -168,6 +168,24 @@ function Library:CreateWindow(options)
     UI.MainFrame.ClipsDescendants = false
     UI.MainFrame.BackgroundTransparency = 0
 
+    UI.AccentBar = Instance.new("Frame")
+    UI.AccentBar.Name = "AccentBar"
+    UI.AccentBar.Parent = UI.MainFrame
+    UI.AccentBar.BackgroundColor3 = accentColor
+    UI.AccentBar.BorderSizePixel = 0
+    UI.AccentBar.Position = UDim2.new(1, 5, 0, 0)
+    UI.AccentBar.Size = UDim2.new(0, 3, 1, 0)
+    UI.AccentBar.Visible = true
+
+    local AccentCorner = Instance.new("UICorner")
+    AccentCorner.CornerRadius = UDim.new(0, 2)
+    AccentCorner.Parent = UI.AccentBar
+
+    local AccentStroke = Instance.new("UIStroke")
+    AccentStroke.Color = Color3.fromRGB(34, 26, 40)
+    AccentStroke.Thickness = 1
+    AccentStroke.Parent = UI.AccentBar
+
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = Color3.fromRGB(34, 26, 40)
     MainStroke.Thickness = 1.5
@@ -480,6 +498,8 @@ function Library:CreateWindow(options)
             ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
         end)
 
+        UI.AccentBar.Visible = false
+
         Tween(ChangelogFrame, 0.6, {BackgroundTransparency = 0, Size = UDim2.new(0, 200, 0, 300)})
         Tween(ClStroke, 0.6, {Transparency = 0})
         Tween(ClTitle, 0.8, {TextTransparency = 0})
@@ -490,6 +510,7 @@ function Library:CreateWindow(options)
             Tween(ChangelogFrame, 0.6, {BackgroundTransparency = 1, Size = UDim2.new(0, 200, 0, 0)})
             task.delay(0.6, function()
                 ChangelogFrame:Destroy()
+                UI.AccentBar.Visible = true
             end)
         end)
         
