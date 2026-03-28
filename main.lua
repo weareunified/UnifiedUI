@@ -59,6 +59,7 @@ function Library:CreateWindow(options)
         Flags = {},
         DefaultFlags = {},
         FlagTypes = {},
+        IgnoredFlags = {},
         Components = {},
         Folder = "Unified",
         ConfigFolder = "Unified/Configs",
@@ -173,8 +174,20 @@ function Library:CreateWindow(options)
 
     local function RestoreDefaultFlags()
         for flagName, data in pairs(UI.DefaultFlags) do
-            ApplyFlagValue(flagName, data.Value)
+            if not UI.IgnoredFlags[flagName] then
+                ApplyFlagValue(flagName, data.Value)
+            end
         end
+    end
+
+    local function BuildConfigData(sourceTable)
+        local config = {}
+        for flag, value in pairs(sourceTable) do
+            if not UI.IgnoredFlags[flag] then
+                config[flag] = SerializeConfigValue(flag, value)
+            end
+        end
+        return config
     end
 
     function UI:UpdateColor(type, color)
@@ -229,12 +242,15 @@ function Library:CreateWindow(options)
         if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
     end
 
+    function UI:SetFlagIgnored(flagName, ignored)
+        if flagName then
+            UI.IgnoredFlags[flagName] = ignored and true or nil
+        end
+    end
+
     function UI:SaveConfig(name)
         if not name or name == "" or name == "No Configs" then return end
-        local config = {}
-        for flag, value in pairs(UI.Flags) do
-            config[flag] = SerializeConfigValue(flag, value)
-        end
+        local config = BuildConfigData(UI.Flags)
         local success, err = pcall(function()
             if writefile then
                 if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
@@ -244,12 +260,28 @@ function Library:CreateWindow(options)
         if not success then warn("UI Error (SaveConfig): " .. tostring(err)) end
     end
 
+    function UI:SaveDefaultConfig()
+        local configSource = {}
+        for flag, data in pairs(UI.DefaultFlags) do
+            configSource[flag] = CloneValue(data.Value)
+        end
+
+        local config = BuildConfigData(configSource)
+        local success, err = pcall(function()
+            if writefile then
+                if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
+                writefile(UI.ConfigFolder .. "/default.json", HttpService:JSONEncode(config))
+            end
+        end)
+        if not success then warn("UI Error (SaveDefaultConfig): " .. tostring(err)) end
+    end
+
     local function CreateDefaultConfig()
         task.spawn(function()
             task.wait(1)
             pcall(function()
                 if writefile and isfile and not isfile(UI.ConfigFolder .. "/default.json") then
-                    UI:SaveConfig("default")
+                    UI:SaveDefaultConfig()
                 end
             end)
         end)
