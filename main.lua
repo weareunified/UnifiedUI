@@ -45,6 +45,10 @@ function Library:ServerHop()
 end
 
 function Library:CreateWindow(options)
+    if not game:IsLoaded() then
+        repeat task.wait() until game:IsLoaded()
+    end
+    
     options = options or {}
     local windowTitle = options.Name or "UNIFIED"
     local accentColor = options.AccentColor or Color3.fromRGB(207, 165, 255)
