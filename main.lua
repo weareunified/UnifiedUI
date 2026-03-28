@@ -1300,26 +1300,41 @@ function Library:CreateWindow(options)
                 BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                 BoxStroke.Thickness = 1
                 BoxStroke.Parent = Colorpicker.Box
+
+                Colorpicker.ToggleButton = Instance.new("TextButton")
+                Colorpicker.ToggleButton.Name = "ToggleButton"
+                Colorpicker.ToggleButton.Parent = Colorpicker.Frame
+                Colorpicker.ToggleButton.BackgroundTransparency = 1
+                Colorpicker.ToggleButton.Size = UDim2.new(1, 0, 0, 28)
+                Colorpicker.ToggleButton.Text = ""
+                Colorpicker.ToggleButton.AutoButtonColor = false
+                Colorpicker.ToggleButton.ZIndex = 6
                 
                 Colorpicker.PickerFrame = Instance.new("Frame")
                 Colorpicker.PickerFrame.Name = "PickerFrame"
                 Colorpicker.PickerFrame.Parent = Colorpicker.Frame
                 Colorpicker.PickerFrame.BackgroundColor3 = UI.Colors.ElementBackground
+                Colorpicker.PickerFrame.BackgroundTransparency = 1
                 Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 5)
-                Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 180)
+                Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 0)
                 Colorpicker.PickerFrame.Visible = false
+                Colorpicker.PickerFrame.Active = true
                 Colorpicker.PickerFrame.ZIndex = 100
                 local PickerStroke = Instance.new("UIStroke")
                 PickerStroke.Color = Color3.fromRGB(34, 26, 40)
+                PickerStroke.Transparency = 1
                 PickerStroke.Parent = Colorpicker.PickerFrame
 
                 Colorpicker.SatVal = Instance.new("ImageLabel")
                 Colorpicker.SatVal.Name = "SatVal"
                 Colorpicker.SatVal.Parent = Colorpicker.PickerFrame
+                Colorpicker.SatVal.Active = true
                 Colorpicker.SatVal.BackgroundColor3 = Color3.fromHSV(Colorpicker.H, 1, 1)
+                Colorpicker.SatVal.BackgroundTransparency = 1
                 Colorpicker.SatVal.Position = UDim2.new(0, 10, 0, 10)
                 Colorpicker.SatVal.Size = UDim2.new(1, -50, 0, 130)
                 Colorpicker.SatVal.Image = "rbxassetid://4155801252"
+                Colorpicker.SatVal.ImageTransparency = 1
                 Colorpicker.SatVal.ZIndex = 101
 
                 Colorpicker.SatValCursor = Instance.new("Frame")
@@ -1336,9 +1351,11 @@ function Library:CreateWindow(options)
                 Colorpicker.Hue = Instance.new("ImageLabel")
                 Colorpicker.Hue.Name = "Hue"
                 Colorpicker.Hue.Parent = Colorpicker.PickerFrame
+                Colorpicker.Hue.Active = true
                 Colorpicker.Hue.Position = UDim2.new(1, -30, 0, 10)
                 Colorpicker.Hue.Size = UDim2.new(0, 20, 0, 130)
                 Colorpicker.Hue.Image = "rbxassetid://3641079629"
+                Colorpicker.Hue.ImageTransparency = 1
                 Colorpicker.Hue.ZIndex = 101
 
                 Colorpicker.HueCursor = Instance.new("Frame")
@@ -1355,6 +1372,8 @@ function Library:CreateWindow(options)
                 Colorpicker.Darkness = Instance.new("Frame")
                 Colorpicker.Darkness.Name = "Darkness"
                 Colorpicker.Darkness.Parent = Colorpicker.PickerFrame
+                Colorpicker.Darkness.Active = true
+                Colorpicker.Darkness.BackgroundTransparency = 1
                 Colorpicker.Darkness.Position = UDim2.new(0, 10, 0, 150)
                 Colorpicker.Darkness.Size = UDim2.new(1, -20, 0, 15)
                 Colorpicker.Darkness.ZIndex = 101
@@ -1423,16 +1442,25 @@ function Library:CreateWindow(options)
                         Colorpicker.Frame.ZIndex = 100
                         Section.Frame.ZIndex = 10
                         Colorpicker.PickerFrame.Visible = true
-                        Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 180)})
+                        Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 0)
+                        Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 180), BackgroundTransparency = 0, Position = UDim2.new(0, 0, 1, 5)})
+                        Tween(PickerStroke, 0.22, {Transparency = 0})
+                        Tween(Colorpicker.SatVal, 0.22, {BackgroundTransparency = 0, ImageTransparency = 0})
+                        Tween(Colorpicker.Hue, 0.22, {ImageTransparency = 0})
+                        Tween(Colorpicker.Darkness, 0.22, {BackgroundTransparency = 0})
                     else
-                        Tween(Colorpicker.PickerFrame, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                        task.delay(0.3, function() if not Colorpicker.Opened then Colorpicker.PickerFrame.Visible = false end end)
+                        Tween(Colorpicker.SatVal, 0.18, {BackgroundTransparency = 1, ImageTransparency = 1})
+                        Tween(Colorpicker.Hue, 0.18, {ImageTransparency = 1})
+                        Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
+                        Tween(PickerStroke, 0.18, {Transparency = 1})
+                        Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Position = UDim2.new(0, 0, 1, 0)})
+                        task.delay(0.22, function() if not Colorpicker.Opened then Colorpicker.PickerFrame.Visible = false end end)
                     end
                     RefreshCanvasSize()
                     task.delay(0.35, RefreshCanvasSize)
                 end
 
-                Colorpicker.Frame.MouseButton1Click:Connect(function() SetOpened(not Colorpicker.Opened) end)
+                Colorpicker.ToggleButton.MouseButton1Click:Connect(function() SetOpened(not Colorpicker.Opened) end)
 
                 local satvalDragging = false
                 Colorpicker.SatVal.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then satvalDragging = true UpdateSatVal(input) end end)
