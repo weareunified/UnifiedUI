@@ -134,6 +134,11 @@ function Library:CreateWindow(options)
                 config[flag] = value
             end
         end
+        for flag, component in pairs(UI.Components) do
+            if component.Opened ~= nil then
+                config[flag .. "_Opened"] = component.Opened
+            end
+        end
         if writefile then
             writefile(UI.ConfigFolder .. "/" .. name .. ".json", HttpService:JSONEncode(config))
         end
@@ -164,6 +169,11 @@ function Library:CreateWindow(options)
                         else
                             UI.Flags[flag] = value
                         end
+                    end
+                end
+                for flag, component in pairs(UI.Components) do
+                    if config[flag .. "_Opened"] ~= nil and component.SetOpened then
+                        component:SetOpened(config[flag .. "_Opened"])
                     end
                 end
             end
@@ -1129,45 +1139,6 @@ function Library:CreateWindow(options)
                 local Codeblock = {}
                 local rawCode = tostring(code):gsub("<[^>]+>", "")
                 
-                local function toHex(color)
-                    return string.format("#%02X%02X%02X", math.floor(color.R * 255), math.floor(color.G * 255), math.floor(color.B * 255))
-                end
-
-                local function highlight(src)
-                    local keywords = {"local", "function", "if", "then", "else", "elseif", "end", "for", "in", "do", "while", "repeat", "until", "return", "break", "nil", "true", "false", "and", "or", "not"}
-                    local builtins = {"game", "workspace", "script", "math", "table", "string", "task", "wait", "spawn", "delay", "print", "warn", "error", "pcall", "xpcall", "Instance", "Enum", "Color3", "UDim2", "UDim", "Vector3", "Vector2"}
-                    
-                    local highlighted = src:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
-                    local accentHex = toHex(accentColor)
-
-                    local replacements = {}
-                    local function protect(s)
-                        local key = "___MKR" .. #replacements .. "___"
-                        table.insert(replacements, s)
-                        return key
-                    end
-
-                    highlighted = highlighted:gsub('("[^"]*")', function(s) return protect('<font color="#98C379">'..s..'</font>') end)
-                    highlighted = highlighted:gsub("('[^']*')", function(s) return protect('<font color="#98C379">'..s..'</font>') end)
-                    highlighted = highlighted:gsub("(%[%[.-%]%])", function(s) return protect('<font color="#98C379">'..s..'</font>') end)
-                    highlighted = highlighted:gsub("%-%-.*", function(s) return protect('<font color="#5C6370">'..s..'</font>') end)
-                    
-                    for _, kw in pairs(keywords) do
-                        highlighted = highlighted:gsub("%f[%w]"..kw.."%f[%W]", function(s) return protect('<font color="' .. accentHex .. '">'..s..'</font>') end)
-                    end
-                    for _, bi in pairs(builtins) do
-                        highlighted = highlighted:gsub("%f[%w]"..bi.."%f[%W]", function(s) return protect('<font color="#61AFEF">'..s..'</font>') end)
-                    end
-                    
-                    highlighted = highlighted:gsub("%f[%d]%d+%f[%D]", function(s) return protect('<font color="#D19A66">'..s..'</font>') end)
-                    
-                    for i = #replacements, 1, -1 do
-                        highlighted = highlighted:gsub("___MKR" .. (i-1) .. "___", replacements[i])
-                    end
-                    
-                    return highlighted
-                end
-
                 Codeblock.Frame = Instance.new("Frame")
                 Codeblock.Frame.Name = text .. "Codeblock"
                 Codeblock.Frame.Parent = Container
@@ -1197,7 +1168,7 @@ function Library:CreateWindow(options)
                 Codeblock.Label.Size = UDim2.new(1, 0, 0, 0)
                 Codeblock.Label.Font = Enum.Font.Code
                 Codeblock.Label.RichText = true
-                Codeblock.Label.Text = highlight(rawCode)
+                Codeblock.Label.Text = rawCode:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
                 Codeblock.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Codeblock.Label.TextSize = 12
                 Codeblock.Label.TextXAlignment = Enum.TextXAlignment.Left
