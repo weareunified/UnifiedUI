@@ -1212,33 +1212,41 @@ function Library:CreateWindow(options)
                 local ListLayout = Instance.new("UIListLayout")
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+                local function CreateOptions()
+                    for _, child in pairs(Dropdown.List:GetChildren()) do
+                        if child:IsA("TextButton") then child:Destroy() end
+                    end
+                    for _, option in pairs(Dropdown.Options) do
+                        local OptBtn = Instance.new("TextButton")
+                        OptBtn.Name = option
+                        OptBtn.Parent = Dropdown.List
+                        OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                        OptBtn.BorderSizePixel = 0
+                        OptBtn.Size = UDim2.new(1, 0, 0, 25)
+                        OptBtn.Font = Enum.Font.SourceSans
+                        OptBtn.Text = "  " .. option
+                        OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                        OptBtn.TextSize = 14
+                        OptBtn.TextXAlignment = Enum.TextXAlignment.Left
+                        OptBtn.ZIndex = 110
+                        OptBtn.MouseButton1Click:Connect(function() 
+                            Dropdown.Update(option) 
+                            Dropdown.Opened = false 
+                            ResetAllZIndex() 
+                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)}) 
+                            task.delay(0.3, function() Dropdown.List.Visible = false end) 
+                            Dropdown.Icon.Text = "+" 
+                        end)
+                    end
+                end
+
                 local function Update(val, isOptions)
                     if isOptions and type(val) == "table" then
                         Dropdown.Options = val
-                        for _, child in pairs(Dropdown.List:GetChildren()) do
-                            if child:IsA("TextButton") then child:Destroy() end
-                        end
-                        for _, option in pairs(Dropdown.Options) do
-                            local OptBtn = Instance.new("TextButton")
-                            OptBtn.Name = option
-                            OptBtn.Parent = Dropdown.List
-                            OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
-                            OptBtn.BorderSizePixel = 0
-                            OptBtn.Size = UDim2.new(1, 0, 0, 25)
-                            OptBtn.Font = Enum.Font.SourceSans
-                            OptBtn.Text = "  " .. option
-                            OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-                            OptBtn.TextSize = 14
-                            OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                            OptBtn.ZIndex = 110
-                            OptBtn.MouseButton1Click:Connect(function() 
-                                Update(option) 
-                                Dropdown.Opened = false 
-                                ResetAllZIndex() 
-                                Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)}) 
-                                task.delay(0.3, function() Dropdown.List.Visible = false end) 
-                                Dropdown.Icon.Text = "+" 
-                            end)
+                        CreateOptions()
+                        if Dropdown.Opened then
+                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                         end
                         return
                     end
@@ -1255,28 +1263,7 @@ function Library:CreateWindow(options)
                 Dropdown.Update = Update
                 UI.Components[flag or text] = Dropdown
 
-                for _, option in pairs(Dropdown.Options) do
-                    local OptBtn = Instance.new("TextButton")
-                    OptBtn.Name = option
-                    OptBtn.Parent = Dropdown.List
-                    OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
-                    OptBtn.BorderSizePixel = 0
-                    OptBtn.Size = UDim2.new(1, 0, 0, 25)
-                    OptBtn.Font = Enum.Font.SourceSans
-                    OptBtn.Text = "  " .. option
-                    OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-                    OptBtn.TextSize = 14
-                    OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                    OptBtn.ZIndex = 110
-                    OptBtn.MouseButton1Click:Connect(function() 
-                        Update(option) 
-                        Dropdown.Opened = false 
-                        ResetAllZIndex() 
-                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)}) 
-                        task.delay(0.3, function() Dropdown.List.Visible = false end) 
-                        Dropdown.Icon.Text = "+" 
-                    end)
-                end
+                CreateOptions()
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
@@ -1354,30 +1341,38 @@ function Library:CreateWindow(options)
                 local ListLayout = Instance.new("UIListLayout")
                 ListLayout.Parent = Dropdown.List
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+                local function CreateOptions()
+                    for _, child in pairs(Dropdown.List:GetChildren()) do
+                        if child:IsA("TextButton") then child:Destroy() end
+                    end
+                    for _, option in pairs(Dropdown.Options) do
+                        local OptBtn = Instance.new("TextButton")
+                        OptBtn.Name = option
+                        OptBtn.Parent = Dropdown.List
+                        OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                        OptBtn.BorderSizePixel = 0
+                        OptBtn.Size = UDim2.new(1, 0, 0, 25)
+                        OptBtn.Font = Enum.Font.SourceSans
+                        OptBtn.Text = "  " .. option
+                        OptBtn.TextColor3 = table.find(Dropdown.Selected, option) and accentColor or Color3.fromRGB(150, 150, 150)
+                        OptBtn.TextSize = 14
+                        OptBtn.TextXAlignment = Enum.TextXAlignment.Left
+                        OptBtn.ZIndex = 110
+                        OptBtn.MouseButton1Click:Connect(function()
+                            local index = table.find(Dropdown.Selected, option)
+                            if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
+                            Dropdown.Update()
+                        end)
+                    end
+                end
+
                 local function Update(val, isOptions)
                     if isOptions and type(val) == "table" then
                         Dropdown.Options = val
-                        for _, child in pairs(Dropdown.List:GetChildren()) do
-                            if child:IsA("TextButton") then child:Destroy() end
-                        end
-                        for _, option in pairs(Dropdown.Options) do
-                            local OptBtn = Instance.new("TextButton")
-                            OptBtn.Name = option
-                            OptBtn.Parent = Dropdown.List
-                            OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
-                            OptBtn.BorderSizePixel = 0
-                            OptBtn.Size = UDim2.new(1, 0, 0, 25)
-                            OptBtn.Font = Enum.Font.SourceSans
-                            OptBtn.Text = "  " .. option
-                            OptBtn.TextColor3 = table.find(Dropdown.Selected, option) and accentColor or Color3.fromRGB(150, 150, 150)
-                            OptBtn.TextSize = 14
-                            OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                            OptBtn.ZIndex = 110
-                            OptBtn.MouseButton1Click:Connect(function()
-                                local index = table.find(Dropdown.Selected, option)
-                                if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
-                                Update()
-                            end)
+                        CreateOptions()
+                        if Dropdown.Opened then
+                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
                         end
                         return
                     end
@@ -1400,28 +1395,12 @@ function Library:CreateWindow(options)
                     end
                     pcall(Dropdown.Callback, Dropdown.Selected)
                 end
+
                 Update()
                 Dropdown.Update = Update
                 UI.Components[flag or text] = Dropdown
-                for _, option in pairs(Dropdown.Options) do
-                    local OptBtn = Instance.new("TextButton")
-                    OptBtn.Name = option
-                    OptBtn.Parent = Dropdown.List
-                    OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
-                    OptBtn.BorderSizePixel = 0
-                    OptBtn.Size = UDim2.new(1, 0, 0, 25)
-                    OptBtn.Font = Enum.Font.SourceSans
-                    OptBtn.Text = "  " .. option
-                    OptBtn.TextColor3 = table.find(Dropdown.Selected, option) and accentColor or Color3.fromRGB(150, 150, 150)
-                    OptBtn.TextSize = 14
-                    OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                    OptBtn.ZIndex = 110
-                    OptBtn.MouseButton1Click:Connect(function()
-                        local index = table.find(Dropdown.Selected, option)
-                        if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
-                        Update()
-                    end)
-                end
+
+                CreateOptions()
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Dropdown.Opened = not Dropdown.Opened
