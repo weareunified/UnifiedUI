@@ -74,6 +74,11 @@ function Library:CreateWindow(options)
         }
     }
 
+    local function GetHoverColor(color)
+        local h, s, v = Color3.toHSV(color)
+        return Color3.fromHSV(h, s, v > 0.5 and v - 0.05 or v + 0.05)
+    end
+
     local function CloneValue(value)
         if typeof(value) == "Color3" then
             return Color3.new(value.R, value.G, value.B)
@@ -225,8 +230,25 @@ function Library:CreateWindow(options)
                  for _, tab in pairs(UI.Tabs) do
                      for _, section in pairs(tab.Sections) do
                          for _, element in pairs(section.Elements) do
-                             if element.Frame and not (element.Frame.Name:find("Dropdown") or element.Frame.Name:find("MultiDropdown")) then
+                             if element.Frame then
                                  element.Frame.BackgroundColor3 = color
+                             end
+                             if element.Box then
+                                 element.Box.BackgroundColor3 = color
+                             end
+                             if element.Btn then
+                                 element.Btn.BackgroundColor3 = color
+                             end
+                             if element.PickerFrame then
+                                 element.PickerFrame.BackgroundColor3 = color
+                             end
+                             -- For dropdowns/multidropdowns options
+                             if element.List then
+                                 for _, opt in pairs(element.List:GetChildren()) do
+                                     if opt:IsA("TextButton") then
+                                         opt.BackgroundColor3 = color
+                                     end
+                                 end
                              end
                          end
                      end
@@ -983,8 +1005,14 @@ function Library:CreateWindow(options)
                 BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                 BtnStroke.Thickness = 1
                 BtnStroke.Parent = Button.Frame
-                Button.Frame.MouseEnter:Connect(function() Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(16, 15, 16)}) Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(50, 40, 60)}) end)
-                Button.Frame.MouseLeave:Connect(function() Tween(Button.Frame, 0.2, {BackgroundColor3 = Color3.fromRGB(11, 10, 11)}) Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) end)
+                Button.Frame.MouseEnter:Connect(function() 
+                    Tween(Button.Frame, 0.2, {BackgroundColor3 = GetHoverColor(UI.Colors.ElementBackground)}) 
+                    Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(50, 40, 60)}) 
+                end)
+                Button.Frame.MouseLeave:Connect(function() 
+                    Tween(Button.Frame, 0.2, {BackgroundColor3 = UI.Colors.ElementBackground}) 
+                    Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) 
+                end)
                 Button.Frame.MouseButton1Click:Connect(function()
                     local ripple = Instance.new("Frame")
                     ripple.Name = "Ripple"
@@ -1073,16 +1101,26 @@ function Library:CreateWindow(options)
                 Slider.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                 Slider.Label.TextSize = 14
                 Slider.Label.TextXAlignment = Enum.TextXAlignment.Left
-                Slider.ValueLabel = Instance.new("TextLabel")
+                Slider.ValueLabel = Instance.new("TextBox")
                 Slider.ValueLabel.Parent = Slider.Frame
                 Slider.ValueLabel.BackgroundTransparency = 1
-                Slider.ValueLabel.Position = UDim2.new(1, -40, 0, 0)
-                Slider.ValueLabel.Size = UDim2.new(0, 40, 0, 20)
+                Slider.ValueLabel.Position = UDim2.new(1, -50, 0, 0)
+                Slider.ValueLabel.Size = UDim2.new(0, 50, 0, 20)
                 Slider.ValueLabel.Font = Enum.Font.SourceSans
                 Slider.ValueLabel.Text = tostring(Slider.Value)
                 Slider.ValueLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
                 Slider.ValueLabel.TextSize = 13
                 Slider.ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+                Slider.ValueLabel.ClearTextOnFocus = false
+                Slider.ValueLabel.FocusLost:Connect(function()
+                    local val = tonumber(Slider.ValueLabel.Text)
+                    if val then
+                        val = math.clamp(math.floor(val), min, max)
+                        Update(val, true)
+                    else
+                        Slider.ValueLabel.Text = tostring(Slider.Value)
+                    end
+                end)
                 Slider.Bar = Instance.new("Frame")
                 Slider.Bar.Parent = Slider.Frame
                 Slider.Bar.BackgroundColor3 = UI.Colors.ElementBackground
@@ -1354,8 +1392,14 @@ function Library:CreateWindow(options)
                 local CopyCorner = Instance.new("UICorner")
                 CopyCorner.CornerRadius = UDim.new(0, 4)
                 CopyCorner.Parent = Codeblock.CopyBtn
-                Codeblock.CopyBtn.MouseEnter:Connect(function() Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(25, 25, 25)}) Tween(CopyStroke, 0.2, {Color = accentColor}) end)
-                Codeblock.CopyBtn.MouseLeave:Connect(function() Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(15, 15, 15)}) Tween(CopyStroke, 0.2, {Color = Color3.fromRGB(35, 30, 45)}) end)
+                Codeblock.CopyBtn.MouseEnter:Connect(function() 
+                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = GetHoverColor(Color3.fromRGB(15, 15, 15))}) 
+                    Tween(CopyStroke, 0.2, {Color = accentColor}) 
+                end)
+                Codeblock.CopyBtn.MouseLeave:Connect(function() 
+                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(15, 15, 15)}) 
+                    Tween(CopyStroke, 0.2, {Color = Color3.fromRGB(35, 30, 45)}) 
+                end)
                 Codeblock.CopyBtn.MouseButton1Click:Connect(function() if setclipboard then setclipboard(rawCode) UI:Notify("UNIFIED", "Code copied to clipboard!") Codeblock.CopyBtn.Text = "COPIED" task.delay(2, function() Codeblock.CopyBtn.Text = "COPY" end) else UI:Notify("ERROR", "Exploit does not support setclipboard!") end end)
                 return Codeblock
             end
@@ -1721,7 +1765,7 @@ function Library:CreateWindow(options)
                         local OptBtn = Instance.new("TextButton")
                         OptBtn.Name = tostring(option)
                         OptBtn.Parent = Dropdown.List
-                        OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                        OptBtn.BackgroundColor3 = UI.Colors.ElementBackground
                         OptBtn.BorderSizePixel = 0
                         OptBtn.Size = UDim2.new(1, 0, 0, 25)
                         OptBtn.Font = Enum.Font.SourceSans
@@ -1730,6 +1774,15 @@ function Library:CreateWindow(options)
                         OptBtn.TextSize = 14
                         OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                         OptBtn.ZIndex = 110
+                        OptBtn.AutoButtonColor = false
+
+                        OptBtn.MouseEnter:Connect(function()
+                            Tween(OptBtn, 0.2, {BackgroundColor3 = GetHoverColor(UI.Colors.ElementBackground)})
+                        end)
+                        OptBtn.MouseLeave:Connect(function()
+                            Tween(OptBtn, 0.2, {BackgroundColor3 = UI.Colors.ElementBackground})
+                        end)
+
                         OptBtn.MouseButton1Click:Connect(function() 
                             Dropdown.Update(option) 
                             SetOpened(false)
@@ -1868,7 +1921,7 @@ function Library:CreateWindow(options)
                         local OptBtn = Instance.new("TextButton")
                         OptBtn.Name = option
                         OptBtn.Parent = Dropdown.List
-                        OptBtn.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+                        OptBtn.BackgroundColor3 = UI.Colors.ElementBackground
                         OptBtn.BorderSizePixel = 0
                         OptBtn.Size = UDim2.new(1, 0, 0, 25)
                         OptBtn.Font = Enum.Font.SourceSans
@@ -1877,6 +1930,15 @@ function Library:CreateWindow(options)
                         OptBtn.TextSize = 14
                         OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                         OptBtn.ZIndex = 110
+                        OptBtn.AutoButtonColor = false
+
+                        OptBtn.MouseEnter:Connect(function()
+                            Tween(OptBtn, 0.2, {BackgroundColor3 = GetHoverColor(UI.Colors.ElementBackground)})
+                        end)
+                        OptBtn.MouseLeave:Connect(function()
+                            Tween(OptBtn, 0.2, {BackgroundColor3 = UI.Colors.ElementBackground})
+                        end)
+
                         OptBtn.MouseButton1Click:Connect(function()
                             local index = table.find(Dropdown.Selected, option)
                             if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
