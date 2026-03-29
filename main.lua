@@ -15,6 +15,7 @@ local function Tween(obj, info, goal)
 end
 
 local function RandomString(length)
+    math.randomseed(os.clock() ^ 2)
     local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     local res = ""
     for i = 1, length do
@@ -55,6 +56,7 @@ function Library:CreateWindow(options)
     
     local UI = {
         CurrentTab = nil,
+        OpenedElement = nil,
         Tabs = {},
         Flags = {},
         DefaultFlags = {},
@@ -494,7 +496,9 @@ function Library:CreateWindow(options)
     UI.UserImage.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     UI.UserImage.Position = UDim2.new(0, 5, 0.5, -12)
     UI.UserImage.Size = UDim2.new(0, 24, 0, 24)
-    UI.UserImage.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+    pcall(function()
+        UI.UserImage.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+    end)
     UI.UserImage.BackgroundTransparency = 1
     UI.UserImage.ImageTransparency = 0
 
@@ -840,24 +844,26 @@ function Library:CreateWindow(options)
         Tab.Content = TabContent
 
         local function RefreshCanvasSize()
-            local targetHeight = 20
+            pcall(function()
+                local targetHeight = 20
 
-            for _, section in pairs(Tab.Sections) do
-                local sectionBottom = (section.Frame.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + section.Frame.AbsoluteSize.Y
-                targetHeight = math.max(targetHeight, sectionBottom + 20)
+                for _, section in pairs(Tab.Sections) do
+                    local sectionBottom = (section.Frame.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + section.Frame.AbsoluteSize.Y
+                    targetHeight = math.max(targetHeight, sectionBottom + 20)
 
-                for _, element in pairs(section.Elements) do
-                    if element.Opened and element.Frame then
-                        local popup = element.List or element.PickerFrame
-                        if popup and popup.Visible then
-                            local popupBottom = (popup.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + popup.AbsoluteSize.Y
-                            targetHeight = math.max(targetHeight, popupBottom + 20)
+                    for _, element in pairs(section.Elements) do
+                        if element.Opened and element.Frame then
+                            local popup = element.List or element.PickerFrame
+                            if popup and popup.Visible then
+                                local popupBottom = (popup.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + popup.AbsoluteSize.Y
+                                targetHeight = math.max(targetHeight, popupBottom + 20)
+                            end
                         end
                     end
                 end
-            end
 
-            TabContent.CanvasSize = UDim2.new(0, 0, 0, targetHeight)
+                TabContent.CanvasSize = UDim2.new(0, 0, 0, targetHeight)
+            end)
         end
 
         local ContentLayout = Instance.new("UIListLayout")
@@ -1625,6 +1631,15 @@ function Library:CreateWindow(options)
                 end
 
                 local function SetOpened(opened)
+                    if opened then
+                        if UI.OpenedElement and UI.OpenedElement ~= Colorpicker and UI.OpenedElement.SetOpened then
+                            UI.OpenedElement.SetOpened(false)
+                        end
+                        UI.OpenedElement = Colorpicker
+                    elseif UI.OpenedElement == Colorpicker then
+                        UI.OpenedElement = nil
+                    end
+
                     Colorpicker.Opened = opened
                     if opened then
                         ResetAllZIndex()
@@ -1679,6 +1694,7 @@ function Library:CreateWindow(options)
                     Colorpicker.DarknessCursor.Position = UDim2.new(1 - v, -1, 0, -2)
                     UpdateColor()
                 end
+                Colorpicker.SetOpened = SetOpened
                 UI.Components[flag or text] = Colorpicker
                 return Colorpicker
             end
@@ -1732,6 +1748,15 @@ function Library:CreateWindow(options)
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
                 local function SetOpened(opened)
+                    if opened then
+                        if UI.OpenedElement and UI.OpenedElement ~= Dropdown and UI.OpenedElement.SetOpened then
+                            UI.OpenedElement.SetOpened(false)
+                        end
+                        UI.OpenedElement = Dropdown
+                    elseif UI.OpenedElement == Dropdown then
+                        UI.OpenedElement = nil
+                    end
+
                     Dropdown.Opened = opened
                     if opened then
                         ResetAllZIndex()
@@ -1830,6 +1855,7 @@ function Library:CreateWindow(options)
                 end
 
                 Dropdown.Update = Update
+                Dropdown.SetOpened = SetOpened
                 UI.Components[flag or text] = Dropdown
 
                 CreateOptions()
@@ -1890,6 +1916,15 @@ function Library:CreateWindow(options)
                 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
                 local function SetOpened(opened)
+                    if opened then
+                        if UI.OpenedElement and UI.OpenedElement ~= Dropdown and UI.OpenedElement.SetOpened then
+                            UI.OpenedElement.SetOpened(false)
+                        end
+                        UI.OpenedElement = Dropdown
+                    elseif UI.OpenedElement == Dropdown then
+                        UI.OpenedElement = nil
+                    end
+
                     Dropdown.Opened = opened
                     if opened then
                         ResetAllZIndex()
@@ -1985,6 +2020,7 @@ function Library:CreateWindow(options)
 
                 Update()
                 Dropdown.Update = Update
+                Dropdown.SetOpened = SetOpened
                 UI.Components[flag or text] = Dropdown
 
                 CreateOptions()
