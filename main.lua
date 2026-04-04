@@ -553,53 +553,103 @@ function Library:CreateWindow(options)
         NotifyFrame.Parent = UI.ScreenGui
         NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
         NotifyFrame.BorderSizePixel = 0
-        NotifyFrame.Position = UDim2.new(1, 20, 1, -100)
-        NotifyFrame.Size = UDim2.new(0, 250, 0, 80)
+        NotifyFrame.Position = UDim2.new(1, 40, 1, -100)
+        NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
         NotifyFrame.ZIndex = 100
-
+        NotifyFrame.ClipsDescendants = true
+        
+        local NotifyCorner = Instance.new("UICorner")
+        NotifyCorner.CornerRadius = UDim.new(0, 6)
+        NotifyCorner.Parent = NotifyFrame
+        
         local NotifyStroke = Instance.new("UIStroke")
-        NotifyStroke.Color = accentColor
-        NotifyStroke.Thickness = 1.5
+        NotifyStroke.Color = Color3.fromRGB(34, 26, 40)
+        NotifyStroke.Thickness = 1.2
         NotifyStroke.Parent = NotifyFrame
-
+        
+        local AccentBar = Instance.new("Frame")
+        AccentBar.Name = "AccentBar"
+        AccentBar.Parent = NotifyFrame
+        AccentBar.BackgroundColor3 = accentColor
+        AccentBar.BorderSizePixel = 0
+        AccentBar.Size = UDim2.new(0, 3, 1, 0)
+        
+        local AccentBarCorner = Instance.new("UICorner")
+        AccentBarCorner.CornerRadius = UDim.new(0, 6)
+        AccentBarCorner.Parent = AccentBar
+        
         local NotifyTitle = Instance.new("TextLabel")
         NotifyTitle.Parent = NotifyFrame
         NotifyTitle.BackgroundTransparency = 1
-        NotifyTitle.Position = UDim2.new(0, 12, 0, 10)
-        NotifyTitle.Size = UDim2.new(1, -24, 0, 20)
+        NotifyTitle.Position = UDim2.new(0, 15, 0, 8)
+        NotifyTitle.Size = UDim2.new(1, -30, 0, 20)
         NotifyTitle.Font = Enum.Font.SourceSansBold
         NotifyTitle.Text = title:upper()
         NotifyTitle.TextColor3 = accentColor
         NotifyTitle.TextSize = 14
         NotifyTitle.TextXAlignment = Enum.TextXAlignment.Left
-
+        
         local NotifyText = Instance.new("TextLabel")
         NotifyText.Parent = NotifyFrame
         NotifyText.BackgroundTransparency = 1
-        NotifyText.Position = UDim2.new(0, 12, 0, 35)
-        NotifyText.Size = UDim2.new(1, -24, 0, 35)
+        NotifyText.Position = UDim2.new(0, 15, 0, 30)
+        NotifyText.Size = UDim2.new(1, -30, 0, 30)
         NotifyText.Font = Enum.Font.SourceSans
         NotifyText.Text = text
-        NotifyText.TextColor3 = Color3.fromRGB(200, 200, 200)
-        NotifyText.TextSize = 14
+        NotifyText.TextColor3 = Color3.fromRGB(180, 180, 180)
+        NotifyText.TextSize = 13
         NotifyText.TextXAlignment = Enum.TextXAlignment.Left
         NotifyText.TextWrapped = true
-
+        NotifyText.TextYAlignment = Enum.TextYAlignment.Top
+        
+        local TimerBarContainer = Instance.new("Frame")
+        TimerBarContainer.Name = "TimerBarContainer"
+        TimerBarContainer.Parent = NotifyFrame
+        TimerBarContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        TimerBarContainer.BorderSizePixel = 0
+        TimerBarContainer.Position = UDim2.new(0, 0, 1, -2)
+        TimerBarContainer.Size = UDim2.new(1, 0, 0, 2)
+        
+        local TimerBar = Instance.new("Frame")
+        TimerBar.Name = "TimerBar"
+        TimerBar.Parent = TimerBarContainer
+        TimerBar.BackgroundColor3 = accentColor
+        TimerBar.BorderSizePixel = 0
+        TimerBar.Size = UDim2.new(1, 0, 1, 0)
+        
         local function UpdatePositions()
             for i, v in pairs(activeNotifications) do
-                local targetY = -100 - ((#activeNotifications - i) * 90)
-                Tween(v, 0.4, {Position = UDim2.new(1, -260, 1, targetY)})
+                local targetY = -100 - ((#activeNotifications - i) * 80)
+                Tween(v, 0.4, {Position = UDim2.new(1, -280, 1, targetY)})
             end
         end
 
+        NotifyFrame.BackgroundTransparency = 1
+        NotifyTitle.TextTransparency = 1
+        NotifyText.TextTransparency = 1
+        NotifyStroke.Transparency = 1
+        AccentBar.BackgroundTransparency = 1
+        
         table.insert(activeNotifications, NotifyFrame)
         UpdatePositions()
+        
+        Tween(NotifyFrame, 0.4, {BackgroundTransparency = 0})
+        Tween(NotifyTitle, 0.4, {TextTransparency = 0})
+        Tween(NotifyText, 0.4, {TextTransparency = 0})
+        Tween(NotifyStroke, 0.4, {Transparency = 0})
+        Tween(AccentBar, 0.4, {BackgroundTransparency = 0})
+
+        Tween(TimerBar, 4, {Size = UDim2.new(0, 0, 1, 0)})
 
         task.delay(4, function()
             local index = table.find(activeNotifications, NotifyFrame)
             if index then
                 table.remove(activeNotifications, index)
-                Tween(NotifyFrame, 0.4, {Position = UDim2.new(1, 20, 1, NotifyFrame.Position.Y.Offset), BackgroundTransparency = 1})
+                Tween(NotifyFrame, 0.4, {Position = UDim2.new(1, 40, 1, NotifyFrame.Position.Y.Offset), BackgroundTransparency = 1})
+                Tween(NotifyTitle, 0.4, {TextTransparency = 1})
+                Tween(NotifyText, 0.4, {TextTransparency = 1})
+                Tween(NotifyStroke, 0.4, {Transparency = 1})
+                Tween(AccentBar, 0.4, {BackgroundTransparency = 1})
                 task.delay(0.4, function() 
                     NotifyFrame:Destroy()
                 end)
