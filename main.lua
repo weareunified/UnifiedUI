@@ -25,6 +25,16 @@ local function RandomString(length)
     return res
 end
 
+local function GetInputLabel(key)
+    local name = key.Name
+    local mapping = {
+        ["MouseButton1"] = "LMB",
+        ["MouseButton2"] = "RMB",
+        ["MouseButton3"] = "MOUSEWHEEL"
+    }
+    return mapping[name] or name:upper()
+end
+
 function Library:Rejoin()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
 end
@@ -1265,7 +1275,7 @@ function Library:CreateWindow(options)
                 Bind.Btn.Position = UDim2.new(1, -50, 0.5, -10)
                 Bind.Btn.Size = UDim2.new(0, 50, 0, 20)
                 Bind.Btn.Font = Enum.Font.SourceSans
-                Bind.Btn.Text = Bind.Key.Name:upper()
+                Bind.Btn.Text = GetInputLabel(Bind.Key)
                 Bind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                 Bind.Btn.TextSize = 12
                 local BtnStroke = Instance.new("UIStroke")
@@ -1277,7 +1287,7 @@ function Library:CreateWindow(options)
                     else
                         Bind.Key = val
                     end
-                    Bind.Btn.Text = Bind.Key.Name:upper()
+                    Bind.Btn.Text = GetInputLabel(Bind.Key)
                     UI.Flags[flag or text] = Bind.Key.Name
                 end
                 UI.Components[flag or text] = Bind
@@ -1286,12 +1296,12 @@ function Library:CreateWindow(options)
                     if Bind.Waiting then
                         if input.UserInputType == Enum.UserInputType.Keyboard then
                             Bind.Key = input.KeyCode
-                            Bind.Btn.Text = Bind.Key.Name:upper()
+                            Bind.Btn.Text = GetInputLabel(Bind.Key)
                             Bind.Waiting = false
                             UI.Flags[flag or text] = Bind.Key.Name
                         elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
                             Bind.Key = input.UserInputType
-                            Bind.Btn.Text = Bind.Key.Name:upper()
+                            Bind.Btn.Text = GetInputLabel(Bind.Key)
                             Bind.Waiting = false
                             UI.Flags[flag or text] = Bind.Key.Name
                         end
@@ -1346,7 +1356,7 @@ function Library:CreateWindow(options)
                 ToggleBind.Btn.Position = UDim2.new(1, -90, 0.5, -10)
                 ToggleBind.Btn.Size = UDim2.new(0, 50, 0, 20)
                 ToggleBind.Btn.Font = Enum.Font.SourceSans
-                ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                 ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                 ToggleBind.Btn.TextSize = 12
                 local BtnStroke = Instance.new("UIStroke")
@@ -1372,7 +1382,7 @@ function Library:CreateWindow(options)
                     else
                         ToggleBind.State = val
                     end
-                    ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                    ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                     Update(true)
                 end
                 UI.Components[flag or text] = ToggleBind
@@ -1382,12 +1392,12 @@ function Library:CreateWindow(options)
                     if ToggleBind.Waiting then
                         if input.UserInputType == Enum.UserInputType.Keyboard then
                             ToggleBind.Key = input.KeyCode
-                            ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                            ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                             ToggleBind.Waiting = false
                             Update()
                         elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
                             ToggleBind.Key = input.UserInputType
-                            ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                            ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                             ToggleBind.Waiting = false
                             Update()
                         end
