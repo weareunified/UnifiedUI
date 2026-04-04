@@ -625,30 +625,34 @@ function Library:CreateWindow(options)
         table.insert(activeNotifications, NotifyFrame)
         UpdatePositions()
         
+        -- Entrance animations (0.4s)
         Tween(NotifyFrame, 0.4, {BackgroundTransparency = 0})
         Tween(NotifyTitle, 0.4, {TextTransparency = 0})
         Tween(NotifyText, 0.4, {TextTransparency = 0})
         Tween(NotifyStroke, 0.4, {Transparency = 0})
         Tween(AccentBar, 0.4, {BackgroundTransparency = 0})
 
-        -- Correctly timed bar shrinking
-        local timerTween = TweenService:Create(TimerBar, TweenInfo.new(4, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)})
-        timerTween:Play()
+        -- Wait for entrance to complete before starting the timer
+        task.delay(0.4, function()
+            local timerTween = TweenService:Create(TimerBar, TweenInfo.new(4, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)})
+            timerTween:Play()
 
-        task.delay(4, function()
-            local index = table.find(activeNotifications, NotifyFrame)
-            if index then
-                table.remove(activeNotifications, index)
-                Tween(NotifyFrame, 0.4, {Position = UDim2.new(1, 40, 1, NotifyFrame.Position.Y.Offset), BackgroundTransparency = 1})
-                Tween(NotifyTitle, 0.4, {TextTransparency = 1})
-                Tween(NotifyText, 0.4, {TextTransparency = 1})
-                Tween(NotifyStroke, 0.4, {Transparency = 1})
-                Tween(AccentBar, 0.4, {BackgroundTransparency = 1})
-                task.delay(0.4, function() 
-                    NotifyFrame:Destroy()
-                end)
-                UpdatePositions()
-            end
+            timerTween.Completed:Connect(function()
+                local index = table.find(activeNotifications, NotifyFrame)
+                if index then
+                    table.remove(activeNotifications, index)
+                    -- Exit animations (0.4s)
+                    Tween(NotifyFrame, 0.4, {Position = UDim2.new(1, 40, 1, NotifyFrame.Position.Y.Offset), BackgroundTransparency = 1})
+                    Tween(NotifyTitle, 0.4, {TextTransparency = 1})
+                    Tween(NotifyText, 0.4, {TextTransparency = 1})
+                    Tween(NotifyStroke, 0.4, {Transparency = 1})
+                    Tween(AccentBar, 0.4, {BackgroundTransparency = 1})
+                    task.delay(0.4, function() 
+                        NotifyFrame:Destroy()
+                    end)
+                    UpdatePositions()
+                end
+            end)
         end)
     end
 
