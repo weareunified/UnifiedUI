@@ -554,13 +554,9 @@ function Library:CreateWindow(options)
         NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
         NotifyFrame.BorderSizePixel = 0
         NotifyFrame.Position = UDim2.new(1, 40, 1, -100)
-        NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
+        NotifyFrame.Size = UDim2.new(0, 280, 0, 85)
         NotifyFrame.ZIndex = 100
         NotifyFrame.ClipsDescendants = true
-        
-        local NotifyCorner = Instance.new("UICorner")
-        NotifyCorner.CornerRadius = UDim.new(0, 6)
-        NotifyCorner.Parent = NotifyFrame
         
         local NotifyStroke = Instance.new("UIStroke")
         NotifyStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -574,30 +570,26 @@ function Library:CreateWindow(options)
         AccentBar.BorderSizePixel = 0
         AccentBar.Size = UDim2.new(0, 3, 1, 0)
         
-        local AccentBarCorner = Instance.new("UICorner")
-        AccentBarCorner.CornerRadius = UDim.new(0, 6)
-        AccentBarCorner.Parent = AccentBar
-        
         local NotifyTitle = Instance.new("TextLabel")
         NotifyTitle.Parent = NotifyFrame
         NotifyTitle.BackgroundTransparency = 1
-        NotifyTitle.Position = UDim2.new(0, 15, 0, 8)
-        NotifyTitle.Size = UDim2.new(1, -30, 0, 20)
+        NotifyTitle.Position = UDim2.new(0, 15, 0, 10)
+        NotifyTitle.Size = UDim2.new(1, -30, 0, 22)
         NotifyTitle.Font = Enum.Font.SourceSansBold
         NotifyTitle.Text = title:upper()
         NotifyTitle.TextColor3 = accentColor
-        NotifyTitle.TextSize = 14
+        NotifyTitle.TextSize = 16 -- Increased
         NotifyTitle.TextXAlignment = Enum.TextXAlignment.Left
         
         local NotifyText = Instance.new("TextLabel")
         NotifyText.Parent = NotifyFrame
         NotifyText.BackgroundTransparency = 1
-        NotifyText.Position = UDim2.new(0, 15, 0, 30)
-        NotifyText.Size = UDim2.new(1, -30, 0, 30)
+        NotifyText.Position = UDim2.new(0, 15, 0, 35)
+        NotifyText.Size = UDim2.new(1, -30, 0, 40)
         NotifyText.Font = Enum.Font.SourceSans
         NotifyText.Text = text
-        NotifyText.TextColor3 = Color3.fromRGB(180, 180, 180)
-        NotifyText.TextSize = 13
+        NotifyText.TextColor3 = Color3.fromRGB(200, 200, 200)
+        NotifyText.TextSize = 15 -- Increased
         NotifyText.TextXAlignment = Enum.TextXAlignment.Left
         NotifyText.TextWrapped = true
         NotifyText.TextYAlignment = Enum.TextYAlignment.Top
@@ -607,8 +599,8 @@ function Library:CreateWindow(options)
         TimerBarContainer.Parent = NotifyFrame
         TimerBarContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         TimerBarContainer.BorderSizePixel = 0
-        TimerBarContainer.Position = UDim2.new(0, 0, 1, -2)
-        TimerBarContainer.Size = UDim2.new(1, 0, 0, 2)
+        TimerBarContainer.Position = UDim2.new(0, 0, 1, -3)
+        TimerBarContainer.Size = UDim2.new(1, 0, 0, 3) -- Slightly thicker for better visibility
         
         local TimerBar = Instance.new("Frame")
         TimerBar.Name = "TimerBar"
@@ -619,8 +611,8 @@ function Library:CreateWindow(options)
         
         local function UpdatePositions()
             for i, v in pairs(activeNotifications) do
-                local targetY = -100 - ((#activeNotifications - i) * 80)
-                Tween(v, 0.4, {Position = UDim2.new(1, -280, 1, targetY)})
+                local targetY = -120 - ((#activeNotifications - i) * 95)
+                Tween(v, 0.4, {Position = UDim2.new(1, -300, 1, targetY)})
             end
         end
 
@@ -639,7 +631,9 @@ function Library:CreateWindow(options)
         Tween(NotifyStroke, 0.4, {Transparency = 0})
         Tween(AccentBar, 0.4, {BackgroundTransparency = 0})
 
-        Tween(TimerBar, 4, {Size = UDim2.new(0, 0, 1, 0)})
+        -- Correctly timed bar shrinking
+        local timerTween = TweenService:Create(TimerBar, TweenInfo.new(4, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)})
+        timerTween:Play()
 
         task.delay(4, function()
             local index = table.find(activeNotifications, NotifyFrame)
