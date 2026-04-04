@@ -1282,7 +1282,25 @@ function Library:CreateWindow(options)
                 end
                 UI.Components[flag or text] = Bind
                 Bind.Btn.MouseButton1Click:Connect(function() Bind.Waiting = true Bind.Btn.Text = "..." end)
-                UserInputService.InputBegan:Connect(function(input) if Bind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then Bind.Key = input.KeyCode Bind.Btn.Text = Bind.Key.Name:upper() Bind.Waiting = false UI.Flags[flag or text] = Bind.Key.Name elseif not Bind.Waiting and input.KeyCode == Bind.Key then pcall(Bind.Callback) end end)
+                UserInputService.InputBegan:Connect(function(input)
+                    if Bind.Waiting then
+                        if input.UserInputType == Enum.UserInputType.Keyboard then
+                            Bind.Key = input.KeyCode
+                            Bind.Btn.Text = Bind.Key.Name:upper()
+                            Bind.Waiting = false
+                            UI.Flags[flag or text] = Bind.Key.Name
+                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
+                            Bind.Key = input.UserInputType
+                            Bind.Btn.Text = Bind.Key.Name:upper()
+                            Bind.Waiting = false
+                            UI.Flags[flag or text] = Bind.Key.Name
+                        end
+                    elseif not Bind.Waiting then
+                        if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Bind.Key) or (input.UserInputType == Bind.Key) then
+                            pcall(Bind.Callback)
+                        end
+                    end
+                end)
                 return Bind
             end
 
@@ -1361,14 +1379,23 @@ function Library:CreateWindow(options)
                 ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State Update() end)
                 ToggleBind.Btn.MouseButton1Click:Connect(function() ToggleBind.Waiting = true ToggleBind.Btn.Text = "..." end)
                 UserInputService.InputBegan:Connect(function(input)
-                    if ToggleBind.Waiting and input.UserInputType == Enum.UserInputType.Keyboard then
-                        ToggleBind.Key = input.KeyCode
-                        ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
-                        ToggleBind.Waiting = false
-                        Update()
-                    elseif not ToggleBind.Waiting and input.KeyCode == ToggleBind.Key then
-                        ToggleBind.State = not ToggleBind.State
-                        Update()
+                    if ToggleBind.Waiting then
+                        if input.UserInputType == Enum.UserInputType.Keyboard then
+                            ToggleBind.Key = input.KeyCode
+                            ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                            ToggleBind.Waiting = false
+                            Update()
+                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
+                            ToggleBind.Key = input.UserInputType
+                            ToggleBind.Btn.Text = ToggleBind.Key.Name:upper()
+                            ToggleBind.Waiting = false
+                            Update()
+                        end
+                    elseif not ToggleBind.Waiting then
+                        if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then
+                            ToggleBind.State = not ToggleBind.State
+                            Update()
+                        end
                     end
                 end)
                 return ToggleBind
