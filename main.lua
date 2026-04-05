@@ -36,7 +36,7 @@ local function Tween(obj, info, goal)
 end
 
 ThrottledLoop(30, function()
-    if collectgarbage then collectgarbage("collect") end
+    if gcinfo then gcinfo() end
 end)
 
 local function RandomString(length)
