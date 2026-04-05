@@ -8,11 +8,36 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 
-local function Tween(obj, info, goal)
-    local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
-    tween:Play()
-    return tween
+local function SafeExecute(f, ...)
+    local s, e = pcall(f, ...)
+    if not s then warn("[Unified UI Error]: " .. tostring(e)) end
+    return s, e
 end
+
+local function ThrottledLoop(interval, f)
+    task.spawn(function()
+        while true do
+            local start = tick()
+            SafeExecute(f)
+            local elapsed = tick() - start
+            task.wait(math.max(interval - elapsed, 0.01))
+            if elapsed > 0.1 then task.wait(0.1) end
+        end
+    end)
+end
+
+local function Tween(obj, info, goal)
+    if not obj or not obj.Parent then return end
+    return SafeExecute(function()
+        local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
+        tween:Play()
+        return tween
+    end)
+end
+
+ThrottledLoop(30, function()
+    if collectgarbage then collectgarbage("collect") end
+end)
 
 local function RandomString(length)
     math.randomseed(os.clock() ^ 2)
@@ -111,19 +136,22 @@ function Library:CreateWindow(options)
 
     local function SequentialLoad(obj, group)
         UI.LoadQueue = UI.LoadQueue + 1
-        local delayTime = UI.LoadQueue * 1 -- 1 second per part
+        local delayTime = math.min(UI.LoadQueue * 0.05, 1)
         
         if obj:IsA("GuiObject") then
             obj.Visible = false
             task.delay(delayTime, function()
-                obj.Visible = true
-                if group then
-                    group.GroupTransparency = 1
-                    Tween(group, 0.5, {GroupTransparency = 0})
-                else
-                    obj.Size = UDim2.new(0,0,0,0) -- Minimal pop-in effect
-                    Tween(obj, 0.5, {Size = UDim2.new(1,0,0,obj.AbsoluteSize.Y)}) 
-                end
+                SafeExecute(function()
+                    obj.Visible = true
+                    if group then
+                        group.GroupTransparency = 1
+                        Tween(group, 0.3, {GroupTransparency = 0})
+                    else
+                        local oldSize = obj.Size
+                        obj.Size = UDim2.new(oldSize.X.Scale, oldSize.X.Offset, 0, 0)
+                        Tween(obj, 0.3, {Size = oldSize})
+                    end
+                end)
             end)
         end
     end
