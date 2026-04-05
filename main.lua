@@ -864,12 +864,15 @@ function Library:CreateWindow(options)
 
     function UI:CreateTab(name, iconId)
         local Tab = {
+            Name = name,
             Sections = {},
             Button = nil,
             Page = nil,
             Content = nil,
             Indicator = nil,
-            Icon = nil
+            Icon = nil,
+            Rendered = false,
+            RenderQueue = {}
         }
         table.insert(UI.Tabs, Tab)
 
@@ -1002,10 +1005,22 @@ function Library:CreateWindow(options)
             end
         end)
 
+        local function Render()
+            if Tab.Rendered then return end
+            Tab.Rendered = true
+            for _, renderFunc in pairs(Tab.RenderQueue) do
+                SafeExecute(renderFunc)
+            end
+        end
+
         TabBtn.MouseButton1Click:Connect(function()
-            if UI.CurrentTab == Tab or UI.TabDebounce then return end
+            if UI.TabDebounce then return end
             UI.TabDebounce = true
             task.delay(0.45, function() UI.TabDebounce = false end)
+            
+            Render()
+            
+            if UI.CurrentTab == Tab then return end
             
             if UI.CurrentTab then
                 local oldTab = UI.CurrentTab
@@ -1059,65 +1074,79 @@ function Library:CreateWindow(options)
         end)
 
         if #UI.Tabs == 1 then
-            TabPage.Visible = true
-            UI.CurrentTab = Tab
-            TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            TabBtn.BackgroundTransparency = 0.92
-            TabIndicator.BackgroundTransparency = 0
-            if Tab.Icon then Tab.Icon.ImageColor3 = Color3.fromRGB(255, 255, 255) end
+            task.spawn(function()
+                repeat task.wait() until UI.LoadQueue == 0 or task.wait(0.5)
+                Render()
+                TabPage.Visible = true
+                UI.CurrentTab = Tab
+                TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TabBtn.BackgroundTransparency = 0.92
+                TabIndicator.BackgroundTransparency = 0
+                if Tab.Icon then Tab.Icon.ImageColor3 = Color3.fromRGB(255, 255, 255) end
+            end)
         end
 
         function Tab:CreateSection(title)
             local Section = { Elements = {} }
             table.insert(Tab.Sections, Section)
-            local parent = Tab.Content
-            Section.Frame = Instance.new("Frame")
-            Section.Frame.Name = tostring(title) .. "Section"
-            Section.Frame.Parent = parent
-            Section.Frame.BackgroundColor3 = UI.Colors.SectionBackground
-            Section.Frame.BorderSizePixel = 0
-            Section.Frame.Size = UDim2.new(1, 0, 0, 40)
-            Section.Frame.ClipsDescendants = false
             
-            Section.Frame.Visible = false
-            UI.LoadQueue = UI.LoadQueue + 1
-            task.delay(UI.LoadQueue * 1, function()
+            local function Build()
+                local parent = Tab.Content
+                Section.Frame = Instance.new("Frame")
+                Section.Frame.Name = tostring(title) .. "Section"
+                Section.Frame.Parent = parent
+                Section.Frame.BackgroundColor3 = UI.Colors.SectionBackground
+                Section.Frame.BorderSizePixel = 0
+                Section.Frame.Size = UDim2.new(1, 0, 0, 40)
+                Section.Frame.ClipsDescendants = false
+                
                 Section.Frame.Visible = true
                 Section.Frame.BackgroundTransparency = 1
                 Tween(Section.Frame, 0.5, {BackgroundTransparency = 0})
-            end)
-            local SectionStroke = Instance.new("UIStroke")
-            SectionStroke.Color = Color3.fromRGB(34, 26, 40)
-            SectionStroke.Thickness = 1.2
-            SectionStroke.Transparency = 0.5
-            SectionStroke.Parent = Section.Frame
-            Section.Frame.MouseEnter:Connect(function() Tween(SectionStroke, 0.3, {Color = accentColor, Transparency = 0.2}) end)
-            Section.Frame.MouseLeave:Connect(function() Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(34, 26, 40), Transparency = 0.5}) end)
-            Section.TitleLabel = Instance.new("TextLabel")
-            Section.TitleLabel.Name = "Title"
-            Section.TitleLabel.Parent = Section.Frame
-            Section.TitleLabel.BackgroundTransparency = 1
-            Section.TitleLabel.Position = UDim2.new(0, 12, 0, 8)
-            Section.TitleLabel.Size = UDim2.new(1, -24, 0, 20)
-            Section.TitleLabel.Font = Enum.Font.SourceSansBold
-            Section.TitleLabel.Text = title:upper()
-            Section.TitleLabel.TextColor3 = accentColor
-            Section.TitleLabel.TextSize = 13
-            Section.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-            local Container = Instance.new("Frame")
-            Container.Name = "Container"
-            Container.Parent = Section.Frame
-            Container.BackgroundTransparency = 1
-            Container.Position = UDim2.new(0, 12, 0, 35)
-            Container.Size = UDim2.new(1, -24, 0, 0)
-            Container.ClipsDescendants = false
-            local ContainerLayout = Instance.new("UIListLayout")
-            ContainerLayout.Parent = Container
-            ContainerLayout.Padding = UDim.new(0, 6)
-            ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                Container.Size = UDim2.new(1, -24, 0, ContainerLayout.AbsoluteContentSize.Y + 10)
-                Section.Frame.Size = UDim2.new(1, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 45)
-            end)
+
+                local SectionStroke = Instance.new("UIStroke")
+                SectionStroke.Color = Color3.fromRGB(34, 26, 40)
+                SectionStroke.Thickness = 1.2
+                SectionStroke.Transparency = 0.5
+                SectionStroke.Parent = Section.Frame
+                Section.Frame.MouseEnter:Connect(function() Tween(SectionStroke, 0.3, {Color = accentColor, Transparency = 0.2}) end)
+                Section.Frame.MouseLeave:Connect(function() Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(34, 26, 40), Transparency = 0.5}) end)
+                Section.TitleLabel = Instance.new("TextLabel")
+                Section.TitleLabel.Name = "Title"
+                Section.TitleLabel.Parent = Section.Frame
+                Section.TitleLabel.BackgroundTransparency = 1
+                Section.TitleLabel.Position = UDim2.new(0, 12, 0, 8)
+                Section.TitleLabel.Size = UDim2.new(1, -24, 0, 20)
+                Section.TitleLabel.Font = Enum.Font.SourceSansBold
+                Section.TitleLabel.Text = title:upper()
+                Section.TitleLabel.TextColor3 = accentColor
+                Section.TitleLabel.TextSize = 13
+                Section.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                
+                local Container = Instance.new("Frame")
+                Container.Name = "Container"
+                Container.Parent = Section.Frame
+                Container.BackgroundTransparency = 1
+                Container.Position = UDim2.new(0, 12, 0, 35)
+                Container.Size = UDim2.new(1, -24, 0, 0)
+                Container.ClipsDescendants = false
+                
+                local ContainerLayout = Instance.new("UIListLayout")
+                ContainerLayout.Parent = Container
+                ContainerLayout.Padding = UDim.new(0, 6)
+                ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                
+                ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    Container.Size = UDim2.new(1, -24, 0, ContainerLayout.AbsoluteContentSize.Y + 10)
+                    Section.Frame.Size = UDim2.new(1, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 45)
+                end)
+            end
+
+            if Tab.Rendered then
+                Build()
+            else
+                table.insert(Tab.RenderQueue, Build)
+            end
 
             function Section:CreateButton(text, callback)
                 local Button = { Callback = callback or function() end }
