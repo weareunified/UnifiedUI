@@ -68,6 +68,7 @@ function Library:CreateWindow(options)
         CurrentTab = nil,
         OpenedElement = nil,
         Tabs = {},
+        LoadQueue = 0,
         Flags = {},
         DefaultFlags = {},
         FlagTypes = {},
@@ -105,6 +106,25 @@ function Library:CreateWindow(options)
         end
 
         return value
+    end
+
+    local function SequentialLoad(obj, group)
+        UI.LoadQueue = UI.LoadQueue + 1
+        local delayTime = UI.LoadQueue * 1 -- 1 second per part
+        
+        if obj:IsA("GuiObject") then
+            obj.Visible = false
+            task.delay(delayTime, function()
+                obj.Visible = true
+                if group then
+                    group.GroupTransparency = 1
+                    Tween(group, 0.5, {GroupTransparency = 0})
+                else
+                    obj.Size = UDim2.new(0,0,0,0) -- Minimal pop-in effect
+                    Tween(obj, 0.5, {Size = UDim2.new(1,0,0,obj.AbsoluteSize.Y)}) 
+                end
+            end)
+        end
     end
 
     local function SetInitialFlag(flagName, value, flagType)
@@ -847,6 +867,14 @@ function Library:CreateWindow(options)
         TabBtn.TextSize = 15
         TabBtn.AutoButtonColor = false
         Tab.Button = TabBtn
+        
+        TabBtn.Visible = false
+        UI.LoadQueue = UI.LoadQueue + 1
+        task.delay(UI.LoadQueue * 1, function()
+            TabBtn.Visible = true
+            TabBtn.TextTransparency = 1
+            Tween(TabBtn, 0.5, {TextTransparency = 0})
+        end)
 
         local TabCorner = Instance.new("UICorner")
         TabCorner.CornerRadius = UDim.new(0, 4)
@@ -1018,6 +1046,14 @@ function Library:CreateWindow(options)
             Section.Frame.BorderSizePixel = 0
             Section.Frame.Size = UDim2.new(1, 0, 0, 40)
             Section.Frame.ClipsDescendants = false
+            
+            Section.Frame.Visible = false
+            UI.LoadQueue = UI.LoadQueue + 1
+            task.delay(UI.LoadQueue * 1, function()
+                Section.Frame.Visible = true
+                Section.Frame.BackgroundTransparency = 1
+                Tween(Section.Frame, 0.5, {BackgroundTransparency = 0})
+            end)
             local SectionStroke = Instance.new("UIStroke")
             SectionStroke.Color = Color3.fromRGB(34, 26, 40)
             SectionStroke.Thickness = 1.2
