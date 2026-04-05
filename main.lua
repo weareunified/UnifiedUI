@@ -1078,6 +1078,7 @@ function Library:CreateWindow(options)
                     Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) 
                 end)
                 Button.Frame.MouseButton1Click:Connect(function()
+                    if UserInputService:GetFocusedTextBox() then return end
                     local ripple = Instance.new("Frame")
                     ripple.Name = "Ripple"
                     ripple.Parent = Button.Frame
@@ -1158,7 +1159,10 @@ function Library:CreateWindow(options)
                 end
                 Toggle.Update = function(val) Toggle.State = val Update(true) end
                 UI.Components[flag or text] = Toggle
-                Toggle.ButtonFrame.MouseButton1Click:Connect(function() Update() end)
+                Toggle.ButtonFrame.MouseButton1Click:Connect(function() 
+                    if UserInputService:GetFocusedTextBox() then return end
+                    Update() 
+                end)
 
                 function Toggle:CreateSlider(sText, sFlag, min, max, default, sCallback)
                     local sliderObj = Section:CreateSlider(sText, sFlag, min, max, default, sCallback)
@@ -1258,7 +1262,12 @@ function Library:CreateWindow(options)
                 Slider.Update = function(val) Update(val, true) end
                 UI.Components[flag or text] = Slider
                 local sliding = false
-                Slider.Bar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true Update(input) end end)
+                Slider.Bar.InputBegan:Connect(function(input) 
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                        if UserInputService:GetFocusedTextBox() then return end
+                        sliding = true Update(input) 
+                    end 
+                end)
                 UserInputService.InputChanged:Connect(function(input) if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then Update(input) end end)
                 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
                 return Slider
@@ -1792,7 +1801,10 @@ function Library:CreateWindow(options)
                     task.delay(0.35, RefreshCanvasSize)
                 end
 
-                Colorpicker.ToggleButton.MouseButton1Click:Connect(function() SetOpened(not Colorpicker.Opened) end)
+                Colorpicker.ToggleButton.MouseButton1Click:Connect(function() 
+                    if UserInputService:GetFocusedTextBox() then return end
+                    SetOpened(not Colorpicker.Opened) 
+                end)
 
                 local satvalDragging = false
                 Colorpicker.SatVal.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then satvalDragging = true UpdateSatVal(input) end end)
@@ -1989,6 +2001,7 @@ function Library:CreateWindow(options)
                 CreateOptions()
                 Dropdown.Frame.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        if UserInputService:GetFocusedTextBox() then return end
                         SetOpened(not Dropdown.Opened)
                     end
                 end)
