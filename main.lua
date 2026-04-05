@@ -1097,14 +1097,29 @@ function Library:CreateWindow(options)
                 local Toggle = { State = default or false, Flag = flag, Callback = callback or function() end }
                 table.insert(Section.Elements, Toggle)
                 SetInitialFlag(flag or text, Toggle.State, "toggle")
-                Toggle.Frame = Instance.new("TextButton")
-                Toggle.Frame.Name = text .. "Toggle"
+                Toggle.Frame = Instance.new("Frame")
+                Toggle.Frame.Name = text .. "ToggleContainer"
                 Toggle.Frame.Parent = Container
                 Toggle.Frame.BackgroundTransparency = 1
                 Toggle.Frame.Size = UDim2.new(1, 0, 0, 28)
-                Toggle.Frame.Text = ""
+                
+                local ToggleLayout = Instance.new("UIListLayout")
+                ToggleLayout.Parent = Toggle.Frame
+                ToggleLayout.Padding = UDim.new(0, 6)
+                ToggleLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+                ToggleLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    Toggle.Frame.Size = UDim2.new(1, 0, 0, ToggleLayout.AbsoluteContentSize.Y)
+                end)
+
+                Toggle.ButtonFrame = Instance.new("TextButton")
+                Toggle.ButtonFrame.Name = "ButtonFrame"
+                Toggle.ButtonFrame.Parent = Toggle.Frame
+                Toggle.ButtonFrame.BackgroundTransparency = 1
+                Toggle.ButtonFrame.Size = UDim2.new(1, 0, 0, 28)
+                Toggle.ButtonFrame.Text = ""
                 Toggle.Label = Instance.new("TextLabel")
-                Toggle.Label.Parent = Toggle.Frame
+                Toggle.Label.Parent = Toggle.ButtonFrame
                 Toggle.Label.BackgroundTransparency = 1
                 Toggle.Label.Size = UDim2.new(1, -40, 1, 0)
                 Toggle.Label.Font = Enum.Font.SourceSans
@@ -1114,7 +1129,7 @@ function Library:CreateWindow(options)
                 Toggle.Label.TextXAlignment = Enum.TextXAlignment.Left
                 Toggle.Box = Instance.new("Frame")
                 Toggle.Box.Name = "Box"
-                Toggle.Box.Parent = Toggle.Frame
+                Toggle.Box.Parent = Toggle.ButtonFrame
                 Toggle.Box.BackgroundColor3 = UI.Colors.ElementBackground
                 Toggle.Box.Position = UDim2.new(1, -30, 0.5, -8)
                 Toggle.Box.Size = UDim2.new(0, 30, 0, 16)
@@ -1143,7 +1158,35 @@ function Library:CreateWindow(options)
                 end
                 Toggle.Update = function(val) Toggle.State = val Update(true) end
                 UI.Components[flag or text] = Toggle
-                Toggle.Frame.MouseButton1Click:Connect(function() Update() end)
+                Toggle.ButtonFrame.MouseButton1Click:Connect(function() Update() end)
+
+                function Toggle:CreateSlider(sText, sFlag, min, max, default, sCallback)
+                    local sliderObj = Section:CreateSlider(sText, sFlag, min, max, default, sCallback)
+                    sliderObj.Frame.Parent = Toggle.Frame
+                    sliderObj.Frame.Size = UDim2.new(1, -15, 0, 40)
+                    local pad = Instance.new("UIPadding", sliderObj.Frame)
+                    pad.PaddingLeft = UDim.new(0, 15)
+                    return sliderObj
+                end
+                
+                function Toggle:CreateColorpicker(cpText, cpFlag, defaultCol, cpCallback)
+                    local cpObj = Section:CreateColorpicker(cpText, cpFlag, defaultCol, cpCallback)
+                    cpObj.Frame.Parent = Toggle.Frame
+                    cpObj.Frame.Size = UDim2.new(1, -15, 0, 28)
+                    local pad = Instance.new("UIPadding", cpObj.Frame)
+                    pad.PaddingLeft = UDim.new(0, 15)
+                    return cpObj
+                end
+                
+                function Toggle:CreateDropdown(dText, dFlag, items, default, dCallback)
+                    local dObj = Section:CreateDropdown(dText, dFlag, items, default, dCallback)
+                    dObj.Frame.Parent = Toggle.Frame
+                    dObj.Frame.Size = UDim2.new(1, -15, 0, 32)
+                    local pad = Instance.new("UIPadding", dObj.Frame)
+                    pad.PaddingLeft = UDim.new(0, 15)
+                    return dObj
+                end
+
                 return Toggle
             end
 
