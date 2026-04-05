@@ -977,7 +977,7 @@ function Library:CreateWindow(options)
         TabBtn.MouseButton1Click:Connect(function()
             if UI.CurrentTab == Tab or UI.TabDebounce then return end
             UI.TabDebounce = true
-            task.delay(0.3600005008, function() UI.TabDebounce = false end)
+            task.delay(0.45, function() UI.TabDebounce = false end)
             
             if UI.CurrentTab then
                 local oldTab = UI.CurrentTab
