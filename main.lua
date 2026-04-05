@@ -69,6 +69,7 @@ function Library:CreateWindow(options)
         OpenedElement = nil,
         Tabs = {},
         LoadQueue = 0,
+        TabDebounce = false,
         Flags = {},
         DefaultFlags = {},
         FlagTypes = {},
@@ -974,7 +975,10 @@ function Library:CreateWindow(options)
         end)
 
         TabBtn.MouseButton1Click:Connect(function()
-            if UI.CurrentTab == Tab then return end
+            if UI.CurrentTab == Tab or UI.TabDebounce then return end
+            UI.TabDebounce = true
+            task.delay(0.3600005008, function() UI.TabDebounce = false end)
+            
             if UI.CurrentTab then
                 local oldTab = UI.CurrentTab
                 Tween(oldTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
