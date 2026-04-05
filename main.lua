@@ -134,28 +134,6 @@ function Library:CreateWindow(options)
         return value
     end
 
-    local function SequentialLoad(obj, group)
-        UI.LoadQueue = UI.LoadQueue + 1
-        local delayTime = math.min(UI.LoadQueue * 0.05, 1)
-        
-        if obj:IsA("GuiObject") then
-            obj.Visible = false
-            task.delay(delayTime, function()
-                SafeExecute(function()
-                    obj.Visible = true
-                    if group then
-                        group.GroupTransparency = 1
-                        Tween(group, 0.3, {GroupTransparency = 0})
-                    else
-                        local oldSize = obj.Size
-                        obj.Size = UDim2.new(oldSize.X.Scale, oldSize.X.Offset, 0, 0)
-                        Tween(obj, 0.3, {Size = oldSize})
-                    end
-                end)
-            end)
-        end
-    end
-
     local function SetInitialFlag(flagName, value, flagType)
         UI.Flags[flagName] = CloneValue(value)
         if flagType then
@@ -1101,8 +1079,8 @@ function Library:CreateWindow(options)
                 Section.Frame.ClipsDescendants = false
                 
                 Section.Frame.Visible = true
-                Section.Frame.BackgroundTransparency = 1
-                Tween(Section.Frame, 0.5, {BackgroundTransparency = 0})
+                Section.Frame.BackgroundTransparency = 0
+
 
                 local SectionStroke = Instance.new("UIStroke")
                 SectionStroke.Color = Color3.fromRGB(34, 26, 40)
