@@ -1,5 +1,5 @@
 local Library = {}
--- we love spear V3
+-- we love spear V4
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1220,16 +1220,23 @@ function Library:CreateWindow(options)
 
                 function Toggle:CreateSlider(sText, sFlag, min, max, default, sCallback)
                     local sliderObj = Section:CreateSlider(sText, sFlag, min, max, default, sCallback)
-                    local function SetSliderParent() sliderObj.Frame.Parent = Toggle.Frame sliderObj.Frame.Size = UDim2.new(1, -15, 0, 40) local pad = Instance.new("UIPadding", sliderObj.Frame) pad.PaddingLeft = UDim.new(0, 15) end
+                    local function SetSliderParent() if not sliderObj.Frame then return end sliderObj.Frame.Parent = Toggle.Frame sliderObj.Frame.Size = UDim2.new(1, -15, 0, 40) local pad = Instance.new("UIPadding", sliderObj.Frame) pad.PaddingLeft = UDim.new(0, 15) end
                     if Tab.Rendered then SetSliderParent() else table.insert(Tab.RenderQueue, SetSliderParent) end
                     return sliderObj
                 end
                 
                 function Toggle:CreateColorpicker(cpText, cpFlag, defaultCol, cpCallback)
                     local cpObj = Section:CreateColorpicker(cpText, cpFlag, defaultCol, cpCallback)
-                    local function SetCPParent() cpObj.Frame.Parent = Toggle.Frame cpObj.Frame.Size = UDim2.new(1, -15, 0, 28) local pad = Instance.new("UIPadding", cpObj.Frame) pad.PaddingLeft = UDim.new(0, 15) end
+                    local function SetCPParent() if not cpObj.Frame then return end cpObj.Frame.Parent = Toggle.Frame cpObj.Frame.Size = UDim2.new(1, -15, 0, 28) local pad = Instance.new("UIPadding", cpObj.Frame) pad.PaddingLeft = UDim.new(0, 15) end
                     if Tab.Rendered then SetCPParent() else table.insert(Tab.RenderQueue, SetCPParent) end
                     return cpObj
+                end
+
+                function Toggle:CreateDropdown(dText, dFlag, items, default, dCallback)
+                    local dObj = Section:CreateDropdown(dText, dFlag, items, default, dCallback)
+                    local function SetDParent() if not dObj.Frame then return end dObj.Frame.Parent = Toggle.Frame dObj.Frame.Size = UDim2.new(1, -15, 0, 32) local pad = Instance.new("UIPadding", dObj.Frame) pad.PaddingLeft = UDim.new(0, 15) end
+                    if Tab.Rendered then SetDParent() else table.insert(Tab.RenderQueue, SetDParent) end
+                    return dObj
                 end
 
                 return Toggle
@@ -1949,13 +1956,13 @@ function Library:CreateWindow(options)
                     Dropdown.Opened = opened
                     if opened then
                         ResetAllZIndex()
-                        Dropdown.Frame.ZIndex = 200
+                        Dropdown.Frame.ZIndex = 1100
                         Section.Frame.ZIndex = 10
-                        if Dropdown.Label then Dropdown.Label.ZIndex = Dropdown.Frame.ZIndex + 1 end
-                        if Dropdown.Icon then Dropdown.Icon.ZIndex = Dropdown.Frame.ZIndex + 1 end
-                        if Dropdown.DropStroke then Dropdown.DropStroke.ZIndex = Dropdown.Frame.ZIndex + 1 end
-                        if Dropdown.ListStroke then Dropdown.ListStroke.ZIndex = Dropdown.Frame.ZIndex + 1 end
-                        Dropdown.List.ZIndex = Dropdown.Frame.ZIndex + 1
+                        if Dropdown.Label then Dropdown.Label.ZIndex = 1101 end
+                        if Dropdown.Icon then Dropdown.Icon.ZIndex = 1101 end
+                        if Dropdown.DropStroke then Dropdown.DropStroke.ZIndex = 1102 end
+                        if Dropdown.ListStroke then Dropdown.ListStroke.ZIndex = 1102 end
+                        Dropdown.List.ZIndex = 1105
                         Dropdown.List.Visible = true
                         local rawSize = math.max(#Dropdown.Options, 1) * 25
                         local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
