@@ -1,5 +1,5 @@
 local Library = {}
--- we love spear
+-- we love spear v2
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -451,9 +451,9 @@ function Library:CreateWindow(options)
 
         local overlay = Instance.new("TextButton")
         overlay.Name = "UnifiedLoadingOverlay"
-        overlay.Parent = UI.MainFrame or UI.ScreenGui
-        overlay.BackgroundColor3 = Color3.fromRGB(140, 140, 140)
-        overlay.BackgroundTransparency = 0.7
+        overlay.Parent = UI.MainFrame
+        overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        overlay.BackgroundTransparency = 0.35
         overlay.BorderSizePixel = 0
         overlay.Size = UDim2.new(1, 0, 1, 0)
         overlay.Position = UDim2.new(0, 0, 0, 0)
@@ -467,17 +467,16 @@ function Library:CreateWindow(options)
         overlayCorner.CornerRadius = UDim.new(0, 6)
         overlayCorner.Parent = overlay
 
-        local frost = Instance.new("UIGradient")
-        frost.Rotation = 90
-        frost.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 190, 190)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 120, 120))
-        })
-        frost.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.15),
-            NumberSequenceKeypoint.new(1, 0.45)
-        })
-        frost.Parent = overlay
+        local blurImg = Instance.new("ImageLabel")
+        blurImg.Name = "Blur"
+        blurImg.Parent = overlay
+        blurImg.BackgroundTransparency = 1
+        blurImg.Size = UDim2.new(1, 0, 1, 0)
+        blurImg.Position = UDim2.new(0, 0, 0, 0)
+        blurImg.Image = "rbxassetid://13353669946"
+        blurImg.ImageTransparency = 0.15
+        blurImg.ScaleType = Enum.ScaleType.Stretch
+        blurImg.ZIndex = overlay.ZIndex
 
         local holder = Instance.new("Frame")
         holder.Name = "Holder"
@@ -492,7 +491,7 @@ function Library:CreateWindow(options)
         header.Name = "Header"
         header.Parent = holder
         header.BackgroundTransparency = 1
-        header.Position = UDim2.new(0.5, 0, 0, 0)
+        header.Position = UDim2.new(0.5, 0, 0, 6)
         header.AnchorPoint = Vector2.new(0.5, 0)
         header.Size = UDim2.new(0, 240, 0, 40)
         header.ZIndex = holder.ZIndex
@@ -540,14 +539,41 @@ function Library:CreateWindow(options)
         status.Parent = holder
         status.BackgroundTransparency = 1
         status.Size = UDim2.new(1, 0, 0, 28)
-        status.Position = UDim2.new(0, 0, 0, 52)
+        status.Position = UDim2.new(0, 0, 0, 60)
         status.Font = Enum.Font.SourceSans
         status.Text = UI.LoadingStatus ~= "" and UI.LoadingStatus or "Creating tabs"
         status.TextColor3 = Color3.fromRGB(180, 180, 180)
-        status.TextSize = 18
-        status.TextXAlignment = Enum.TextXAlignment.Left
+        status.TextSize = 16
+        status.TextXAlignment = Enum.TextXAlignment.Center
         status.TextTransparency = 0
         status.ZIndex = holder.ZIndex
+
+        task.spawn(function()
+            local messages = {
+                "Creating tabs",
+                "Optimizing interface",
+                "Caching components",
+                "Finalizing"
+            }
+            local idx = 1
+            while UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent do
+                if UI.LoadQueue == 0 then
+                    task.wait(0.2)
+                else
+                    local nextText = messages[idx]
+                    idx = (idx % #messages) + 1
+                    if status and status.Parent then
+                        Tween(status, 0.2, {TextTransparency = 1})
+                        task.wait(0.22)
+                        if status and status.Parent then
+                            status.Text = nextText
+                            Tween(status, 0.25, {TextTransparency = 0})
+                        end
+                    end
+                    task.wait(0.9)
+                end
+            end
+        end)
 
         task.spawn(function()
             local seq = {d1, d2, d3}
