@@ -1,5 +1,5 @@
 local Library = {}
--- final upd
+-- ???
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1371,12 +1371,18 @@ function Library:CreateWindow(options)
                     Bind.Btn = Instance.new("TextButton")
                     Bind.Btn.Parent = Bind.Frame
                     Bind.Btn.BackgroundColor3 = UI.Colors.ElementBackground
-                    Bind.Btn.Position = UDim2.new(1, -50, 0.5, -10)
+                    Bind.Btn.Position = UDim2.new(1, 0, 0.5, -10)
+                    Bind.Btn.AnchorPoint = Vector2.new(1, 0)
                     Bind.Btn.Size = UDim2.new(0, 50, 0, 20)
+                    Bind.Btn.AutomaticSize = Enum.AutomaticSize.X
                     Bind.Btn.Font = Enum.Font.SourceSans
                     Bind.Btn.Text = GetInputLabel(Bind.Key)
                     Bind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                     Bind.Btn.TextSize = 12
+                    local BtnPadding = Instance.new("UIPadding")
+                    BtnPadding.PaddingLeft = UDim.new(0, 8)
+                    BtnPadding.PaddingRight = UDim.new(0, 8)
+                    BtnPadding.Parent = Bind.Btn
                     local BtnStroke = Instance.new("UIStroke")
                     BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                     BtnStroke.Parent = Bind.Btn
@@ -1457,12 +1463,18 @@ function Library:CreateWindow(options)
                     ToggleBind.Btn = Instance.new("TextButton")
                     ToggleBind.Btn.Parent = ToggleBind.Frame
                     ToggleBind.Btn.BackgroundColor3 = UI.Colors.ElementBackground
-                    ToggleBind.Btn.Position = UDim2.new(1, -90, 0.5, -10)
+                    ToggleBind.Btn.Position = UDim2.new(1, -40, 0.5, -10)
+                    ToggleBind.Btn.AnchorPoint = Vector2.new(1, 0)
                     ToggleBind.Btn.Size = UDim2.new(0, 50, 0, 20)
+                    ToggleBind.Btn.AutomaticSize = Enum.AutomaticSize.X
                     ToggleBind.Btn.Font = Enum.Font.SourceSans
                     ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                     ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                     ToggleBind.Btn.TextSize = 12
+                    local TBPadding = Instance.new("UIPadding")
+                    TBPadding.PaddingLeft = UDim.new(0, 8)
+                    TBPadding.PaddingRight = UDim.new(0, 8)
+                    TBPadding.Parent = ToggleBind.Btn
                     
                     local BtnStroke = Instance.new("UIStroke")
                     BtnStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -1503,85 +1515,89 @@ function Library:CreateWindow(options)
 
             function Section:CreateCodeblock(text, code)
                 local Codeblock = {}
+                table.insert(Section.Elements, Codeblock)
                 local rawCode = tostring(code):gsub("<[^>]+>", "")
                 
-                Codeblock.Frame = Instance.new("Frame")
-                Codeblock.Frame.Name = text .. "Codeblock"
-                Codeblock.Frame.Parent = Section.Container
-                Codeblock.Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
-                Codeblock.Frame.Size = UDim2.new(1, 0, 0, 120)
-                Codeblock.Frame.ClipsDescendants = true
-                local CodeStroke = Instance.new("UIStroke")
-                CodeStroke.Color = Color3.fromRGB(25, 20, 30)
-                CodeStroke.Parent = Codeblock.Frame
-                
-                local CodeScroll = Instance.new("ScrollingFrame")
-                CodeScroll.Name = "CodeScroll"
-                CodeScroll.Parent = Codeblock.Frame
-                CodeScroll.BackgroundTransparency = 1
-                CodeScroll.BorderSizePixel = 0
-                CodeScroll.Position = UDim2.new(0, 8, 0, 30)
-                CodeScroll.Size = UDim2.new(1, -16, 1, -38)
-                CodeScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-                CodeScroll.ScrollBarThickness = 2
-                CodeScroll.ScrollBarImageColor3 = accentColor
-                CodeScroll.BottomImage = ""
-                CodeScroll.TopImage = ""
-                
-                Codeblock.Label = Instance.new("TextLabel")
-                Codeblock.Label.Parent = CodeScroll
-                Codeblock.Label.BackgroundTransparency = 1
-                Codeblock.Label.Size = UDim2.new(1, 0, 0, 0)
-                Codeblock.Label.Font = Enum.Font.Code
-                Codeblock.Label.RichText = true
-                Codeblock.Label.Text = rawCode:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
-                Codeblock.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
-                Codeblock.Label.TextSize = 12
-                Codeblock.Label.TextXAlignment = Enum.TextXAlignment.Left
-                Codeblock.Label.TextYAlignment = Enum.TextYAlignment.Top
-                Codeblock.Label.AutomaticSize = Enum.AutomaticSize.Y
+                local function BuildCodeblock()
+                    Codeblock.Frame = Instance.new("Frame")
+                    Codeblock.Frame.Name = text .. "Codeblock"
+                    Codeblock.Frame.Parent = Section.Container
+                    Codeblock.Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+                    Codeblock.Frame.Size = UDim2.new(1, 0, 0, 120)
+                    Codeblock.Frame.ClipsDescendants = true
+                    local CodeStroke = Instance.new("UIStroke")
+                    CodeStroke.Color = Color3.fromRGB(25, 20, 30)
+                    CodeStroke.Parent = Codeblock.Frame
+                    
+                    local CodeScroll = Instance.new("ScrollingFrame")
+                    CodeScroll.Name = "CodeScroll"
+                    CodeScroll.Parent = Codeblock.Frame
+                    CodeScroll.BackgroundTransparency = 1
+                    CodeScroll.BorderSizePixel = 0
+                    CodeScroll.Position = UDim2.new(0, 8, 0, 30)
+                    CodeScroll.Size = UDim2.new(1, -16, 1, -38)
+                    CodeScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+                    CodeScroll.ScrollBarThickness = 2
+                    CodeScroll.ScrollBarImageColor3 = accentColor
+                    CodeScroll.BottomImage = ""
+                    CodeScroll.TopImage = ""
+                    
+                    Codeblock.Label = Instance.new("TextLabel")
+                    Codeblock.Label.Parent = CodeScroll
+                    Codeblock.Label.BackgroundTransparency = 1
+                    Codeblock.Label.Size = UDim2.new(1, 0, 0, 0)
+                    Codeblock.Label.Font = Enum.Font.Code
+                    Codeblock.Label.RichText = true
+                    Codeblock.Label.Text = rawCode:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+                    Codeblock.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    Codeblock.Label.TextSize = 12
+                    Codeblock.Label.TextXAlignment = Enum.TextXAlignment.Left
+                    Codeblock.Label.TextYAlignment = Enum.TextYAlignment.Top
+                    Codeblock.Label.AutomaticSize = Enum.AutomaticSize.Y
 
-                Codeblock.Label:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-                    CodeScroll.CanvasSize = UDim2.new(0, 0, 0, Codeblock.Label.AbsoluteSize.Y)
-                end)
-                
-                local TitleLabel = Instance.new("TextLabel")
-                TitleLabel.Parent = Codeblock.Frame
-                TitleLabel.BackgroundTransparency = 1
-                TitleLabel.Position = UDim2.new(0, 10, 0, 5)
-                TitleLabel.Size = UDim2.new(1, -70, 0, 20)
-                TitleLabel.Font = Enum.Font.SourceSansBold
-                TitleLabel.Text = text
-                TitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-                TitleLabel.TextSize = 13
-                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    Codeblock.Label:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+                        CodeScroll.CanvasSize = UDim2.new(0, 0, 0, Codeblock.Label.AbsoluteSize.Y)
+                    end)
+                    
+                    local TitleLabel = Instance.new("TextLabel")
+                    TitleLabel.Parent = Codeblock.Frame
+                    TitleLabel.BackgroundTransparency = 1
+                    TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+                    TitleLabel.Size = UDim2.new(1, -70, 0, 20)
+                    TitleLabel.Font = Enum.Font.SourceSansBold
+                    TitleLabel.Text = text
+                    TitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    TitleLabel.TextSize = 13
+                    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-                Codeblock.CopyBtn = Instance.new("TextButton")
-                Codeblock.CopyBtn.Name = "CopyBtn"
-                Codeblock.CopyBtn.Parent = Codeblock.Frame
-                Codeblock.CopyBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-                Codeblock.CopyBtn.Position = UDim2.new(1, -60, 0, 5)
-                Codeblock.CopyBtn.Size = UDim2.new(0, 55, 0, 20)
-                Codeblock.CopyBtn.Font = Enum.Font.SourceSansBold
-                Codeblock.CopyBtn.Text = "COPY"
-                Codeblock.CopyBtn.TextColor3 = accentColor
-                Codeblock.CopyBtn.TextSize = 12
-                Codeblock.CopyBtn.AutoButtonColor = false
-                local CopyStroke = Instance.new("UIStroke")
-                CopyStroke.Color = Color3.fromRGB(35, 30, 45)
-                CopyStroke.Parent = Codeblock.CopyBtn
-                local CopyCorner = Instance.new("UICorner")
-                CopyCorner.CornerRadius = UDim.new(0, 4)
-                CopyCorner.Parent = Codeblock.CopyBtn
-                Codeblock.CopyBtn.MouseEnter:Connect(function() 
-                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = GetHoverColor(Color3.fromRGB(15, 15, 15))}) 
-                    Tween(CopyStroke, 0.2, {Color = accentColor}) 
-                end)
-                Codeblock.CopyBtn.MouseLeave:Connect(function() 
-                    Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(15, 15, 15)}) 
-                    Tween(CopyStroke, 0.2, {Color = Color3.fromRGB(35, 30, 45)}) 
-                end)
-                Codeblock.CopyBtn.MouseButton1Click:Connect(function() if setclipboard then setclipboard(rawCode) UI:Notify("UNIFIED", "Code copied to clipboard!") Codeblock.CopyBtn.Text = "COPIED" task.delay(2, function() Codeblock.CopyBtn.Text = "COPY" end) else UI:Notify("ERROR", "Exploit does not support setclipboard!") end end)
+                    Codeblock.CopyBtn = Instance.new("TextButton")
+                    Codeblock.CopyBtn.Name = "CopyBtn"
+                    Codeblock.CopyBtn.Parent = Codeblock.Frame
+                    Codeblock.CopyBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+                    Codeblock.CopyBtn.Position = UDim2.new(1, -60, 0, 5)
+                    Codeblock.CopyBtn.Size = UDim2.new(0, 55, 0, 20)
+                    Codeblock.CopyBtn.Font = Enum.Font.SourceSansBold
+                    Codeblock.CopyBtn.Text = "COPY"
+                    Codeblock.CopyBtn.TextColor3 = accentColor
+                    Codeblock.CopyBtn.TextSize = 12
+                    Codeblock.CopyBtn.AutoButtonColor = false
+                    local CopyStroke = Instance.new("UIStroke")
+                    CopyStroke.Color = Color3.fromRGB(35, 30, 45)
+                    CopyStroke.Parent = Codeblock.CopyBtn
+                    local CopyCorner = Instance.new("UICorner")
+                    CopyCorner.CornerRadius = UDim.new(0, 4)
+                    CopyCorner.Parent = Codeblock.CopyBtn
+                    Codeblock.CopyBtn.MouseEnter:Connect(function() 
+                        Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = GetHoverColor(Color3.fromRGB(15, 15, 15))}) 
+                        Tween(CopyStroke, 0.2, {Color = accentColor}) 
+                    end)
+                    Codeblock.CopyBtn.MouseLeave:Connect(function() 
+                        Tween(Codeblock.CopyBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(15, 15, 15)}) 
+                        Tween(CopyStroke, 0.2, {Color = Color3.fromRGB(35, 30, 45)}) 
+                    end)
+                    Codeblock.CopyBtn.MouseButton1Click:Connect(function() if setclipboard then setclipboard(rawCode) UI:Notify("UNIFIED", "Code copied to clipboard!") Codeblock.CopyBtn.Text = "COPIED" task.delay(2, function() Codeblock.CopyBtn.Text = "COPY" end) else UI:Notify("ERROR", "Exploit does not support setclipboard!") end end)
+                end
+                if Tab.Rendered then BuildCodeblock() else table.insert(Tab.RenderQueue, BuildCodeblock) end
                 return Codeblock
             end
 
