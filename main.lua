@@ -1440,40 +1440,8 @@ function Library:CreateWindow(options)
                 if Tab.Rendered then BuildBind() else table.insert(Tab.RenderQueue, BuildBind) end
                 return Bind
             end
-                Bind.Update = function(val)
-                    if typeof(val) == "string" then
-                        Bind.Key = Enum.KeyCode[val]
-                    else
-                        Bind.Key = val
-                    end
-                    Bind.Btn.Text = GetInputLabel(Bind.Key)
-                    UI.Flags[flag or text] = Bind.Key.Name
-                end
-                UI.Components[flag or text] = Bind
-                Bind.Btn.MouseButton1Click:Connect(function() Bind.Waiting = true Bind.Btn.Text = "..." end)
-                UserInputService.InputBegan:Connect(function(input)
-                    if Bind.Waiting then
-                        if input.UserInputType == Enum.UserInputType.Keyboard then
-                            Bind.Key = input.KeyCode
-                            Bind.Btn.Text = GetInputLabel(Bind.Key)
-                            Bind.Waiting = false
-                            UI.Flags[flag or text] = Bind.Key.Name
-                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
-                            Bind.Key = input.UserInputType
-                            Bind.Btn.Text = GetInputLabel(Bind.Key)
-                            Bind.Waiting = false
-                            UI.Flags[flag or text] = Bind.Key.Name
-                        end
-                    elseif not Bind.Waiting then
-                        if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Bind.Key) or (input.UserInputType == Bind.Key) then
-                            pcall(Bind.Callback)
-                        end
-                    end
-                end)
-                return Bind
-            end
 
-                function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
+            function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
                 local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Flag = flag or text, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, ToggleBind)
                 
@@ -2289,8 +2257,19 @@ function Library:CreateWindow(options)
             end -- Closes CreateOptions or the Dropdown constructor
             if Tab.Rendered then BuildMulti() else table.insert(Tab.RenderQueue, BuildMulti) end
             return Dropdown
-        end -- Closes the Tab/Section function
-    end -- Closes the UI function
+        end
+
+        return Section
+    end
+
+    return Tab
+end
+
     return UI
-end -- Closes the Library/Main function
+end
+
+function Library:SetWatermark(text)
+    if UI and UI.Watermark then UI.Watermark.Text = text end
+end
+
 return Library
