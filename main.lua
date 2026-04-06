@@ -1,5 +1,5 @@
 local Library = {}
--- ???
+-- use unified
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -442,6 +442,7 @@ function Library:CreateWindow(options)
     UI.MainFrame.Size = UDim2.new(0, 630, 0, 420)
     UI.MainFrame.ClipsDescendants = false
     UI.MainFrame.BackgroundTransparency = 0
+    UI.MainFrame.Active = true
 
     UI.AccentBar = Instance.new("Frame")
     UI.AccentBar.Name = "AccentBar"
@@ -474,6 +475,7 @@ function Library:CreateWindow(options)
     UI.LeftPanel.BorderSizePixel = 0
     UI.LeftPanel.Size = UDim2.new(0, 180, 1, 0)
     UI.LeftPanel.BackgroundTransparency = 0
+    UI.LeftPanel.Active = true
 
     local LeftStroke = Instance.new("UIStroke")
     LeftStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -584,6 +586,7 @@ function Library:CreateWindow(options)
     UI.MainContent.Position = UDim2.new(0, 180, 0, 0)
     UI.MainContent.Size = UDim2.new(1, -180, 1, 0)
     UI.MainContent.ClipsDescendants = true
+    UI.MainContent.Active = true
 
     local activeNotifications = {}
 
@@ -1250,6 +1253,7 @@ function Library:CreateWindow(options)
                     Slider.Frame.Parent = Section.Container
                     Slider.Frame.BackgroundTransparency = 1
                     Slider.Frame.Size = UDim2.new(1, 0, 0, 40)
+                    Slider.Frame.Active = true
                     Slider.Label = Instance.new("TextLabel")
                     Slider.Label.Parent = Slider.Frame
                     Slider.Label.BackgroundTransparency = 1
@@ -1295,6 +1299,7 @@ function Library:CreateWindow(options)
                     Slider.Bar.BackgroundColor3 = UI.Colors.ElementBackground
                     Slider.Bar.Position = UDim2.new(0, 0, 0, 25)
                     Slider.Bar.Size = UDim2.new(1, 0, 0, 6)
+                    Slider.Bar.Active = true
                     local BarStroke = Instance.new("UIStroke")
                     BarStroke.Color = Color3.fromRGB(34, 26, 40)
                     BarStroke.Parent = Slider.Bar
