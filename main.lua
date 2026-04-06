@@ -1,5 +1,5 @@
 local Library = {}
--- new
+-- final upd
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1940,7 +1940,9 @@ function Library:CreateWindow(options)
                             end
 
                             if Dropdown.Opened and Dropdown.List then
-                                local targetSize = math.max(#Dropdown.Options, 1) * 25
+                                local rawSize = math.max(#Dropdown.Options, 1) * 25
+                                local targetSize = math.min(rawSize, 150)
+                                Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
                                 Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                             end
                             RefreshCanvasSize()
@@ -1956,6 +1958,8 @@ function Library:CreateWindow(options)
                         pcall(Dropdown.Callback, Dropdown.Selected)
                     end)
                 end
+
+                local MAX_DROPDOWN_HEIGHT = 150
 
                 local function SetOpened(opened)
                     if not Dropdown.Frame then Dropdown.Opened = opened return end
@@ -1974,9 +1978,22 @@ function Library:CreateWindow(options)
                         Dropdown.Frame.ZIndex = 100
                         Section.Frame.ZIndex = 10
                         Dropdown.List.Visible = true
-                        local targetSize = math.max(#Dropdown.Options, 1) * 25
+                        local rawSize = math.max(#Dropdown.Options, 1) * 25
+                        local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
+                        Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                         Dropdown.Icon.Text = "-"
+                        -- Auto-scroll TabContent to show the dropdown
+                        task.delay(0.32, function()
+                            pcall(function()
+                                local listBottom = Dropdown.List.AbsolutePosition.Y + Dropdown.List.AbsoluteSize.Y
+                                local contentBottom = TabContent.AbsolutePosition.Y + TabContent.AbsoluteSize.Y
+                                if listBottom > contentBottom then
+                                    local scrollOffset = listBottom - contentBottom + 20
+                                    TabContent.CanvasPosition = Vector2.new(0, TabContent.CanvasPosition.Y + scrollOffset)
+                                end
+                            end)
+                        end)
                     else
                         ResetAllZIndex()
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
@@ -1988,6 +2005,7 @@ function Library:CreateWindow(options)
                         Dropdown.Icon.Text = "+"
                     end
                     RefreshCanvasSize()
+                    task.delay(0.35, RefreshCanvasSize)
                 end
 
                 local function BuildDrop()
@@ -2020,7 +2038,7 @@ function Library:CreateWindow(options)
                     Dropdown.Icon.Text = "+"
                     Dropdown.Icon.TextColor3 = accentColor
                     Dropdown.Icon.TextSize = 18
-                    Dropdown.List = Instance.new("Frame")
+                    Dropdown.List = Instance.new("ScrollingFrame")
                     Dropdown.List.Parent = Dropdown.Frame
                     Dropdown.List.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
                     Dropdown.List.Position = UDim2.new(0, 0, 1, 5)
@@ -2028,6 +2046,15 @@ function Library:CreateWindow(options)
                     Dropdown.List.Visible = false
                     Dropdown.List.ClipsDescendants = true
                     Dropdown.List.ZIndex = 100
+                    Dropdown.List.ScrollBarThickness = 3
+                    Dropdown.List.ScrollBarImageColor3 = accentColor
+                    Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, 0)
+                    Dropdown.List.BorderSizePixel = 0
+                    Dropdown.List.AutomaticCanvasSize = Enum.AutomaticSize.None
+                    Dropdown.List.ScrollingDirection = Enum.ScrollingDirection.Y
+                    Dropdown.List.TopImage = ""
+                    Dropdown.List.BottomImage = ""
+                    Dropdown.List.MidImage = "rbxassetid://7445543667"
                     local ListStroke = Instance.new("UIStroke")
                     ListStroke.Color = Color3.fromRGB(34, 26, 40)
                     ListStroke.Parent = Dropdown.List
@@ -2087,7 +2114,7 @@ function Library:CreateWindow(options)
                     Dropdown.Icon.Text = "+"
                     Dropdown.Icon.TextColor3 = accentColor
                     Dropdown.Icon.TextSize = 18
-                    Dropdown.List = Instance.new("Frame")
+                    Dropdown.List = Instance.new("ScrollingFrame")
                     Dropdown.List.Parent = Dropdown.Frame
                     Dropdown.List.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
                     Dropdown.List.Position = UDim2.new(0, 0, 1, 5)
@@ -2095,12 +2122,23 @@ function Library:CreateWindow(options)
                     Dropdown.List.Visible = false
                     Dropdown.List.ClipsDescendants = true
                     Dropdown.List.ZIndex = 100
+                    Dropdown.List.ScrollBarThickness = 3
+                    Dropdown.List.ScrollBarImageColor3 = accentColor
+                    Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, 0)
+                    Dropdown.List.BorderSizePixel = 0
+                    Dropdown.List.AutomaticCanvasSize = Enum.AutomaticSize.None
+                    Dropdown.List.ScrollingDirection = Enum.ScrollingDirection.Y
+                    Dropdown.List.TopImage = ""
+                    Dropdown.List.BottomImage = ""
+                    Dropdown.List.MidImage = "rbxassetid://7445543667"
                     local ListStroke = Instance.new("UIStroke")
                     ListStroke.Color = Color3.fromRGB(34, 26, 40)
                     ListStroke.Parent = Dropdown.List
                     local ListLayout = Instance.new("UIListLayout")
                     ListLayout.Parent = Dropdown.List
                     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+                    local MULTI_MAX_DROPDOWN_HEIGHT = 150
 
                     local function SetOpened(opened)
                         if opened then
@@ -2118,9 +2156,22 @@ function Library:CreateWindow(options)
                             Dropdown.Frame.ZIndex = 100
                             Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
-                            local targetSize = #Dropdown.Options * 25
+                            local rawSize = #Dropdown.Options * 25
+                            local targetSize = math.min(rawSize, MULTI_MAX_DROPDOWN_HEIGHT)
+                            Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                             Dropdown.Icon.Text = "-"
+                            -- Auto-scroll TabContent to show the dropdown
+                            task.delay(0.32, function()
+                                pcall(function()
+                                    local listBottom = Dropdown.List.AbsolutePosition.Y + Dropdown.List.AbsoluteSize.Y
+                                    local contentBottom = TabContent.AbsolutePosition.Y + TabContent.AbsoluteSize.Y
+                                    if listBottom > contentBottom then
+                                        local scrollOffset = listBottom - contentBottom + 20
+                                        TabContent.CanvasPosition = Vector2.new(0, TabContent.CanvasPosition.Y + scrollOffset)
+                                    end
+                                end)
+                            end)
                         else
                             ResetAllZIndex()
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
@@ -2179,7 +2230,10 @@ function Library:CreateWindow(options)
                             Dropdown.Options = val
                             CreateOptions()
                             if Dropdown.Opened then
-                                Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, #Dropdown.Options * 25)})
+                                local rawSize = #Dropdown.Options * 25
+                                local targetSize = math.min(rawSize, 150)
+                                Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
+                                Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                                 RefreshCanvasSize()
                                 task.delay(0.35, RefreshCanvasSize)
                             end
