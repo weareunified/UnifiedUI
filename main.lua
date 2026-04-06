@@ -1,5 +1,5 @@
 local Library = {}
-
+-- test
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1840,9 +1840,8 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Colorpicker.Frame.ZIndex = 1100
-                            Section.Frame.ZIndex = 1000
-                            TabContent.ClipsDescendants = false
+                            Colorpicker.Frame.ZIndex = 100
+                            Section.Frame.ZIndex = 10
                             Colorpicker.PickerFrame.Visible = true
                             Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 0)
                             Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 180), BackgroundTransparency = 0, Position = UDim2.new(0, 0, 1, 5)})
@@ -1851,7 +1850,6 @@ function Library:CreateWindow(options)
                             Tween(Colorpicker.Hue, 0.22, {BackgroundTransparency = 0})
                             Tween(Colorpicker.Darkness, 0.22, {BackgroundTransparency = 0})
                         else
-                            TabContent.ClipsDescendants = true
                             Tween(Colorpicker.SatVal, 0.18, {BackgroundTransparency = 1, ImageTransparency = 1})
                             Tween(Colorpicker.Hue, 0.18, {BackgroundTransparency = 1})
                             Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
@@ -1998,9 +1996,8 @@ function Library:CreateWindow(options)
                     Dropdown.Opened = opened
                     if opened then
                         ResetAllZIndex()
-                        Dropdown.Frame.ZIndex = 1100
-                        Section.Frame.ZIndex = 1000
-                        TabContent.ClipsDescendants = false
+                        Dropdown.Frame.ZIndex = 100
+                        Section.Frame.ZIndex = 10
                         Dropdown.List.Visible = true
                         local rawSize = math.max(#Dropdown.Options, 1) * 25
                         local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
@@ -2019,7 +2016,6 @@ function Library:CreateWindow(options)
                             end)
                         end)
                     else
-                        TabContent.ClipsDescendants = true
                         ResetAllZIndex()
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                         task.delay(0.3, function() 
@@ -2178,9 +2174,8 @@ function Library:CreateWindow(options)
                         Dropdown.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Dropdown.Frame.ZIndex = 1100
-                            Section.Frame.ZIndex = 1000
-                            TabContent.ClipsDescendants = false
+                            Dropdown.Frame.ZIndex = 100
+                            Section.Frame.ZIndex = 10
                             Dropdown.List.Visible = true
                             local rawSize = #Dropdown.Options * 25
                             local targetSize = math.min(rawSize, MULTI_MAX_DROPDOWN_HEIGHT)
@@ -2199,7 +2194,6 @@ function Library:CreateWindow(options)
                                 end)
                             end)
                         else
-                            TabContent.ClipsDescendants = true
                             ResetAllZIndex()
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                             task.delay(0.3, function() 
