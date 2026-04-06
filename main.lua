@@ -1,5 +1,5 @@
 local Library = {}
--- fixes
+-- uhh..?
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -422,7 +422,7 @@ function Library:CreateWindow(options)
     UI.ScreenGui = Instance.new("ScreenGui")
     UI.ScreenGui.Name = RandomString(16)
     UI.ScreenGui.ResetOnSpawn = false
-    UI.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    UI.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     
     local coreGui = game:GetService("CoreGui")
     if gethui then
@@ -862,10 +862,10 @@ function Library:CreateWindow(options)
 
         local function ResetAllZIndex()
             for _, s in pairs(Tab.Sections) do
-                s.Frame.ZIndex = 1
+                s.Frame.ZIndex = 10
                 for _, e in pairs(s.Elements) do
                     if e.Frame then
-                        e.Frame.ZIndex = 1
+                        e.Frame.ZIndex = 11
                     end
                 end
             end
@@ -1840,9 +1840,8 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Colorpicker.Frame.ZIndex = 20
-                            Section.Frame.ZIndex = 10
-                            Colorpicker.PickerFrame.ZIndex = 100
+                            Colorpicker.Frame.ZIndex = 1000
+                            Colorpicker.PickerFrame.ZIndex = 1001
                             Colorpicker.PickerFrame.Visible = true
                             Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 0)
                             Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 180), BackgroundTransparency = 0, Position = UDim2.new(0, 0, 1, 5)})
@@ -1997,9 +1996,8 @@ function Library:CreateWindow(options)
                     Dropdown.Opened = opened
                     if opened then
                         ResetAllZIndex()
-                        Dropdown.Frame.ZIndex = 20
-                        Section.Frame.ZIndex = 10
-                        Dropdown.List.ZIndex = 100
+                        Dropdown.Frame.ZIndex = 1000
+                        Dropdown.List.ZIndex = 1001
                         Dropdown.List.Visible = true
                         local rawSize = math.max(#Dropdown.Options, 1) * 25
                         local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
@@ -2176,9 +2174,8 @@ function Library:CreateWindow(options)
                         Dropdown.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Dropdown.Frame.ZIndex = 20
-                            Section.Frame.ZIndex = 10
-                            Dropdown.List.ZIndex = 100
+                            Dropdown.Frame.ZIndex = 1000
+                            Dropdown.List.ZIndex = 1001
                             Dropdown.List.Visible = true
                             local rawSize = #Dropdown.Options * 25
                             local targetSize = math.min(rawSize, MULTI_MAX_DROPDOWN_HEIGHT)
