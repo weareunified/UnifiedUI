@@ -1,5 +1,5 @@
 local Library = {}
--- bro?
+-- bro?ss
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -2059,14 +2059,16 @@ function Library:CreateWindow(options)
                     Dropdown.Icon.Text = "+"
                     Dropdown.Icon.TextColor3 = accentColor
                     Dropdown.Icon.TextSize = 18
+                    Dropdown.List = Instance.new("ScrollingFrame")
+                    Dropdown.List.Parent = Dropdown.Frame
                     Dropdown.List.BackgroundColor3 = UI.Colors.ElementBackground
                     Dropdown.List.BackgroundTransparency = 0
-                    Dropdown.List.Active = true
                     Dropdown.List.Position = UDim2.new(0, 0, 1, 5)
                     Dropdown.List.Size = UDim2.new(1, 0, 0, 0)
                     Dropdown.List.Visible = false
                     Dropdown.List.ClipsDescendants = true
-                    Dropdown.List.ZIndex = 100
+                    Dropdown.List.ZIndex = 1100
+                    Dropdown.List.Active = true
                     Dropdown.List.ScrollBarThickness = 3
                     Dropdown.List.ScrollBarImageColor3 = accentColor
                     Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -2137,12 +2139,13 @@ function Library:CreateWindow(options)
                     Dropdown.Icon.TextSize = 18
                     Dropdown.List = Instance.new("ScrollingFrame")
                     Dropdown.List.Parent = Dropdown.Frame
-                    Dropdown.List.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
+                    Dropdown.List.BackgroundColor3 = UI.Colors.ElementBackground
                     Dropdown.List.Position = UDim2.new(0, 0, 1, 5)
                     Dropdown.List.Size = UDim2.new(1, 0, 0, 0)
                     Dropdown.List.Visible = false
                     Dropdown.List.ClipsDescendants = true
-                    Dropdown.List.ZIndex = 100
+                    Dropdown.List.ZIndex = 1100
+                    Dropdown.List.Active = true
                     Dropdown.List.ScrollBarThickness = 3
                     Dropdown.List.ScrollBarImageColor3 = accentColor
                     Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, 0)
