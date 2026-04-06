@@ -1,5 +1,5 @@
 local Library = {}
--- use unified
+-- wtf?
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -862,9 +862,9 @@ function Library:CreateWindow(options)
 
         local function ResetAllZIndex()
             for _, s in pairs(Tab.Sections) do
-                s.Frame.ZIndex = 1
+                s.Frame.ZIndex = 5
                 for _, e in pairs(s.Elements) do
-                    if e.Frame and (e.Frame.Name:find("Dropdown") or e.Frame.Name:find("MultiDropdown") or e.Frame.Name:find("Colorpicker")) then
+                    if e.Frame then
                         e.Frame.ZIndex = 5
                     end
                 end
@@ -943,6 +943,7 @@ function Library:CreateWindow(options)
         TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabContent.ClipsDescendants = true
         TabContent.ZIndex = 10
+        TabContent.Active = true
         Tab.Content = TabContent
 
         local function RefreshCanvasSize()
@@ -1040,14 +1041,15 @@ function Library:CreateWindow(options)
             table.insert(Tab.Sections, Section)
             
             local function Build()
-                local parent = Tab.Content
                 Section.Frame = Instance.new("Frame")
-                Section.Frame.Name = tostring(title) .. "Section"
-                Section.Frame.Parent = parent
+                Section.Frame.Name = title .. "Section"
+                Section.Frame.Parent = TabContent
                 Section.Frame.BackgroundColor3 = UI.Colors.SectionBackground
                 Section.Frame.BorderSizePixel = 0
-                Section.Frame.Size = UDim2.new(1, 0, 0, 40)
+                Section.Frame.Size = UDim2.new(1, 0, 0, 0)
                 Section.Frame.ClipsDescendants = false
+                Section.Frame.Active = true
+                Section.Frame.ZIndex = 5
                 
                 Section.Frame.Visible = true
                 Section.Frame.BackgroundTransparency = 0
@@ -1079,6 +1081,7 @@ function Library:CreateWindow(options)
                 Section.Container.Position = UDim2.new(0, 12, 0, 35)
                 Section.Container.Size = UDim2.new(1, -24, 0, 0)
                 Section.Container.ClipsDescendants = false
+                Section.Container.Active = true
                 
                 local ContainerLayout = Instance.new("UIListLayout")
                 ContainerLayout.Parent = Section.Container
@@ -1107,6 +1110,7 @@ function Library:CreateWindow(options)
                     Button.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Button.Frame.BorderSizePixel = 0
                     Button.Frame.Size = UDim2.new(1, 0, 0, 28)
+                    Button.Frame.Active = true
                     Button.Frame.Font = Enum.Font.SourceSans
                     Button.Frame.Text = text
                     Button.Frame.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -1150,10 +1154,11 @@ function Library:CreateWindow(options)
                 
                 local function BuildTog()
                     Toggle.Frame = Instance.new("Frame")
-                    Toggle.Frame.Name = text .. "ToggleContainer"
+                    Toggle.Frame.Name = text .. "Toggle"
                     Toggle.Frame.Parent = Section.Container
                     Toggle.Frame.BackgroundTransparency = 1
                     Toggle.Frame.Size = UDim2.new(1, 0, 0, 28)
+                    Toggle.Frame.Active = true
                     
                     local ToggleLayout = Instance.new("UIListLayout")
                     ToggleLayout.Parent = Toggle.Frame
@@ -1168,8 +1173,9 @@ function Library:CreateWindow(options)
                     Toggle.ButtonFrame.Name = "ButtonFrame"
                     Toggle.ButtonFrame.Parent = Toggle.Frame
                     Toggle.ButtonFrame.BackgroundTransparency = 1
-                    Toggle.ButtonFrame.Size = UDim2.new(1, 0, 0, 28)
+                    Toggle.ButtonFrame.Size = UDim2.new(1, 0, 1, 0)
                     Toggle.ButtonFrame.Text = ""
+                    Toggle.ButtonFrame.Active = true
                     Toggle.Label = Instance.new("TextLabel")
                     Toggle.Label.Parent = Toggle.ButtonFrame
                     Toggle.Label.BackgroundTransparency = 1
@@ -1330,6 +1336,7 @@ function Library:CreateWindow(options)
                     Textbox.Frame.Parent = Section.Container
                     Textbox.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Textbox.Frame.Size = UDim2.new(1, 0, 0, 30)
+                    Textbox.Frame.Active = true
                     local BoxStroke = Instance.new("UIStroke")
                     BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Parent = Textbox.Frame
@@ -1364,6 +1371,7 @@ function Library:CreateWindow(options)
                     Bind.Frame.Parent = Section.Container
                     Bind.Frame.BackgroundTransparency = 1
                     Bind.Frame.Size = UDim2.new(1, 0, 0, 28)
+                    Bind.Frame.Active = true
                     Bind.Label = Instance.new("TextLabel")
                     Bind.Label.Parent = Bind.Frame
                     Bind.Label.BackgroundTransparency = 1
@@ -1433,6 +1441,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Frame.Parent = Section.Container
                     ToggleBind.Frame.BackgroundTransparency = 1
                     ToggleBind.Frame.Size = UDim2.new(1, 0, 0, 28)
+                    ToggleBind.Frame.Active = true
                     
                     ToggleBind.Label = Instance.new("TextLabel")
                     ToggleBind.Label.Parent = ToggleBind.Frame
@@ -1451,6 +1460,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
                     ToggleBind.Box.Text = ""
+                    ToggleBind.Box.Active = true
                     
                     local BoxStroke = Instance.new("UIStroke")
                     BoxStroke.Color = Color3.fromRGB(34, 26, 40)
@@ -1997,7 +2007,8 @@ function Library:CreateWindow(options)
                     if opened then
                         ResetAllZIndex()
                         Dropdown.Frame.ZIndex = 100
-                        Section.Frame.ZIndex = 10
+                        Section.Frame.ZIndex = 20
+                        Dropdown.List.Active = true
                         Dropdown.List.Visible = true
                         local rawSize = math.max(#Dropdown.Options, 1) * 25
                         local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
@@ -2035,6 +2046,7 @@ function Library:CreateWindow(options)
                     Dropdown.Frame.Parent = Section.Container
                     Dropdown.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
+                    Dropdown.Frame.Active = true
                     Dropdown.Frame.ZIndex = 5
                     
                     local DropStroke = Instance.new("UIStroke")
@@ -2067,6 +2079,7 @@ function Library:CreateWindow(options)
                     Dropdown.List.Visible = false
                     Dropdown.List.ClipsDescendants = true
                     Dropdown.List.ZIndex = 100
+                    Dropdown.List.Active = true
                     Dropdown.List.ScrollBarThickness = 3
                     Dropdown.List.ScrollBarImageColor3 = accentColor
                     Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, 0)
