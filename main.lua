@@ -1,5 +1,5 @@
 local Library = {}
--- we love spear V2
+-- we love spear V3
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1230,13 +1230,6 @@ function Library:CreateWindow(options)
                     local function SetCPParent() cpObj.Frame.Parent = Toggle.Frame cpObj.Frame.Size = UDim2.new(1, -15, 0, 28) local pad = Instance.new("UIPadding", cpObj.Frame) pad.PaddingLeft = UDim.new(0, 15) end
                     if Tab.Rendered then SetCPParent() else table.insert(Tab.RenderQueue, SetCPParent) end
                     return cpObj
-                end
-                
-                function Toggle:CreateDropdown(dText, dFlag, items, default, dCallback)
-                    local dObj = Section:CreateDropdown(dText, dFlag, items, default, dCallback)
-                    local function SetDParent() dObj.Frame.Parent = Toggle.Frame dObj.Frame.Size = UDim2.new(1, -15, 0, 32) local pad = Instance.new("UIPadding", dObj.Frame) pad.PaddingLeft = UDim.new(0, 15) end
-                    if Tab.Rendered then SetDParent() else table.insert(Tab.RenderQueue, SetDParent) end
-                    return dObj
                 end
 
                 return Toggle
