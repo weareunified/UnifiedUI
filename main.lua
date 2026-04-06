@@ -1,5 +1,5 @@
 local Library = {}
--- bruh
+-- fixes
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1840,8 +1840,9 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Colorpicker.Frame.ZIndex = 100
+                            Colorpicker.Frame.ZIndex = 20
                             Section.Frame.ZIndex = 10
+                            Colorpicker.PickerFrame.ZIndex = 100
                             Colorpicker.PickerFrame.Visible = true
                             Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 0)
                             Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 180), BackgroundTransparency = 0, Position = UDim2.new(0, 0, 1, 5)})
