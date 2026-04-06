@@ -1,5 +1,5 @@
 local Library = {}
--- lol
+-- lol v1
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -585,25 +585,40 @@ function Library:CreateWindow(options)
                 "Finalizing"
             }
             local idx = 1
+            local shown = {}
             local lastText = status.Text
+            shown[lastText] = true
+
             while UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent do
                 if UI.LoadingFinishing then
                     task.wait(0.05)
                 elseif UI.LoadQueue == 0 then
                     task.wait(0.2)
                 else
-                    local nextText = messages[idx]
-                    idx = (idx % #messages) + 1
-                    if nextText == lastText then
-                        nextText = messages[idx]
+                    local nextText
+                    local tries = 0
+                    while tries < #messages do
+                        local candidate = messages[idx]
                         idx = (idx % #messages) + 1
+                        tries = tries + 1
+                        if not shown[candidate] then
+                            nextText = candidate
+                            break
+                        end
                     end
+
+                    if not nextText then
+                        task.wait(0.25)
+                        continue
+                    end
+
                     if status and status.Parent then
                         Tween(status, 0.2, {TextTransparency = 1})
                         task.wait(0.22)
                         if status and status.Parent then
                             status.Text = nextText
                             lastText = nextText
+                            shown[nextText] = true
                             Tween(status, 0.25, {TextTransparency = 0})
                         end
                     end
