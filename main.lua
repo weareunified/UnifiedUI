@@ -1,5 +1,5 @@
 local Library = {}
--- lol v1
+-- lol v2
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -2224,7 +2224,13 @@ function Library:CreateWindow(options)
                             end)
                         end)
                     else
-                        ResetAllZIndex()
+                        Dropdown.Frame.ZIndex = 5
+                        Section.Frame.ZIndex = 1
+                        if Dropdown.Label then Dropdown.Label.ZIndex = 6 end
+                        if Dropdown.Icon then Dropdown.Icon.ZIndex = 6 end
+                        if Dropdown.DropStroke then Dropdown.DropStroke.ZIndex = 7 end
+                        if Dropdown.ListStroke then Dropdown.ListStroke.ZIndex = 7 end
+                        Dropdown.List.ZIndex = 100
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
                         task.delay(0.3, function() 
                             if not Dropdown.Opened then 
