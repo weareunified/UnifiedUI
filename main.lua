@@ -2252,34 +2252,32 @@ function Library:CreateWindow(options)
                             end
                         end
                         
-                        UI.Flags[flag or text] = Dropdown.Selected
-                        local selectedCount = #Dropdown.Selected
-                        if selectedCount == 0 then
-                            Dropdown.Label.Text = text .. ": ..."
-                        else
-                            Dropdown.Label.Text = text .. ": (" .. selectedCount .. ") selected"
-                        end
-                        pcall(Dropdown.Callback, Dropdown.Selected)
+                    UI.Flags[flag or text] = Dropdown.Selected
+                    local selectedCount = #Dropdown.Selected
+                    if selectedCount == 0 then
+                        Dropdown.Label.Text = text .. ": ..."
+                    else
+                        Dropdown.Label.Text = text .. ": (" .. selectedCount .. ") selected"
                     end
-
-                    Update()
-                    Dropdown.Update = Update
-                    Dropdown.SetOpened = SetOpened
-                    UI.Components[flag or text] = Dropdown
-
-                    CreateOptions()
-                    Dropdown.Frame.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            SetOpened(not Dropdown.Opened)
-                        end
-                    end)
+                    pcall(Dropdown.Callback, Dropdown.Selected)
                 end
-                if Tab.Rendered then BuildMulti() else table.insert(Tab.RenderQueue, BuildMulti) end
-                return Dropdown
-            end
-            return Section
-        end
-        return Tab
-    end
+
+                Update()
+                Dropdown.Update = Update
+                Dropdown.SetOpened = SetOpened
+                UI.Components[flag or text] = Dropdown
+
+                CreateOptions()
+                Dropdown.Frame.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        SetOpened(not Dropdown.Opened)
+                    end
+                end)
+            end -- Closes CreateOptions or the Dropdown constructor
+            if Tab.Rendered then BuildMulti() else table.insert(Tab.RenderQueue, BuildMulti) end
+            return Dropdown
+        end -- Closes the Tab/Section function
+    end -- Closes the UI function
     return UI
+end -- Closes the Library/Main function
 return Library
