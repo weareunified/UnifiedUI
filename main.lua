@@ -2282,5 +2282,4 @@ function Library:CreateWindow(options)
         return Tab
     end
     return UI
-end
 return Library
