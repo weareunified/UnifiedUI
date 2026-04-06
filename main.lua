@@ -1,5 +1,5 @@
 local Library = {}
--- V1
+-- new
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -112,6 +112,7 @@ function Library:CreateWindow(options)
             SubText = Color3.fromRGB(150, 150, 150)
         }
     }
+    Library._UI = UI
 
     local function GetHoverColor(color)
         local h, s, v = Color3.toHSV(color)
@@ -299,8 +300,10 @@ function Library:CreateWindow(options)
     end
 
     if isfolder and makefolder then
-        if not isfolder(UI.Folder) then makefolder(UI.Folder) end
-        if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
+        pcall(function()
+            if not isfolder(UI.Folder) then makefolder(UI.Folder) end
+            if not isfolder(UI.ConfigFolder) then makefolder(UI.ConfigFolder) end
+        end)
     end
 
     function UI:SetFlagIgnored(flagName, ignored)
@@ -1005,46 +1008,11 @@ function Library:CreateWindow(options)
                 Tween(oldTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
                 if oldTab.Indicator then Tween(oldTab.Indicator, 0.3, {BackgroundTransparency = 1}) end
                 if oldTab.Icon then Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)}) end
-                
-                local oldGroup = Instance.new("CanvasGroup", oldTab.Page)
-                oldGroup.Name = "TransitionGroup"
-                oldGroup.Size = UDim2.new(1, 0, 1, 0)
-                oldGroup.BackgroundTransparency = 1
-                for _, child in pairs(oldTab.Page:GetChildren()) do
-                    if child ~= oldGroup then child.Parent = oldGroup end
-                end
-                
-                Tween(oldGroup, 0.3, {GroupTransparency = 1, Size = UDim2.new(1, -20, 1, -20), Position = UDim2.new(0, 10, 0, 10)})
-                task.delay(0.3, function() 
-                    oldTab.Page.Visible = false 
-                    for _, child in pairs(oldGroup:GetChildren()) do
-                        child.Parent = oldTab.Page
-                    end
-                    oldGroup:Destroy()
-                end)
+                oldTab.Page.Visible = false 
             end
             
             UI.CurrentTab = Tab
             TabPage.Visible = true
-            
-            local newGroup = Instance.new("CanvasGroup", TabPage)
-            newGroup.Name = "TransitionGroup"
-            newGroup.Size = UDim2.new(1, 40, 1, 40)
-            newGroup.Position = UDim2.new(0, -20, 0, -20)
-            newGroup.BackgroundTransparency = 1
-            newGroup.GroupTransparency = 1
-            
-            for _, child in pairs(TabPage:GetChildren()) do
-                if child ~= newGroup then child.Parent = newGroup end
-            end
-            
-            Tween(newGroup, 0.4, {GroupTransparency = 0, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0)})
-            task.delay(0.4, function()
-                for _, child in pairs(newGroup:GetChildren()) do
-                    child.Parent = TabPage
-                end
-                newGroup:Destroy()
-            end)
             
             Tween(TabBtn, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
             if Tab.Indicator then Tween(Tab.Indicator, 0.3, {BackgroundTransparency = 0}) end
@@ -1101,21 +1069,21 @@ function Library:CreateWindow(options)
                 Section.TitleLabel.TextSize = 13
                 Section.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
                 
-                local Container = Instance.new("Frame")
-                Container.Name = "Container"
-                Container.Parent = Section.Frame
-                Container.BackgroundTransparency = 1
-                Container.Position = UDim2.new(0, 12, 0, 35)
-                Container.Size = UDim2.new(1, -24, 0, 0)
-                Container.ClipsDescendants = false
+                Section.Container = Instance.new("Frame")
+                Section.Container.Name = "Container"
+                Section.Container.Parent = Section.Frame
+                Section.Container.BackgroundTransparency = 1
+                Section.Container.Position = UDim2.new(0, 12, 0, 35)
+                Section.Container.Size = UDim2.new(1, -24, 0, 0)
+                Section.Container.ClipsDescendants = false
                 
                 local ContainerLayout = Instance.new("UIListLayout")
-                ContainerLayout.Parent = Container
+                ContainerLayout.Parent = Section.Container
                 ContainerLayout.Padding = UDim.new(0, 6)
                 ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 
                 ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                    Container.Size = UDim2.new(1, -24, 0, ContainerLayout.AbsoluteContentSize.Y + 10)
+                    Section.Container.Size = UDim2.new(1, -24, 0, ContainerLayout.AbsoluteContentSize.Y + 10)
                     Section.Frame.Size = UDim2.new(1, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 45)
                 end)
             end
@@ -1132,7 +1100,7 @@ function Library:CreateWindow(options)
                 local function BuildBtn()
                     Button.Frame = Instance.new("TextButton")
                     Button.Frame.Name = text .. "Button"
-                    Button.Frame.Parent = Container
+                    Button.Frame.Parent = Section.Container
                     Button.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Button.Frame.BorderSizePixel = 0
                     Button.Frame.Size = UDim2.new(1, 0, 0, 28)
@@ -1180,7 +1148,7 @@ function Library:CreateWindow(options)
                 local function BuildTog()
                     Toggle.Frame = Instance.new("Frame")
                     Toggle.Frame.Name = text .. "ToggleContainer"
-                    Toggle.Frame.Parent = Container
+                    Toggle.Frame.Parent = Section.Container
                     Toggle.Frame.BackgroundTransparency = 1
                     Toggle.Frame.Size = UDim2.new(1, 0, 0, 28)
                     
@@ -1279,7 +1247,7 @@ function Library:CreateWindow(options)
                 local function BuildSlider()
                     Slider.Frame = Instance.new("Frame")
                     Slider.Frame.Name = text .. "Slider"
-                    Slider.Frame.Parent = Container
+                    Slider.Frame.Parent = Section.Container
                     Slider.Frame.BackgroundTransparency = 1
                     Slider.Frame.Size = UDim2.new(1, 0, 0, 40)
                     Slider.Label = Instance.new("TextLabel")
@@ -1354,7 +1322,7 @@ function Library:CreateWindow(options)
                 local function BuildTxt()
                     Textbox.Frame = Instance.new("Frame")
                     Textbox.Frame.Name = text .. "Textbox"
-                    Textbox.Frame.Parent = Container
+                    Textbox.Frame.Parent = Section.Container
                     Textbox.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Textbox.Frame.Size = UDim2.new(1, 0, 0, 30)
                     local BoxStroke = Instance.new("UIStroke")
@@ -1388,7 +1356,7 @@ function Library:CreateWindow(options)
                 local function BuildBind()
                     Bind.Frame = Instance.new("Frame")
                     Bind.Frame.Name = text .. "Bind"
-                    Bind.Frame.Parent = Container
+                    Bind.Frame.Parent = Section.Container
                     Bind.Frame.BackgroundTransparency = 1
                     Bind.Frame.Size = UDim2.new(1, 0, 0, 28)
                     Bind.Label = Instance.new("TextLabel")
@@ -1451,7 +1419,7 @@ function Library:CreateWindow(options)
                 local function BuildTB()
                     ToggleBind.Frame = Instance.new("Frame")
                     ToggleBind.Frame.Name = text .. "ToggleBind"
-                    ToggleBind.Frame.Parent = Container -- Ensure 'Container' is defined in this scope
+                    ToggleBind.Frame.Parent = Section.Container
                     ToggleBind.Frame.BackgroundTransparency = 1
                     ToggleBind.Frame.Size = UDim2.new(1, 0, 0, 28)
                     
@@ -1499,11 +1467,6 @@ function Library:CreateWindow(options)
                     local BtnStroke = Instance.new("UIStroke")
                     BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                     BtnStroke.Parent = ToggleBind.Btn
-                end
-
-                BuildTB() -- This ensures the UI elements are actually created
-                return ToggleBind
-            end
                     
                     local function Update(manually)
                         pcall(function()
@@ -1544,7 +1507,7 @@ function Library:CreateWindow(options)
                 
                 Codeblock.Frame = Instance.new("Frame")
                 Codeblock.Frame.Name = text .. "Codeblock"
-                Codeblock.Frame.Parent = Container
+                Codeblock.Frame.Parent = Section.Container
                 Codeblock.Frame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
                 Codeblock.Frame.Size = UDim2.new(1, 0, 0, 120)
                 Codeblock.Frame.ClipsDescendants = true
@@ -1626,7 +1589,7 @@ function Library:CreateWindow(options)
                 local Image = {}
                 Image.Frame = Instance.new("Frame")
                 Image.Frame.Name = text .. "Image"
-                Image.Frame.Parent = Container
+                Image.Frame.Parent = Section.Container
                 Image.Frame.BackgroundTransparency = 1
                 Image.Frame.Size = UDim2.new(1, 0, 0, 120)
                 Image.Label = Instance.new("TextLabel")
@@ -1657,7 +1620,7 @@ function Library:CreateWindow(options)
                 local function BuildCP()
                     Colorpicker.Frame = Instance.new("TextButton")
                     Colorpicker.Frame.Name = text .. "Colorpicker"
-                    Colorpicker.Frame.Parent = Container
+                    Colorpicker.Frame.Parent = Section.Container
                     Colorpicker.Frame.BackgroundTransparency = 1
                     Colorpicker.Frame.Size = UDim2.new(1, 0, 0, 28)
                     Colorpicker.Frame.Text = ""
@@ -1922,10 +1885,115 @@ function Library:CreateWindow(options)
                 table.insert(Section.Elements, Dropdown)
                 SetInitialFlag(flag or text, Dropdown.Selected, "dropdown")
                 
+                local function CreateOptions()
+                    if not Dropdown.List then return end
+                    for _, child in pairs(Dropdown.List:GetChildren()) do
+                        if child:IsA("TextButton") then child:Destroy() end
+                    end
+                    for _, option in ipairs(Dropdown.Options) do
+                        local OptBtn = Instance.new("TextButton")
+                        OptBtn.Name = tostring(option)
+                        OptBtn.Parent = Dropdown.List
+                        OptBtn.BackgroundColor3 = UI.Colors.ElementBackground
+                        OptBtn.BorderSizePixel = 0
+                        OptBtn.Size = UDim2.new(1, 0, 0, 25)
+                        OptBtn.Font = Enum.Font.SourceSans
+                        OptBtn.Text = "  " .. tostring(option)
+                        OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                        OptBtn.TextSize = 14
+                        OptBtn.TextXAlignment = Enum.TextXAlignment.Left
+                        OptBtn.ZIndex = 110
+                        OptBtn.AutoButtonColor = false
+
+                        OptBtn.MouseEnter:Connect(function()
+                            Tween(OptBtn, 0.2, {BackgroundColor3 = GetHoverColor(UI.Colors.ElementBackground)})
+                        end)
+                        OptBtn.MouseLeave:Connect(function()
+                            Tween(OptBtn, 0.2, {BackgroundColor3 = UI.Colors.ElementBackground})
+                        end)
+
+                        OptBtn.MouseButton1Click:Connect(function() 
+                            Dropdown.Update(option) 
+                            Dropdown.SetOpened(false)
+                        end)
+                    end
+                end
+
+                local function Update(val, isOptions)
+                    pcall(function()
+                        if val == Dropdown then
+                            val = isOptions
+                            isOptions = true
+                        end
+
+                        if isOptions and type(val) == "table" then
+                            Dropdown.Options = val
+                            CreateOptions()
+
+                            local exists = false
+                            for _, opt in ipairs(Dropdown.Options) do
+                                if opt == Dropdown.Selected then exists = true break end
+                            end
+                            if not exists then 
+                                Dropdown.Selected = nil
+                                if Dropdown.Label then Dropdown.Label.Text = text .. ": None" end
+                            end
+
+                            if Dropdown.Opened and Dropdown.List then
+                                local targetSize = math.max(#Dropdown.Options, 1) * 25
+                                Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                            end
+                            RefreshCanvasSize()
+                            return
+                        end
+
+                        if val ~= nil and not isOptions then
+                            Dropdown.Selected = val
+                        end
+                        
+                        UI.Flags[flag or text] = Dropdown.Selected
+                        if Dropdown.Label then Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None") end
+                        pcall(Dropdown.Callback, Dropdown.Selected)
+                    end)
+                end
+
+                local function SetOpened(opened)
+                    if not Dropdown.Frame then Dropdown.Opened = opened return end
+                    if opened then
+                        if UI.OpenedElement and UI.OpenedElement ~= Dropdown and UI.OpenedElement.SetOpened then
+                            UI.OpenedElement.SetOpened(false)
+                        end
+                        UI.OpenedElement = Dropdown
+                    elseif UI.OpenedElement == Dropdown then
+                        UI.OpenedElement = nil
+                    end
+
+                    Dropdown.Opened = opened
+                    if opened then
+                        ResetAllZIndex()
+                        Dropdown.Frame.ZIndex = 100
+                        Section.Frame.ZIndex = 10
+                        Dropdown.List.Visible = true
+                        local targetSize = math.max(#Dropdown.Options, 1) * 25
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                        Dropdown.Icon.Text = "-"
+                    else
+                        ResetAllZIndex()
+                        Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
+                        task.delay(0.3, function() 
+                            if not Dropdown.Opened then 
+                                Dropdown.List.Visible = false 
+                            end 
+                        end)
+                        Dropdown.Icon.Text = "+"
+                    end
+                    RefreshCanvasSize()
+                end
+
                 local function BuildDrop()
                     Dropdown.Frame = Instance.new("Frame")
                     Dropdown.Frame.Name = text .. "Dropdown"
-                    Dropdown.Frame.Parent = Container
+                    Dropdown.Frame.Parent = Section.Container
                     Dropdown.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                     Dropdown.Frame.ZIndex = 5
@@ -1967,117 +2035,6 @@ function Library:CreateWindow(options)
                     ListLayout.Parent = Dropdown.List
                     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-                    local function SetOpened(opened)
-                        if opened then
-                            if UI.OpenedElement and UI.OpenedElement ~= Dropdown and UI.OpenedElement.SetOpened then
-                                UI.OpenedElement.SetOpened(false)
-                            end
-                            UI.OpenedElement = Dropdown
-                        elseif UI.OpenedElement == Dropdown then
-                            UI.OpenedElement = nil
-                        end
-
-                        Dropdown.Opened = opened
-                        if opened then
-                            ResetAllZIndex()
-                            Dropdown.Frame.ZIndex = 100
-                            Section.Frame.ZIndex = 10
-                            Dropdown.List.Visible = true
-                            local targetSize = math.max(#Dropdown.Options, 1) * 25
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                            Dropdown.Icon.Text = "-"
-                        else
-                            ResetAllZIndex()
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, 0)})
-                            task.delay(0.3, function() 
-                                if not Dropdown.Opened then 
-                                    Dropdown.List.Visible = false 
-                                end 
-                            end)
-                            Dropdown.Icon.Text = "+"
-                        end
-                        RefreshCanvasSize()
-                        task.delay(0.35, RefreshCanvasSize)
-                    end
-
-                    local function CreateOptions()
-                        for _, child in pairs(Dropdown.List:GetChildren()) do
-                            if child:IsA("TextButton") then
-                                child:Destroy()
-                            end
-                        end
-                        for _, option in ipairs(Dropdown.Options) do
-                            local OptBtn = Instance.new("TextButton")
-                            OptBtn.Name = tostring(option)
-                            OptBtn.Parent = Dropdown.List
-                            OptBtn.BackgroundColor3 = UI.Colors.ElementBackground
-                            OptBtn.BorderSizePixel = 0
-                            OptBtn.Size = UDim2.new(1, 0, 0, 25)
-                            OptBtn.Font = Enum.Font.SourceSans
-                            OptBtn.Text = "  " .. tostring(option)
-                            OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-                            OptBtn.TextSize = 14
-                            OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                            OptBtn.ZIndex = 110
-                            OptBtn.AutoButtonColor = false
-
-                            OptBtn.MouseEnter:Connect(function()
-                                Tween(OptBtn, 0.2, {BackgroundColor3 = GetHoverColor(UI.Colors.ElementBackground)})
-                            end)
-                            OptBtn.MouseLeave:Connect(function()
-                                Tween(OptBtn, 0.2, {BackgroundColor3 = UI.Colors.ElementBackground})
-                            end)
-
-                            OptBtn.MouseButton1Click:Connect(function() 
-                                Dropdown.Update(option) 
-                                SetOpened(false)
-                            end)
-                        end
-                    end
-
-                    local function Update(val, isOptions)
-                        pcall(function()
-                            if val == Dropdown then
-                                val = isOptions
-                                isOptions = true
-                            end
-
-                            if isOptions and type(val) == "table" then
-                                Dropdown.Options = val
-                                CreateOptions()
-
-                                local exists = false
-                                for _, opt in ipairs(Dropdown.Options) do
-                                    if opt == Dropdown.Selected then exists = true break end
-                                end
-                                if not exists then 
-                                    Dropdown.Selected = nil
-                                    Dropdown.Label.Text = text .. ": None"
-                                end
-
-                                if Dropdown.Opened then
-                                    local targetSize = math.max(#Dropdown.Options, 1) * 25
-                                    Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                                    RefreshCanvasSize()
-                                    task.delay(0.35, RefreshCanvasSize)
-                                end
-                                return
-                            end
-
-                            if val ~= nil and not isOptions then
-                                Dropdown.Selected = val
-                            end
-                            
-                            UI.Flags[flag or text] = Dropdown.Selected
-                            Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None")
-                            pcall(Dropdown.Callback, Dropdown.Selected)
-                        end)
-                    end
-
-                    Dropdown.Update = Update
-                    Dropdown.SetOpened = SetOpened
-                    UI.Components[flag or text] = Dropdown
-
                     CreateOptions()
                     Dropdown.Frame.InputBegan:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -2086,6 +2043,11 @@ function Library:CreateWindow(options)
                         end
                     end)
                 end
+
+                Dropdown.Update = Update
+                Dropdown.SetOpened = SetOpened
+                UI.Components[flag or text] = Dropdown
+
                 if Tab.Rendered then BuildDrop() else table.insert(Tab.RenderQueue, BuildDrop) end
                 return Dropdown
             end
@@ -2098,7 +2060,7 @@ function Library:CreateWindow(options)
                 local function BuildMulti()
                     Dropdown.Frame = Instance.new("Frame")
                     Dropdown.Frame.Name = text .. "MultiDropdown"
-                    Dropdown.Frame.Parent = Container
+                    Dropdown.Frame.Parent = Section.Container
                     Dropdown.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Dropdown.Frame.Size = UDim2.new(1, 0, 0, 30)
                     Dropdown.Frame.ZIndex = 5
@@ -2265,11 +2227,11 @@ function Library:CreateWindow(options)
     return Tab
 end
 
-    return UI
-end
+        return UI
+    end
 
 function Library:SetWatermark(text)
-    if UI and UI.Watermark then UI.Watermark.Text = text end
+    if self._UI and self._UI.Watermark then self._UI.Watermark.Text = text end
 end
 
 return Library
