@@ -1,5 +1,5 @@
 local Library = {}
--- we love spear v2
+-- lol
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -436,6 +436,35 @@ function Library:CreateWindow(options)
     UI.LoadingActive = false
     UI.LoadingStatus = ""
     UI.LoadingOverlay = nil
+    UI.LoadingFinishing = false
+
+    function UI:FinishLoading()
+        if UI.LoadingFinishing then return end
+        if not UI.LoadingActive then return end
+        UI.LoadingFinishing = true
+
+        local overlay = UI.LoadingOverlay
+        local holder = overlay and overlay:FindFirstChild("Holder")
+        local status = holder and holder:FindFirstChild("Status")
+        if status and status.Parent then
+            pcall(function()
+                Tween(status, 0.15, {TextTransparency = 1})
+            end)
+            task.delay(0.16, function()
+                if not (UI.LoadingFinishing and UI.LoadingActive and UI.LoadingOverlay == overlay and overlay and overlay.Parent) then return end
+                pcall(function()
+                    status.Text = "Done!"
+                    Tween(status, 0.2, {TextTransparency = 0})
+                end)
+            end)
+        end
+
+        task.delay(0.55, function()
+            if UI.LoadingOverlay == overlay then
+                UI:HideLoading()
+            end
+        end)
+    end
 
     function UI:ShowLoading(statusText)
         UI.LoadingStatus = tostring(statusText or UI.LoadingStatus or "")
@@ -556,17 +585,25 @@ function Library:CreateWindow(options)
                 "Finalizing"
             }
             local idx = 1
+            local lastText = status.Text
             while UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent do
-                if UI.LoadQueue == 0 then
+                if UI.LoadingFinishing then
+                    task.wait(0.05)
+                elseif UI.LoadQueue == 0 then
                     task.wait(0.2)
                 else
                     local nextText = messages[idx]
                     idx = (idx % #messages) + 1
+                    if nextText == lastText then
+                        nextText = messages[idx]
+                        idx = (idx % #messages) + 1
+                    end
                     if status and status.Parent then
                         Tween(status, 0.2, {TextTransparency = 1})
                         task.wait(0.22)
                         if status and status.Parent then
                             status.Text = nextText
+                            lastText = nextText
                             Tween(status, 0.25, {TextTransparency = 0})
                         end
                     end
@@ -595,6 +632,7 @@ function Library:CreateWindow(options)
     function UI:HideLoading()
         if not UI.LoadingActive then return end
         UI.LoadingActive = false
+        UI.LoadingFinishing = false
 
         if UI.LoadingOverlay then
             local o = UI.LoadingOverlay
@@ -625,7 +663,7 @@ function Library:CreateWindow(options)
 
     task.delay(8, function()
         if UI.LoadingActive and UI.LoadQueue == 0 then
-            UI:HideLoading()
+            UI:FinishLoading()
         end
     end)
 
@@ -1078,7 +1116,7 @@ function Library:CreateWindow(options)
 
             UI.LoadQueue = math.max(UI.LoadQueue - 1, 0)
             if UI.LoadQueue == 0 then
-                UI:HideLoading()
+                UI:FinishLoading()
             end
         end)
 
