@@ -1,5 +1,5 @@
 local Library = {}
--- test
+-- bruh
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -864,8 +864,8 @@ function Library:CreateWindow(options)
             for _, s in pairs(Tab.Sections) do
                 s.Frame.ZIndex = 1
                 for _, e in pairs(s.Elements) do
-                    if e.Frame and (e.Frame.Name:find("Dropdown") or e.Frame.Name:find("MultiDropdown") or e.Frame.Name:find("Colorpicker")) then
-                        e.Frame.ZIndex = 5
+                    if e.Frame then
+                        e.Frame.ZIndex = 1
                     end
                 end
             end
@@ -1996,8 +1996,9 @@ function Library:CreateWindow(options)
                     Dropdown.Opened = opened
                     if opened then
                         ResetAllZIndex()
-                        Dropdown.Frame.ZIndex = 100
+                        Dropdown.Frame.ZIndex = 20
                         Section.Frame.ZIndex = 10
+                        Dropdown.List.ZIndex = 100
                         Dropdown.List.Visible = true
                         local rawSize = math.max(#Dropdown.Options, 1) * 25
                         local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
@@ -2174,8 +2175,9 @@ function Library:CreateWindow(options)
                         Dropdown.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Dropdown.Frame.ZIndex = 100
+                            Dropdown.Frame.ZIndex = 20
                             Section.Frame.ZIndex = 10
+                            Dropdown.List.ZIndex = 100
                             Dropdown.List.Visible = true
                             local rawSize = #Dropdown.Options * 25
                             local targetSize = math.min(rawSize, MULTI_MAX_DROPDOWN_HEIGHT)
