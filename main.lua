@@ -1,5 +1,5 @@
 local Library = {}
--- we love spear V4
+-- we love spear V5
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -433,6 +433,160 @@ function Library:CreateWindow(options)
         UI.ScreenGui.Parent = coreGui
     end
 
+    UI.LoadingActive = false
+    UI.LoadingStatus = ""
+    UI.LoadingOverlay = nil
+    UI.LoadingBlur = nil
+
+    function UI:ShowLoading(statusText)
+        UI.LoadingStatus = tostring(statusText or UI.LoadingStatus or "")
+        if UI.LoadingActive and UI.LoadingOverlay and UI.LoadingOverlay.Parent then
+            local holder = UI.LoadingOverlay:FindFirstChild("Holder")
+            if holder and holder:FindFirstChild("Status") then
+                holder.Status.Text = UI.LoadingStatus
+            end
+            return
+        end
+
+        UI.LoadingActive = true
+
+        local Lighting = game:GetService("Lighting")
+        local blur = Instance.new("BlurEffect")
+        blur.Name = "UnifiedLoadingBlur"
+        blur.Size = 0
+        blur.Parent = Lighting
+        UI.LoadingBlur = blur
+        Tween(blur, 0.25, {Size = 14})
+
+        local overlay = Instance.new("TextButton")
+        overlay.Name = "UnifiedLoadingOverlay"
+        overlay.Parent = UI.ScreenGui
+        overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        overlay.BackgroundTransparency = 0.35
+        overlay.BorderSizePixel = 0
+        overlay.Size = UDim2.new(1, 0, 1, 0)
+        overlay.Position = UDim2.new(0, 0, 0, 0)
+        overlay.AutoButtonColor = false
+        overlay.Text = ""
+        overlay.Active = true
+        overlay.ZIndex = 50000
+        UI.LoadingOverlay = overlay
+
+        local holder = Instance.new("Frame")
+        holder.Name = "Holder"
+        holder.Parent = overlay
+        holder.BackgroundTransparency = 1
+        holder.AnchorPoint = Vector2.new(0.5, 0.5)
+        holder.Position = UDim2.new(0.5, 0, 0.5, -10)
+        holder.Size = UDim2.new(0, 360, 0, 140)
+        holder.ZIndex = overlay.ZIndex + 1
+
+        local title = Instance.new("TextLabel")
+        title.Name = "Title"
+        title.Parent = holder
+        title.BackgroundTransparency = 1
+        title.Size = UDim2.new(1, 0, 0, 40)
+        title.Position = UDim2.new(0, 0, 0, 0)
+        title.Font = Enum.Font.SourceSansBold
+        title.Text = "Loading"
+        title.TextColor3 = Color3.fromRGB(230, 230, 230)
+        title.TextSize = 30
+        title.ZIndex = holder.ZIndex
+
+        local dots = Instance.new("Frame")
+        dots.Name = "Dots"
+        dots.Parent = holder
+        dots.BackgroundTransparency = 1
+        dots.Size = UDim2.new(0, 90, 0, 40)
+        dots.Position = UDim2.new(0.5, 0, 0, 0)
+        dots.AnchorPoint = Vector2.new(0.5, 0)
+        dots.ZIndex = holder.ZIndex
+
+        local function mkDot(i)
+            local d = Instance.new("TextLabel")
+            d.Name = "Dot" .. tostring(i)
+            d.Parent = dots
+            d.BackgroundTransparency = 1
+            d.Size = UDim2.new(0, 20, 0, 40)
+            d.Position = UDim2.new(0, (i - 1) * 22, 0, 0)
+            d.Font = Enum.Font.SourceSansBold
+            d.Text = "."
+            d.TextColor3 = Color3.fromRGB(230, 230, 230)
+            d.TextSize = 28
+            d.ZIndex = dots.ZIndex
+            return d
+        end
+
+        local d1, d2, d3 = mkDot(1), mkDot(2), mkDot(3)
+
+        local status = Instance.new("TextLabel")
+        status.Name = "Status"
+        status.Parent = holder
+        status.BackgroundTransparency = 1
+        status.Size = UDim2.new(1, 0, 0, 28)
+        status.Position = UDim2.new(0, 0, 0, 52)
+        status.Font = Enum.Font.SourceSans
+        status.Text = UI.LoadingStatus ~= "" and UI.LoadingStatus or "Creating tabs"
+        status.TextColor3 = Color3.fromRGB(180, 180, 180)
+        status.TextSize = 18
+        status.ZIndex = holder.ZIndex
+
+        task.spawn(function()
+            local seq = {d1, d2, d3}
+            while UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent do
+                for i = 1, #seq do
+                    if not (UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent) then break end
+                    for j = 1, #seq do
+                        local target = seq[j]
+                        if target and target.Parent then
+                            Tween(target, 0.18, {TextSize = (j == i) and 36 or 28})
+                        end
+                    end
+                    task.wait(0.2)
+                end
+            end
+        end)
+    end
+
+    function UI:HideLoading()
+        if not UI.LoadingActive then return end
+        UI.LoadingActive = false
+
+        if UI.LoadingOverlay then
+            local o = UI.LoadingOverlay
+            UI.LoadingOverlay = nil
+            pcall(function()
+                Tween(o, 0.2, {BackgroundTransparency = 1})
+            end)
+            task.delay(0.25, function()
+                pcall(function()
+                    if o then o:Destroy() end
+                end)
+            end)
+        end
+
+        if UI.LoadingBlur then
+            local b = UI.LoadingBlur
+            UI.LoadingBlur = nil
+            pcall(function()
+                Tween(b, 0.25, {Size = 0})
+            end)
+            task.delay(0.3, function()
+                pcall(function()
+                    if b then b:Destroy() end
+                end)
+            end)
+        end
+    end
+
+    UI:ShowLoading("Creating tabs")
+
+    task.delay(8, function()
+        if UI.LoadingActive and UI.LoadQueue == 0 then
+            UI:HideLoading()
+        end
+    end)
+
     UI.MainFrame = Instance.new("Frame")
     UI.MainFrame.Name = "MainFrame"
     UI.MainFrame.Parent = UI.ScreenGui
@@ -784,7 +938,7 @@ function Library:CreateWindow(options)
         ClContent.Size = UDim2.new(1, -24, 1, -45)
         ClContent.ScrollBarThickness = 2
         ClContent.ScrollBarImageColor3 = accentColor
-        ClContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+        ClContent.CanvasSize = UDim2.new(0, 0, 0, 0) -- Changed
         
         local ClLayout = Instance.new("UIListLayout")
         ClLayout.Parent = ClContent
@@ -890,6 +1044,11 @@ function Library:CreateWindow(options)
             TabBtn.Visible = true
             TabBtn.TextTransparency = 1
             Tween(TabBtn, 0.5, {TextTransparency = 0})
+
+            UI.LoadQueue = math.max(UI.LoadQueue - 1, 0)
+            if UI.LoadQueue == 0 then
+                UI:HideLoading()
+            end
         end)
 
         local TabCorner = Instance.new("UICorner")
