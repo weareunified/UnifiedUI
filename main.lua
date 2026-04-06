@@ -1923,7 +1923,7 @@ function Library:CreateWindow(options)
                         OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
                         OptBtn.TextSize = 14
                         OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                        OptBtn.ZIndex = 110
+                        OptBtn.ZIndex = (Dropdown.List.ZIndex or 1) + 1
                         OptBtn.AutoButtonColor = false
 
                         OptBtn.MouseEnter:Connect(function()
@@ -1938,46 +1938,6 @@ function Library:CreateWindow(options)
                             Dropdown.SetOpened(false)
                         end)
                     end
-                end
-
-                local function Update(val, isOptions)
-                    pcall(function()
-                        if val == Dropdown then
-                            val = isOptions
-                            isOptions = true
-                        end
-
-                        if isOptions and type(val) == "table" then
-                            Dropdown.Options = val
-                            CreateOptions()
-
-                            local exists = false
-                            for _, opt in ipairs(Dropdown.Options) do
-                                if opt == Dropdown.Selected then exists = true break end
-                            end
-                            if not exists then 
-                                Dropdown.Selected = nil
-                                if Dropdown.Label then Dropdown.Label.Text = text .. ": None" end
-                            end
-
-                            if Dropdown.Opened and Dropdown.List then
-                                local rawSize = math.max(#Dropdown.Options, 1) * 25
-                                local targetSize = math.min(rawSize, 150)
-                                Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
-                                Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                            end
-                            RefreshCanvasSize()
-                            return
-                        end
-
-                        if val ~= nil and not isOptions then
-                            Dropdown.Selected = val
-                        end
-                        
-                        UI.Flags[flag or text] = Dropdown.Selected
-                        if Dropdown.Label then Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None") end
-                        pcall(Dropdown.Callback, Dropdown.Selected)
-                    end)
                 end
 
                 local MAX_DROPDOWN_HEIGHT = 150
@@ -1996,8 +1956,13 @@ function Library:CreateWindow(options)
                     Dropdown.Opened = opened
                     if opened then
                         ResetAllZIndex()
-                        Dropdown.Frame.ZIndex = 100
+                        Dropdown.Frame.ZIndex = 200
                         Section.Frame.ZIndex = 10
+                        if Dropdown.Label then Dropdown.Label.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                        if Dropdown.Icon then Dropdown.Icon.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                        if Dropdown.DropStroke then Dropdown.DropStroke.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                        if Dropdown.ListStroke then Dropdown.ListStroke.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                        Dropdown.List.ZIndex = Dropdown.Frame.ZIndex + 1
                         Dropdown.List.Visible = true
                         local rawSize = math.max(#Dropdown.Options, 1) * 25
                         local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
@@ -2040,6 +2005,7 @@ function Library:CreateWindow(options)
                     local DropStroke = Instance.new("UIStroke")
                     DropStroke.Color = Color3.fromRGB(34, 26, 40)
                     DropStroke.Parent = Dropdown.Frame
+                    Dropdown.DropStroke = DropStroke
                     Dropdown.Label = Instance.new("TextLabel")
                     Dropdown.Label.Parent = Dropdown.Frame
                     Dropdown.Label.BackgroundTransparency = 1
@@ -2081,6 +2047,7 @@ function Library:CreateWindow(options)
                     local ListStroke = Instance.new("UIStroke")
                     ListStroke.Color = Color3.fromRGB(34, 26, 40)
                     ListStroke.Parent = Dropdown.List
+                    Dropdown.ListStroke = ListStroke
                     local ListLayout = Instance.new("UIListLayout")
                     ListLayout.Parent = Dropdown.List
                     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -2094,7 +2061,44 @@ function Library:CreateWindow(options)
                     end)
                 end
 
-                Dropdown.Update = Update
+                Dropdown.Update = function(val, isOptions)
+                    if val == Dropdown then
+                        val = isOptions
+                        isOptions = true
+                    end
+
+                    if isOptions and type(val) == "table" then
+                        Dropdown.Options = val
+                        CreateOptions()
+
+                        local exists = false
+                        for _, opt in ipairs(Dropdown.Options) do
+                            if opt == Dropdown.Selected then exists = true break end
+                        end
+                        if not exists then 
+                            Dropdown.Selected = nil
+                            if Dropdown.Label then Dropdown.Label.Text = text .. ": None" end
+                        end
+
+                        if Dropdown.Opened and Dropdown.List then
+                            local rawSize = math.max(#Dropdown.Options, 1) * 25
+                            local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
+                            Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
+                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                        end
+                        RefreshCanvasSize()
+                        return
+                    end
+
+                    if val ~= nil and not isOptions then
+                        Dropdown.Selected = val
+                    end
+                    
+                    UI.Flags[flag or text] = Dropdown.Selected
+                    if Dropdown.Label then Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None") end
+                    pcall(Dropdown.Callback, Dropdown.Selected)
+                end
+
                 Dropdown.SetOpened = SetOpened
                 UI.Components[flag or text] = Dropdown
 
@@ -2118,6 +2122,7 @@ function Library:CreateWindow(options)
                     local DropStroke = Instance.new("UIStroke")
                     DropStroke.Color = Color3.fromRGB(34, 26, 40)
                     DropStroke.Parent = Dropdown.Frame
+                    Dropdown.DropStroke = DropStroke
                     Dropdown.Label = Instance.new("TextLabel")
                     Dropdown.Label.Parent = Dropdown.Frame
                     Dropdown.Label.BackgroundTransparency = 1
@@ -2159,6 +2164,7 @@ function Library:CreateWindow(options)
                     local ListStroke = Instance.new("UIStroke")
                     ListStroke.Color = Color3.fromRGB(34, 26, 40)
                     ListStroke.Parent = Dropdown.List
+                    Dropdown.ListStroke = ListStroke
                     local ListLayout = Instance.new("UIListLayout")
                     ListLayout.Parent = Dropdown.List
                     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -2178,8 +2184,13 @@ function Library:CreateWindow(options)
                         Dropdown.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Dropdown.Frame.ZIndex = 100
+                            Dropdown.Frame.ZIndex = 200
                             Section.Frame.ZIndex = 10
+                            if Dropdown.Label then Dropdown.Label.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                            if Dropdown.Icon then Dropdown.Icon.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                            if Dropdown.DropStroke then Dropdown.DropStroke.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                            if Dropdown.ListStroke then Dropdown.ListStroke.ZIndex = Dropdown.Frame.ZIndex + 1 end
+                            Dropdown.List.ZIndex = Dropdown.Frame.ZIndex + 1
                             Dropdown.List.Visible = true
                             local rawSize = #Dropdown.Options * 25
                             local targetSize = math.min(rawSize, MULTI_MAX_DROPDOWN_HEIGHT)
@@ -2227,7 +2238,7 @@ function Library:CreateWindow(options)
                             OptBtn.TextColor3 = table.find(Dropdown.Selected, option) and accentColor or Color3.fromRGB(150, 150, 150)
                             OptBtn.TextSize = 14
                             OptBtn.TextXAlignment = Enum.TextXAlignment.Left
-                            OptBtn.ZIndex = 110
+                            OptBtn.ZIndex = (Dropdown.List.ZIndex or 1) + 1
                             OptBtn.AutoButtonColor = false
 
                             OptBtn.MouseEnter:Connect(function()
