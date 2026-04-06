@@ -1,5 +1,5 @@
 local Library = {}
--- we love spear V5
+-- we love spear
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -436,7 +436,6 @@ function Library:CreateWindow(options)
     UI.LoadingActive = false
     UI.LoadingStatus = ""
     UI.LoadingOverlay = nil
-    UI.LoadingBlur = nil
 
     function UI:ShowLoading(statusText)
         UI.LoadingStatus = tostring(statusText or UI.LoadingStatus or "")
@@ -450,19 +449,11 @@ function Library:CreateWindow(options)
 
         UI.LoadingActive = true
 
-        local Lighting = game:GetService("Lighting")
-        local blur = Instance.new("BlurEffect")
-        blur.Name = "UnifiedLoadingBlur"
-        blur.Size = 0
-        blur.Parent = Lighting
-        UI.LoadingBlur = blur
-        Tween(blur, 0.25, {Size = 14})
-
         local overlay = Instance.new("TextButton")
         overlay.Name = "UnifiedLoadingOverlay"
-        overlay.Parent = UI.ScreenGui
-        overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        overlay.BackgroundTransparency = 0.35
+        overlay.Parent = UI.MainFrame or UI.ScreenGui
+        overlay.BackgroundColor3 = Color3.fromRGB(140, 140, 140)
+        overlay.BackgroundTransparency = 0.7
         overlay.BorderSizePixel = 0
         overlay.Size = UDim2.new(1, 0, 1, 0)
         overlay.Position = UDim2.new(0, 0, 0, 0)
@@ -471,6 +462,22 @@ function Library:CreateWindow(options)
         overlay.Active = true
         overlay.ZIndex = 50000
         UI.LoadingOverlay = overlay
+
+        local overlayCorner = Instance.new("UICorner")
+        overlayCorner.CornerRadius = UDim.new(0, 6)
+        overlayCorner.Parent = overlay
+
+        local frost = Instance.new("UIGradient")
+        frost.Rotation = 90
+        frost.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 190, 190)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 120, 120))
+        })
+        frost.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.15),
+            NumberSequenceKeypoint.new(1, 0.45)
+        })
+        frost.Parent = overlay
 
         local holder = Instance.new("Frame")
         holder.Name = "Holder"
@@ -481,37 +488,46 @@ function Library:CreateWindow(options)
         holder.Size = UDim2.new(0, 360, 0, 140)
         holder.ZIndex = overlay.ZIndex + 1
 
-        local title = Instance.new("TextLabel")
-        title.Name = "Title"
-        title.Parent = holder
-        title.BackgroundTransparency = 1
-        title.Size = UDim2.new(1, 0, 0, 40)
-        title.Position = UDim2.new(0, 0, 0, 0)
-        title.Font = Enum.Font.SourceSansBold
-        title.Text = "Loading"
-        title.TextColor3 = Color3.fromRGB(230, 230, 230)
-        title.TextSize = 30
-        title.ZIndex = holder.ZIndex
+        local header = Instance.new("Frame")
+        header.Name = "Header"
+        header.Parent = holder
+        header.BackgroundTransparency = 1
+        header.Position = UDim2.new(0.5, 0, 0, 0)
+        header.AnchorPoint = Vector2.new(0.5, 0)
+        header.Size = UDim2.new(0, 240, 0, 40)
+        header.ZIndex = holder.ZIndex
 
         local dots = Instance.new("Frame")
         dots.Name = "Dots"
-        dots.Parent = holder
+        dots.Parent = header
         dots.BackgroundTransparency = 1
-        dots.Size = UDim2.new(0, 90, 0, 40)
-        dots.Position = UDim2.new(0.5, 0, 0, 0)
-        dots.AnchorPoint = Vector2.new(0.5, 0)
+        dots.Size = UDim2.new(0, 70, 1, 0)
+        dots.Position = UDim2.new(0, 0, 0, 0)
         dots.ZIndex = holder.ZIndex
+
+        local title = Instance.new("TextLabel")
+        title.Name = "Title"
+        title.Parent = header
+        title.BackgroundTransparency = 1
+        title.Size = UDim2.new(1, -70, 1, 0)
+        title.Position = UDim2.new(0, 70, 0, 0)
+        title.Font = Enum.Font.SourceSansBold
+        title.Text = "Loading"
+        title.TextColor3 = Color3.fromRGB(235, 235, 235)
+        title.TextSize = 30
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.ZIndex = holder.ZIndex
 
         local function mkDot(i)
             local d = Instance.new("TextLabel")
             d.Name = "Dot" .. tostring(i)
             d.Parent = dots
             d.BackgroundTransparency = 1
-            d.Size = UDim2.new(0, 20, 0, 40)
+            d.Size = UDim2.new(0, 18, 1, 0)
             d.Position = UDim2.new(0, (i - 1) * 22, 0, 0)
             d.Font = Enum.Font.SourceSansBold
             d.Text = "."
-            d.TextColor3 = Color3.fromRGB(230, 230, 230)
+            d.TextColor3 = Color3.fromRGB(235, 235, 235)
             d.TextSize = 28
             d.ZIndex = dots.ZIndex
             return d
@@ -529,6 +545,8 @@ function Library:CreateWindow(options)
         status.Text = UI.LoadingStatus ~= "" and UI.LoadingStatus or "Creating tabs"
         status.TextColor3 = Color3.fromRGB(180, 180, 180)
         status.TextSize = 18
+        status.TextXAlignment = Enum.TextXAlignment.Left
+        status.TextTransparency = 0
         status.ZIndex = holder.ZIndex
 
         task.spawn(function()
@@ -564,28 +582,7 @@ function Library:CreateWindow(options)
                 end)
             end)
         end
-
-        if UI.LoadingBlur then
-            local b = UI.LoadingBlur
-            UI.LoadingBlur = nil
-            pcall(function()
-                Tween(b, 0.25, {Size = 0})
-            end)
-            task.delay(0.3, function()
-                pcall(function()
-                    if b then b:Destroy() end
-                end)
-            end)
-        end
     end
-
-    UI:ShowLoading("Creating tabs")
-
-    task.delay(8, function()
-        if UI.LoadingActive and UI.LoadQueue == 0 then
-            UI:HideLoading()
-        end
-    end)
 
     UI.MainFrame = Instance.new("Frame")
     UI.MainFrame.Name = "MainFrame"
@@ -597,6 +594,14 @@ function Library:CreateWindow(options)
     UI.MainFrame.ClipsDescendants = false
     UI.MainFrame.BackgroundTransparency = 0
     UI.MainFrame.Active = true
+
+    UI:ShowLoading("Creating tabs")
+
+    task.delay(8, function()
+        if UI.LoadingActive and UI.LoadQueue == 0 then
+            UI:HideLoading()
+        end
+    end)
 
     UI.AccentBar = Instance.new("Frame")
     UI.AccentBar.Name = "AccentBar"
