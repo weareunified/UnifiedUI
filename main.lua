@@ -1,5 +1,5 @@
 local Library = {}
--- lol v2
+-- lol v1
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -2083,8 +2083,9 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Colorpicker.Frame.ZIndex = 100
-                            Section.Frame.ZIndex = 10
+                            Colorpicker.Frame.ZIndex = 2000
+                            Section.Frame.ZIndex = 100
+                            Colorpicker.PickerFrame.ZIndex = 2005
                             Colorpicker.PickerFrame.Visible = true
                             Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 0)
                             Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 180), BackgroundTransparency = 0, Position = UDim2.new(0, 0, 1, 5)})
@@ -2098,7 +2099,13 @@ function Library:CreateWindow(options)
                             Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
                             Tween(PickerStroke, 0.18, {Transparency = 1})
                             Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Position = UDim2.new(0, 0, 1, 0)})
-                            task.delay(0.22, function() if not Colorpicker.Opened then Colorpicker.PickerFrame.Visible = false end end)
+                            task.delay(0.22, function() 
+                                if not Colorpicker.Opened then 
+                                    Colorpicker.PickerFrame.Visible = false 
+                                    Colorpicker.Frame.ZIndex = 5
+                                    Section.Frame.ZIndex = 1
+                                end 
+                            end)
                         end
                         RefreshCanvasSize()
                         task.delay(0.35, RefreshCanvasSize)
