@@ -1,5 +1,5 @@
 local Library = {}
--- we love spear
+-- we love spear V2
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
