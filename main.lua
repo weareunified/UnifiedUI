@@ -1473,17 +1473,20 @@ function Library:CreateWindow(options)
                 return Bind
             end
 
-            function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
-                local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Flag = flag, Callback = callback or function() end, Waiting = false }
+                function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
+                local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Flag = flag or text, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, ToggleBind)
-                SetInitialFlag(flag or text, {ToggleBind.State, ToggleBind.Key.Name}, "togglebind")
+                
+                -- Ensure SetInitialFlag and GetInputLabel are defined in your script environment
+                SetInitialFlag(ToggleBind.Flag, {ToggleBind.State, ToggleBind.Key.Name}, "togglebind")
                 
                 local function BuildTB()
                     ToggleBind.Frame = Instance.new("Frame")
                     ToggleBind.Frame.Name = text .. "ToggleBind"
-                    ToggleBind.Frame.Parent = Container
+                    ToggleBind.Frame.Parent = Container -- Ensure 'Container' is defined in this scope
                     ToggleBind.Frame.BackgroundTransparency = 1
                     ToggleBind.Frame.Size = UDim2.new(1, 0, 0, 28)
+                    
                     ToggleBind.Label = Instance.new("TextLabel")
                     ToggleBind.Label.Parent = ToggleBind.Frame
                     ToggleBind.Label.BackgroundTransparency = 1
@@ -1493,6 +1496,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Label.TextColor3 = Color3.fromRGB(200, 200, 200)
                     ToggleBind.Label.TextSize = 14
                     ToggleBind.Label.TextXAlignment = Enum.TextXAlignment.Left
+                    
                     ToggleBind.Box = Instance.new("TextButton")
                     ToggleBind.Box.Name = "Box"
                     ToggleBind.Box.Parent = ToggleBind.Frame
@@ -1500,10 +1504,12 @@ function Library:CreateWindow(options)
                     ToggleBind.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
                     ToggleBind.Box.Text = ""
+                    
                     local BoxStroke = Instance.new("UIStroke")
                     BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = ToggleBind.Box
+                    
                     ToggleBind.Indicator = Instance.new("Frame")
                     ToggleBind.Indicator.Name = "Indicator"
                     ToggleBind.Indicator.Parent = ToggleBind.Box
@@ -1511,6 +1517,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Indicator.Position = ToggleBind.State and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
                     ToggleBind.Indicator.Size = UDim2.new(0, 12, 0, 12)
                     ToggleBind.Indicator.BackgroundTransparency = ToggleBind.State and 0 or 1
+                    
                     ToggleBind.Btn = Instance.new("TextButton")
                     ToggleBind.Btn.Parent = ToggleBind.Frame
                     ToggleBind.Btn.BackgroundColor3 = UI.Colors.ElementBackground
@@ -1520,9 +1527,15 @@ function Library:CreateWindow(options)
                     ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                     ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                     ToggleBind.Btn.TextSize = 12
+                    
                     local BtnStroke = Instance.new("UIStroke")
                     BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                     BtnStroke.Parent = ToggleBind.Btn
+                end
+
+                BuildTB() -- This ensures the UI elements are actually created
+                return ToggleBind
+            end
                     
                     local function Update(manually)
                         pcall(function()
