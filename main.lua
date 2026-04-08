@@ -1,5 +1,5 @@
 local Library = {}
--- lol whyss
+-- bro fix it alr..
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
