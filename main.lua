@@ -1,5 +1,5 @@
 local Library = {}
--- lol v122
+-- lol why pexp acting gay
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -979,7 +979,8 @@ function Library:CreateWindow(options)
     function UI:UpdateSidePickerPosition()
         if UI.SidePicker then
             local mainPos = UI.MainFrame.Position
-            UI.SidePicker.Position = UDim2.new(mainPos.X.Scale, mainPos.X.Offset + 640, mainPos.Y.Offset >= 0 and mainPos.Y.Scale or 0, mainPos.Y.Offset + 210)
+            -- Position under the changelog (changelog is 300px tall + 10px padding)
+            UI.SidePicker.Position = UDim2.new(mainPos.X.Scale, mainPos.X.Offset + 640, mainPos.Y.Offset >= 0 and mainPos.Y.Scale or 0, mainPos.Y.Offset + 310)
         end
     end
 
