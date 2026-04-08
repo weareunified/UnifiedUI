@@ -1,5 +1,5 @@
 local Library = {}
--- lol v1
+-- lol v122
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -826,6 +826,45 @@ function Library:CreateWindow(options)
     UI.MainContent.ClipsDescendants = true
     UI.MainContent.Active = true
 
+    UI.TabContent = Instance.new("Frame")
+    UI.TabContent.Name = "TabContent"
+    UI.TabContent.Parent = UI.MainContent
+    UI.TabContent.BackgroundTransparency = 1
+    UI.TabContent.Position = UDim2.new(0, 10, 0, 10)
+    UI.TabContent.Size = UDim2.new(1, -20, 1, -20)
+    UI.TabContent.ClipsDescendants = false
+
+    UI.SidePicker = Instance.new("Frame")
+    UI.SidePicker.Name = "SidePicker"
+    UI.SidePicker.Parent = UI.ScreenGui
+    UI.SidePicker.BackgroundColor3 = UI.Colors.SectionBackground
+    UI.SidePicker.BorderSizePixel = 0
+    UI.SidePicker.Position = UDim2.new(0.5, 325, 0.5, -210)
+    UI.SidePicker.Size = UDim2.new(0, 200, 0, 200)
+    UI.SidePicker.Visible = false
+    UI.SidePicker.ZIndex = 5000
+    
+    local SideStroke = Instance.new("UIStroke")
+    SideStroke.Color = Color3.fromRGB(34, 26, 40)
+    SideStroke.Thickness = 1.2
+    SideStroke.Parent = UI.SidePicker
+    
+    local SideCorner = Instance.new("UICorner")
+    SideCorner.CornerRadius = UDim.new(0, 6)
+    SideCorner.Parent = UI.SidePicker
+
+    UI.SidePickerTitle = Instance.new("TextLabel")
+    UI.SidePickerTitle.Parent = UI.SidePicker
+    UI.SidePickerTitle.BackgroundTransparency = 1
+    UI.SidePickerTitle.Position = UDim2.new(0, 10, 0, 5)
+    UI.SidePickerTitle.Size = UDim2.new(1, -20, 0, 20)
+    UI.SidePickerTitle.Font = Enum.Font.SourceSansBold
+    UI.SidePickerTitle.Text = "Color Picker"
+    UI.SidePickerTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+    UI.SidePickerTitle.TextSize = 14
+    UI.SidePickerTitle.TextXAlignment = Enum.TextXAlignment.Left
+    UI.SidePickerTitle.ZIndex = 5001
+
     local activeNotifications = {}
 
     function UI:Notify(title, text)
@@ -859,7 +898,7 @@ function Library:CreateWindow(options)
         NotifyTitle.Font = Enum.Font.SourceSansBold
         NotifyTitle.Text = title:upper()
         NotifyTitle.TextColor3 = accentColor
-        NotifyTitle.TextSize = 16 -- Increased
+        NotifyTitle.TextSize = 16
         NotifyTitle.TextXAlignment = Enum.TextXAlignment.Left
         
         local NotifyText = Instance.new("TextLabel")
@@ -870,7 +909,7 @@ function Library:CreateWindow(options)
         NotifyText.Font = Enum.Font.SourceSans
         NotifyText.Text = text
         NotifyText.TextColor3 = Color3.fromRGB(200, 200, 200)
-        NotifyText.TextSize = 15 -- Increased
+        NotifyText.TextSize = 15
         NotifyText.TextXAlignment = Enum.TextXAlignment.Left
         NotifyText.TextWrapped = true
         NotifyText.TextYAlignment = Enum.TextYAlignment.Top
@@ -881,7 +920,7 @@ function Library:CreateWindow(options)
         TimerBarContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         TimerBarContainer.BorderSizePixel = 0
         TimerBarContainer.Position = UDim2.new(0, 0, 1, -3)
-        TimerBarContainer.Size = UDim2.new(1, 0, 0, 3) -- Slightly thicker for better visibility
+        TimerBarContainer.Size = UDim2.new(1, 0, 0, 3)
         
         local TimerBar = Instance.new("Frame")
         TimerBar.Name = "TimerBar"
@@ -937,10 +976,18 @@ function Library:CreateWindow(options)
         end)
     end
 
+    function UI:UpdateSidePickerPosition()
+        if UI.SidePicker then
+            local mainPos = UI.MainFrame.Position
+            UI.SidePicker.Position = UDim2.new(mainPos.X.Scale, mainPos.X.Offset + 640, mainPos.Y.Offset >= 0 and mainPos.Y.Scale or 0, mainPos.Y.Offset + 210)
+        end
+    end
+
     local dragging, dragInput, dragStart, startPos
     local function UpdateDrag(input)
         local delta = input.Position - dragStart
         UI.MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        UI:UpdateSidePickerPosition()
     end
 
     local function StartDragging(input)
@@ -1022,7 +1069,7 @@ function Library:CreateWindow(options)
         ClContent.Size = UDim2.new(1, -24, 1, -45)
         ClContent.ScrollBarThickness = 2
         ClContent.ScrollBarImageColor3 = accentColor
-        ClContent.CanvasSize = UDim2.new(0, 0, 0, 0) -- Changed
+        ClContent.CanvasSize = UDim2.new(0, 0, 0, 0)
         
         local ClLayout = Instance.new("UIListLayout")
         ClLayout.Parent = ClContent
@@ -1607,6 +1654,7 @@ function Library:CreateWindow(options)
                     Bind.Frame.Parent = Section.Container
                     Bind.Frame.BackgroundTransparency = 1
                     Bind.Frame.Size = UDim2.new(1, 0, 0, 28)
+                    
                     Bind.Label = Instance.new("TextLabel")
                     Bind.Label.Parent = Bind.Frame
                     Bind.Label.BackgroundTransparency = 1
@@ -1693,13 +1741,10 @@ function Library:CreateWindow(options)
                     ToggleBind.Box.BackgroundColor3 = UI.Colors.ElementBackground
                     ToggleBind.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
-                    ToggleBind.Box.Text = ""
-                    
                     local BoxStroke = Instance.new("UIStroke")
                     BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = ToggleBind.Box
-                    
                     ToggleBind.Indicator = Instance.new("Frame")
                     ToggleBind.Indicator.Name = "Indicator"
                     ToggleBind.Indicator.Parent = ToggleBind.Box
@@ -1928,7 +1973,8 @@ function Library:CreateWindow(options)
                     Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 0)
                     Colorpicker.PickerFrame.Visible = false
                     Colorpicker.PickerFrame.Active = true
-                    Colorpicker.PickerFrame.ZIndex = 100
+                    Colorpicker.PickerFrame.ZIndex = 5000
+                    
                     local PickerStroke = Instance.new("UIStroke")
                     PickerStroke.Color = Color3.fromRGB(34, 26, 40)
                     PickerStroke.Transparency = 1
@@ -1942,8 +1988,8 @@ function Library:CreateWindow(options)
                     Colorpicker.InputBlocker.Size = UDim2.new(1, 0, 1, 0)
                     Colorpicker.InputBlocker.Text = ""
                     Colorpicker.InputBlocker.AutoButtonColor = false
-                    Colorpicker.InputBlocker.ZIndex = 100
-
+                    Colorpicker.InputBlocker.ZIndex = 5000
+                    
                     Colorpicker.SatVal = Instance.new("ImageLabel")
                     Colorpicker.SatVal.Name = "SatVal"
                     Colorpicker.SatVal.Parent = Colorpicker.PickerFrame
@@ -1954,15 +2000,16 @@ function Library:CreateWindow(options)
                     Colorpicker.SatVal.Size = UDim2.new(1, -50, 0, 130)
                     Colorpicker.SatVal.Image = "rbxassetid://4155801252"
                     Colorpicker.SatVal.ImageTransparency = 1
-                    Colorpicker.SatVal.ZIndex = 101
-
+                    Colorpicker.SatVal.ZIndex = 5001
+                    
                     Colorpicker.SatValCursor = Instance.new("Frame")
                     Colorpicker.SatValCursor.Name = "Cursor"
                     Colorpicker.SatValCursor.Parent = Colorpicker.SatVal
                     Colorpicker.SatValCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     Colorpicker.SatValCursor.Position = UDim2.new(Colorpicker.S, -2, 1 - Colorpicker.V, -2)
                     Colorpicker.SatValCursor.Size = UDim2.new(0, 4, 0, 4)
-                    Colorpicker.SatValCursor.ZIndex = 102
+                    Colorpicker.SatValCursor.ZIndex = 5002
+                    
                     local CursorStroke = Instance.new("UIStroke")
                     CursorStroke.Color = Color3.fromRGB(0, 0, 0)
                     CursorStroke.Parent = Colorpicker.SatValCursor
@@ -1976,7 +2023,8 @@ function Library:CreateWindow(options)
                     Colorpicker.Hue.Position = UDim2.new(1, -30, 0, 10)
                     Colorpicker.Hue.Size = UDim2.new(0, 20, 0, 130)
                     Colorpicker.Hue.Image = ""
-                    Colorpicker.Hue.ZIndex = 101
+                    Colorpicker.Hue.ZIndex = 5001
+                    
                     local HueGradient = Instance.new("UIGradient")
                     HueGradient.Color = ColorSequence.new({
                         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
@@ -1989,14 +2037,15 @@ function Library:CreateWindow(options)
                     })
                     HueGradient.Rotation = 90
                     HueGradient.Parent = Colorpicker.Hue
-
+                    
                     Colorpicker.HueCursor = Instance.new("Frame")
                     Colorpicker.HueCursor.Name = "Cursor"
                     Colorpicker.HueCursor.Parent = Colorpicker.Hue
                     Colorpicker.HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     Colorpicker.HueCursor.Position = UDim2.new(0, -2, Colorpicker.H, -1)
                     Colorpicker.HueCursor.Size = UDim2.new(1, 4, 0, 2)
-                    Colorpicker.HueCursor.ZIndex = 102
+                    Colorpicker.HueCursor.ZIndex = 5002
+                    
                     local HueCursorStroke = Instance.new("UIStroke")
                     HueCursorStroke.Color = Color3.fromRGB(0, 0, 0)
                     HueCursorStroke.Parent = Colorpicker.HueCursor
@@ -2008,24 +2057,23 @@ function Library:CreateWindow(options)
                     Colorpicker.Darkness.BackgroundTransparency = 1
                     Colorpicker.Darkness.Position = UDim2.new(0, 10, 0, 150)
                     Colorpicker.Darkness.Size = UDim2.new(1, -20, 0, 15)
-                    Colorpicker.Darkness.ZIndex = 101
+                    Colorpicker.Darkness.ZIndex = 5001
+                    
                     local DarknessGradient = Instance.new("UIGradient")
                     DarknessGradient.Color = ColorSequence.new({
                         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
                         ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
                     })
                     DarknessGradient.Parent = Colorpicker.Darkness
-                    local DarknessStroke = Instance.new("UIStroke")
-                    DarknessStroke.Color = Color3.fromRGB(34, 26, 40)
-                    DarknessStroke.Parent = Colorpicker.Darkness
-
+                    
                     Colorpicker.DarknessCursor = Instance.new("Frame")
                     Colorpicker.DarknessCursor.Name = "Cursor"
                     Colorpicker.DarknessCursor.Parent = Colorpicker.Darkness
                     Colorpicker.DarknessCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                     Colorpicker.DarknessCursor.Position = UDim2.new(1 - Colorpicker.V, -1, 0, -2)
                     Colorpicker.DarknessCursor.Size = UDim2.new(0, 2, 1, 4)
-                    Colorpicker.DarknessCursor.ZIndex = 102
+                    Colorpicker.DarknessCursor.ZIndex = 5002
+                    
                     local DarknessCursorStroke = Instance.new("UIStroke")
                     DarknessCursorStroke.Color = Color3.fromRGB(0, 0, 0)
                     DarknessCursorStroke.Parent = Colorpicker.DarknessCursor
@@ -2071,6 +2119,7 @@ function Library:CreateWindow(options)
                     end
 
                     local function SetOpened(opened)
+                        if not Colorpicker.Frame then Colorpicker.Opened = opened return end
                         if opened then
                             if UI.OpenedElement and UI.OpenedElement ~= Colorpicker and UI.OpenedElement.SetOpened then
                                 UI.OpenedElement.SetOpened(false)
@@ -2083,12 +2132,17 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            Colorpicker.Frame.ZIndex = 2000
-                            Section.Frame.ZIndex = 100
-                            Colorpicker.PickerFrame.ZIndex = 2005
+                            UI:UpdateSidePickerPosition()
+                            UI.SidePicker.Visible = true
+                            UI.SidePickerTitle.Text = text
+                            
+                            Colorpicker.PickerFrame.Parent = UI.SidePicker
                             Colorpicker.PickerFrame.Visible = true
-                            Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 0)
-                            Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 180), BackgroundTransparency = 0, Position = UDim2.new(0, 0, 1, 5)})
+                            Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 0, 30)
+                            Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 1, -30)
+                            Colorpicker.PickerFrame.BackgroundTransparency = 1
+                            
+                            Tween(Colorpicker.PickerFrame, 0.22, {BackgroundTransparency = 0})
                             Tween(PickerStroke, 0.22, {Transparency = 0})
                             Tween(Colorpicker.SatVal, 0.22, {BackgroundTransparency = 0, ImageTransparency = 0})
                             Tween(Colorpicker.Hue, 0.22, {BackgroundTransparency = 0})
@@ -2098,12 +2152,12 @@ function Library:CreateWindow(options)
                             Tween(Colorpicker.Hue, 0.18, {BackgroundTransparency = 1})
                             Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
                             Tween(PickerStroke, 0.18, {Transparency = 1})
-                            Tween(Colorpicker.PickerFrame, 0.22, {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Position = UDim2.new(0, 0, 1, 0)})
+                            Tween(Colorpicker.PickerFrame, 0.22, {BackgroundTransparency = 1})
                             task.delay(0.22, function() 
                                 if not Colorpicker.Opened then 
                                     Colorpicker.PickerFrame.Visible = false 
-                                    Colorpicker.Frame.ZIndex = 5
-                                    Section.Frame.ZIndex = 1
+                                    Colorpicker.PickerFrame.Parent = Colorpicker.Frame
+                                    UI.SidePicker.Visible = false
                                 end 
                             end)
                         end
