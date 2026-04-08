@@ -1,5 +1,5 @@
 local Library = {}
--- lol why
+-- lol whyss
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -253,48 +253,45 @@ function Library:CreateWindow(options)
                     end
                     for _, section in pairs(tab.Sections) do
                         section.TitleLabel.TextColor3 = color
-                        -- Update all elements accent color if needed
                     end
                 end
             elseif type == "MainBackground" then
                 UI.MainFrame.BackgroundColor3 = color
             elseif type == "SidebarBackground" then
-                 UI.LeftPanel.BackgroundColor3 = color
-             elseif type == "SectionBackground" then
-                 for _, tab in pairs(UI.Tabs) do
-                     for _, section in pairs(tab.Sections) do
-                         section.Frame.BackgroundColor3 = color
-                     end
-                 end
-             elseif type == "ElementBackground" then
-                 for _, tab in pairs(UI.Tabs) do
-                     for _, section in pairs(tab.Sections) do
-                         for _, element in pairs(section.Elements) do
-                             if element.Frame then
-                                 element.Frame.BackgroundColor3 = color
-                             end
-                             if element.Box then
-                                 element.Box.BackgroundColor3 = color
-                             end
-                             if element.Btn then
-                                 element.Btn.BackgroundColor3 = color
-                             end
-                             if element.PickerFrame then
-                                 element.PickerFrame.BackgroundColor3 = color
-                             end
-                             -- For dropdowns/multidropdowns options
-                             if element.List then
-                                 for _, opt in pairs(element.List:GetChildren()) do
-                                     if opt:IsA("TextButton") then
-                                         opt.BackgroundColor3 = color
-                                     end
-                                 end
-                             end
-                         end
-                     end
-                 end
-             elseif type == "MainText" then
-                -- This would require iterating through many elements
+                UI.LeftPanel.BackgroundColor3 = color
+            elseif type == "SectionBackground" then
+                for _, tab in pairs(UI.Tabs) do
+                    for _, section in pairs(tab.Sections) do
+                        section.Frame.BackgroundColor3 = color
+                    end
+                end
+            elseif type == "ElementBackground" then
+                for _, tab in pairs(UI.Tabs) do
+                    for _, section in pairs(tab.Sections) do
+                        for _, element in pairs(section.Elements) do
+                            if element.Frame then
+                                element.Frame.BackgroundColor3 = color
+                            end
+                            if element.Box then
+                                element.Box.BackgroundColor3 = color
+                            end
+                            if element.Btn then
+                                element.Btn.BackgroundColor3 = color
+                            end
+                            if element.PickerFrame then
+                                element.PickerFrame.BackgroundColor3 = color
+                            end
+                            if element.List then
+                                for _, opt in pairs(element.List:GetChildren()) do
+                                    if opt:IsA("TextButton") then
+                                        opt.BackgroundColor3 = color
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            elseif type == "MainText" then
             end
         end
     end
@@ -392,7 +389,6 @@ function Library:CreateWindow(options)
                 local files = listfiles(UI.ConfigFolder)
                 if files then
                     for _, v in pairs(files) do
-                        -- Robust extraction: handle paths, separators, and extensions
                         local name = v:match("([^/\\]+)%.json$") or v:match("([^/\\]+)$")
                         if name and name ~= "" then 
                             table.insert(configs, name) 
@@ -945,14 +941,12 @@ function Library:CreateWindow(options)
         table.insert(activeNotifications, NotifyFrame)
         UpdatePositions()
         
-        -- Entrance animations (0.4s)
         Tween(NotifyFrame, 0.4, {BackgroundTransparency = 0})
         Tween(NotifyTitle, 0.4, {TextTransparency = 0})
         Tween(NotifyText, 0.4, {TextTransparency = 0})
         Tween(NotifyStroke, 0.4, {Transparency = 0})
         Tween(AccentBar, 0.4, {BackgroundTransparency = 0})
 
-        -- Wait for entrance to complete before starting the timer
         task.delay(0.4, function()
             local timerTween = TweenService:Create(TimerBar, TweenInfo.new(4, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)})
             timerTween:Play()
@@ -961,7 +955,6 @@ function Library:CreateWindow(options)
                 local index = table.find(activeNotifications, NotifyFrame)
                 if index then
                     table.remove(activeNotifications, index)
-                    -- Exit animations (0.4s)
                     Tween(NotifyFrame, 0.4, {Position = UDim2.new(1, 40, 1, NotifyFrame.Position.Y.Offset), BackgroundTransparency = 1})
                     Tween(NotifyTitle, 0.4, {TextTransparency = 1})
                     Tween(NotifyText, 0.4, {TextTransparency = 1})
@@ -979,7 +972,6 @@ function Library:CreateWindow(options)
     function UI:UpdateSidePickerPosition()
         if UI.SidePicker then
             local mainPos = UI.MainFrame.Position
-            -- Position under the changelog (changelog is 300px tall + 10px padding)
             UI.SidePicker.Position = UDim2.new(mainPos.X.Scale, mainPos.X.Offset + 640, mainPos.Y.Scale, mainPos.Y.Offset + 310)
         end
     end
@@ -1967,11 +1959,11 @@ function Library:CreateWindow(options)
                     
                     Colorpicker.PickerFrame = Instance.new("Frame")
                     Colorpicker.PickerFrame.Name = "PickerFrame"
-                    Colorpicker.PickerFrame.Parent = Colorpicker.Frame
+                    Colorpicker.PickerFrame.Parent = UI.ScreenGui
                     Colorpicker.PickerFrame.BackgroundColor3 = UI.Colors.ElementBackground
                     Colorpicker.PickerFrame.BackgroundTransparency = 1
-                    Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 1, 5)
-                    Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 0, 0)
+                    Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 0, 0)
+                    Colorpicker.PickerFrame.Size = UDim2.new(0, 200, 0, 175)
                     Colorpicker.PickerFrame.Visible = false
                     Colorpicker.PickerFrame.Active = true
                     Colorpicker.PickerFrame.ZIndex = 5000
@@ -2133,14 +2125,14 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            UI:UpdateSidePickerPosition()
-                            UI.SidePicker.Visible = true
-                            UI.SidePickerTitle.Text = text
                             
-                            Colorpicker.PickerFrame.Parent = UI.SidePicker
+                            local boxAbsPos = Colorpicker.Box.AbsolutePosition
+                            local boxAbsSize = Colorpicker.Box.AbsoluteSize
+                            local pickerX = boxAbsPos.X + boxAbsSize.X + 5
+                            local pickerY = boxAbsPos.Y
+                            
+                            Colorpicker.PickerFrame.Position = UDim2.new(0, pickerX, 0, pickerY)
                             Colorpicker.PickerFrame.Visible = true
-                            Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 0, 30)
-                            Colorpicker.PickerFrame.Size = UDim2.new(1, 0, 1, -30)
                             Colorpicker.PickerFrame.BackgroundTransparency = 1
                             
                             Tween(Colorpicker.PickerFrame, 0.22, {BackgroundTransparency = 0})
@@ -2157,8 +2149,6 @@ function Library:CreateWindow(options)
                             task.delay(0.22, function() 
                                 if not Colorpicker.Opened then 
                                     Colorpicker.PickerFrame.Visible = false 
-                                    Colorpicker.PickerFrame.Parent = Colorpicker.Frame
-                                    UI.SidePicker.Visible = false
                                 end 
                             end)
                         end
