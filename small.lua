@@ -1,5 +1,5 @@
 local Library = {}
--- v2
+-- v2.1
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1740,16 +1740,17 @@ function Library:CreateWindow(options)
                     Colorpicker.PaletteBtn.Name = "PaletteBtn"
                     Colorpicker.PaletteBtn.Parent = Colorpicker.Frame
                     Colorpicker.PaletteBtn.BackgroundTransparency = 1
-                    Colorpicker.PaletteBtn.Position = UDim2.new(1, -50, 0.5, -8)
-                    Colorpicker.PaletteBtn.Size = UDim2.new(0, 16, 0, 16)
+                    Colorpicker.PaletteBtn.Position = UDim2.new(1, -60, 0.5, -10)
+                    Colorpicker.PaletteBtn.Size = UDim2.new(0, 20, 0, 20)
                     Colorpicker.PaletteBtn.Image = "rbxassetid://13318260408"
-                    Colorpicker.PaletteBtn.ImageColor3 = Color3.fromRGB(150, 150, 150)
+                    Colorpicker.PaletteBtn.ImageColor3 = UI.Colors.Accent
                     Colorpicker.PaletteBtn.ZIndex = 11
+
                     Colorpicker.ToggleButton = Instance.new("TextButton")
                     Colorpicker.ToggleButton.Name = "ToggleButton"
                     Colorpicker.ToggleButton.Parent = Colorpicker.Frame
                     Colorpicker.ToggleButton.BackgroundTransparency = 1
-                    Colorpicker.ToggleButton.Size = UDim2.new(1, -55, 0, 28)
+                    Colorpicker.ToggleButton.Size = UDim2.new(1, -65, 0, 28)
                     Colorpicker.ToggleButton.Text = ""
                     Colorpicker.ToggleButton.AutoButtonColor = false
                     Colorpicker.ToggleButton.ZIndex = 6
@@ -1774,7 +1775,7 @@ function Library:CreateWindow(options)
                     Colorpicker.PaletteFrame.Size = UDim2.new(0, 115, 0, 0)
                     Colorpicker.PaletteFrame.AutomaticSize = Enum.AutomaticSize.Y
                     Colorpicker.PaletteFrame.Visible = false
-                    Colorpicker.PaletteFrame.ZIndex = 5001
+                    Colorpicker.PaletteFrame.ZIndex = 10000
                     local PalStroke = Instance.new("UIStroke")
                     PalStroke.Color = Color3.fromRGB(34, 26, 40)
                     PalStroke.Parent = Colorpicker.PaletteFrame
