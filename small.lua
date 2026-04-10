@@ -1,5 +1,5 @@
 local Library = {}
--- use unified and cinnamon.sellhub.cx
+-- v1
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1771,21 +1771,25 @@ function Library:CreateWindow(options)
                     Colorpicker.PaletteFrame.Name = "PaletteFrame"
                     Colorpicker.PaletteFrame.Parent = UI.ScreenGui
                     Colorpicker.PaletteFrame.BackgroundColor3 = UI.Colors.ElementBackground
-                    Colorpicker.PaletteFrame.Size = UDim2.new(0, 120, 0, 0)
+                    Colorpicker.PaletteFrame.Size = UDim2.new(0, 115, 0, 0)
                     Colorpicker.PaletteFrame.AutomaticSize = Enum.AutomaticSize.Y
                     Colorpicker.PaletteFrame.Visible = false
                     Colorpicker.PaletteFrame.ZIndex = 5001
                     local PalStroke = Instance.new("UIStroke")
                     PalStroke.Color = Color3.fromRGB(34, 26, 40)
                     PalStroke.Parent = Colorpicker.PaletteFrame
-                    local PalLayout = Instance.new("UIListLayout")
+                    local PalLayout = Instance.new("UIGridLayout")
                     PalLayout.Parent = Colorpicker.PaletteFrame
-                    PalLayout.Padding = UDim.new(0, 5)
+                    PalLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+                    PalLayout.CellSize = UDim2.new(0, 45, 0, 18)
                     PalLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-                    PalLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                    PalLayout.StartCorner = Enum.StartCorner.TopLeft
                     local PalPad = Instance.new("UIPadding", Colorpicker.PaletteFrame)
                     PalPad.PaddingTop = UDim.new(0, 8)
                     PalPad.PaddingBottom = UDim.new(0, 8)
+                    PalPad.PaddingLeft = UDim.new(0, 8)
+                    PalPad.PaddingRight = UDim.new(0, 8)
+
                     local LastPaletteActivity = 0
                     local PaletteColors = {
                         {Name = "Red", Color = Color3.fromRGB(255, 0, 0)},
@@ -1797,10 +1801,10 @@ function Library:CreateWindow(options)
                         {Name = "White", Color = Color3.fromRGB(255, 255, 255)},
                         {Name = "Black", Color = Color3.fromRGB(0, 0, 0)}
                     }
+
                     for _, data in ipairs(PaletteColors) do
                         local btn = Instance.new("TextButton")
                         btn.Parent = Colorpicker.PaletteFrame
-                        btn.Size = UDim2.new(0, 100, 0, 18)
                         btn.BackgroundColor3 = data.Color
                         btn.Text = ""
                         btn.BorderSizePixel = 0
