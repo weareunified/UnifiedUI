@@ -1,5 +1,5 @@
 local Library = {}
--- v2.1
+-- v2.2
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -371,6 +371,8 @@ function Library:CreateWindow(options)
     UI.ScreenGui.Name = RandomString(16)
     UI.ScreenGui.ResetOnSpawn = false
     UI.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    UI.ScreenGui.IgnoreGuiInset = true
+    UI.ScreenGui.DisplayOrder = 100
     local coreGui = game:GetService("CoreGui")
     if gethui then
         UI.ScreenGui.Parent = gethui()
