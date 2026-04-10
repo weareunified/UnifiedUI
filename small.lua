@@ -1,5 +1,5 @@
 local Library = {}
--- v1
+-- bro fix it alr..
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1963,7 +1963,7 @@ function Library:CreateWindow(options)
                     Colorpicker.PickerFrame.BackgroundColor3 = UI.Colors.ElementBackground
                     Colorpicker.PickerFrame.BackgroundTransparency = 1
                     Colorpicker.PickerFrame.Position = UDim2.new(0, 0, 0, 0)
-                    Colorpicker.PickerFrame.Size = UDim2.new(0, 200, 0, 225)
+                    Colorpicker.PickerFrame.Size = UDim2.new(0, 200, 0, 175)
                     Colorpicker.PickerFrame.Visible = false
                     Colorpicker.PickerFrame.Active = true
                     Colorpicker.PickerFrame.ZIndex = 5000
@@ -2071,61 +2071,6 @@ function Library:CreateWindow(options)
                     DarknessCursorStroke.Color = Color3.fromRGB(0, 0, 0)
                     DarknessCursorStroke.Parent = Colorpicker.DarknessCursor
 
-                    Colorpicker.Palette = Instance.new("Frame")
-                    Colorpicker.Palette.Name = "Palette"
-                    Colorpicker.Palette.Parent = Colorpicker.PickerFrame
-                    Colorpicker.Palette.BackgroundTransparency = 1
-                    Colorpicker.Palette.Position = UDim2.new(0, 10, 0, 175)
-                    Colorpicker.Palette.Size = UDim2.new(1, -20, 0, 40)
-                    Colorpicker.Palette.ZIndex = 5001
-                    
-                    local PaletteLayout = Instance.new("UIGridLayout")
-                    PaletteLayout.Parent = Colorpicker.Palette
-                    PaletteLayout.CellSize = UDim2.new(0, 19, 0, 19)
-                    PaletteLayout.Padding = UDim2.new(0, 4, 0, 4)
-                    PaletteLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-                    local function CreatePaletteButton(color, isAccent)
-                        local Btn = Instance.new("TextButton")
-                        Btn.BackgroundColor3 = color
-                        Btn.BorderSizePixel = 0
-                        Btn.Text = isAccent and "A" or ""
-                        Btn.TextColor3 = Color3.fromRGB(0, 0, 0)
-                        Btn.TextSize = 10
-                        Btn.Font = Enum.Font.SourceSansBold
-                        Btn.ZIndex = 5002
-                        Btn.Parent = Colorpicker.Palette
-                        
-                        local BtnCorner = Instance.new("UICorner")
-                        BtnCorner.CornerRadius = UDim.new(0, 2)
-                        BtnCorner.Parent = Btn
-
-                        Btn.MouseButton1Click:Connect(function()
-                            Colorpicker.Update(isAccent and UI.Colors.Accent or color)
-                        end)
-
-                        if isAccent then
-                            task.spawn(function()
-                                while Btn and Btn.Parent do
-                                    Btn.BackgroundColor3 = UI.Colors.Accent
-                                    task.wait(0.5)
-                                end
-                            end)
-                        end
-                    end
-
-                    CreatePaletteButton(UI.Colors.Accent, true)
-                    local presetColors = {
-                        Color3.fromRGB(255, 255, 255), Color3.fromRGB(150, 150, 150), Color3.fromRGB(0, 0, 0),
-                        Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255),
-                        Color3.fromRGB(255, 255, 0), Color3.fromRGB(0, 255, 255), Color3.fromRGB(255, 0, 255),
-                        Color3.fromRGB(255, 128, 0), Color3.fromRGB(128, 255, 0), Color3.fromRGB(0, 255, 128),
-                        Color3.fromRGB(0, 128, 255), Color3.fromRGB(128, 0, 255), Color3.fromRGB(255, 0, 128)
-                    }
-                    for _, col in ipairs(presetColors) do
-                        CreatePaletteButton(col, false)
-                    end
-
                     Colorpicker.InputBlocker.MouseButton1Click:Connect(function()
                     end)
 
@@ -2195,22 +2140,10 @@ function Library:CreateWindow(options)
                             Tween(Colorpicker.SatVal, 0.22, {BackgroundTransparency = 0, ImageTransparency = 0})
                             Tween(Colorpicker.Hue, 0.22, {BackgroundTransparency = 0})
                             Tween(Colorpicker.Darkness, 0.22, {BackgroundTransparency = 0})
-                            Tween(Colorpicker.Palette, 0.22, {BackgroundTransparency = 0})
-                            for _, child in pairs(Colorpicker.Palette:GetChildren()) do
-                                if child:IsA("TextButton") then
-                                    Tween(child, 0.22, {BackgroundTransparency = 0, TextTransparency = 0})
-                                end
-                            end
                         else
                             Tween(Colorpicker.SatVal, 0.18, {BackgroundTransparency = 1, ImageTransparency = 1})
                             Tween(Colorpicker.Hue, 0.18, {BackgroundTransparency = 1})
                             Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
-                            Tween(Colorpicker.Palette, 0.18, {BackgroundTransparency = 1})
-                            for _, child in pairs(Colorpicker.Palette:GetChildren()) do
-                                if child:IsA("TextButton") then
-                                    Tween(child, 0.18, {BackgroundTransparency = 1, TextTransparency = 1})
-                                end
-                            end
                             Tween(PickerStroke, 0.18, {Transparency = 1})
                             Tween(Colorpicker.PickerFrame, 0.22, {BackgroundTransparency = 1})
                             task.delay(0.22, function() 
