@@ -1,5 +1,5 @@
 local Library = {}
--- use unified and cinnamon
+-- Color palette fixed
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -104,12 +104,12 @@ function Library:CreateWindow(options)
         ConfigFolder = "Unified/Configs",
         Colors = {
             Accent = accentColor,
-            MainBackground = Color3.fromRGB(9, 8, 9),
-            SidebarBackground = Color3.fromRGB(7, 7, 7),
-            SectionBackground = Color3.fromRGB(7, 7, 7),
-            ElementBackground = Color3.fromRGB(11, 10, 11),
-            MainText = Color3.fromRGB(200, 200, 200),
-            SubText = Color3.fromRGB(150, 150, 150)
+            MainBackground = Color3.fromRGB(18, 16, 20),
+            SidebarBackground = Color3.fromRGB(14, 12, 16),
+            SectionBackground = Color3.fromRGB(22, 19, 26),
+            ElementBackground = Color3.fromRGB(28, 24, 32),
+            MainText = Color3.fromRGB(220, 220, 225),
+            SubText = Color3.fromRGB(150, 150, 155)
         }
     }
     Library._UI = UI
@@ -1948,21 +1948,11 @@ function Library:CreateWindow(options)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = Colorpicker.Box
 
-                    Colorpicker.PaletteBtn = Instance.new("ImageButton")
-                    Colorpicker.PaletteBtn.Name = "PaletteBtn"
-                    Colorpicker.PaletteBtn.Parent = Colorpicker.Frame
-                    Colorpicker.PaletteBtn.BackgroundTransparency = 1
-                    Colorpicker.PaletteBtn.Position = UDim2.new(1, -50, 0.5, -8)
-                    Colorpicker.PaletteBtn.Size = UDim2.new(0, 16, 0, 16)
-                    Colorpicker.PaletteBtn.Image = "rbxassetid://13318260408"
-                    Colorpicker.PaletteBtn.ImageColor3 = Color3.fromRGB(150, 150, 150)
-                    Colorpicker.PaletteBtn.ZIndex = 11
-
                     Colorpicker.ToggleButton = Instance.new("TextButton")
                     Colorpicker.ToggleButton.Name = "ToggleButton"
                     Colorpicker.ToggleButton.Parent = Colorpicker.Frame
                     Colorpicker.ToggleButton.BackgroundTransparency = 1
-                    Colorpicker.ToggleButton.Size = UDim2.new(1, -55, 0, 28)
+                    Colorpicker.ToggleButton.Size = UDim2.new(1, 0, 0, 28)
                     Colorpicker.ToggleButton.Text = ""
                     Colorpicker.ToggleButton.AutoButtonColor = false
                     Colorpicker.ToggleButton.ZIndex = 6
@@ -1982,61 +1972,6 @@ function Library:CreateWindow(options)
                     PickerStroke.Color = Color3.fromRGB(34, 26, 40)
                     PickerStroke.Transparency = 1
                     PickerStroke.Parent = Colorpicker.PickerFrame
-
-                    Colorpicker.PaletteFrame = Instance.new("Frame")
-                    Colorpicker.PaletteFrame.Name = "PaletteFrame"
-                    Colorpicker.PaletteFrame.Parent = UI.ScreenGui
-                    Colorpicker.PaletteFrame.BackgroundColor3 = UI.Colors.ElementBackground
-                    Colorpicker.PaletteFrame.Size = UDim2.new(0, 120, 0, 135)
-                    Colorpicker.PaletteFrame.Visible = false
-                    Colorpicker.PaletteFrame.ZIndex = 5001
-                    local PalStroke = Instance.new("UIStroke")
-                    PalStroke.Color = Color3.fromRGB(34, 26, 40)
-                    PalStroke.Parent = Colorpicker.PaletteFrame
-                    local PalLayout = Instance.new("UIListLayout")
-                    PalLayout.Parent = Colorpicker.PaletteFrame
-                    PalLayout.Padding = UDim.new(0, 5)
-                    PalLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-                    PalLayout.SortOrder = Enum.SortOrder.LayoutOrder
-                    local PalPad = Instance.new("UIPadding", Colorpicker.PaletteFrame)
-                    PalPad.PaddingTop = UDim.new(0, 8)
-
-                    local LastPaletteActivity = 0
-                    local PaletteColors = {
-                        {Name = "Red", Color = Color3.fromRGB(255, 0, 0)},
-                        {Name = "Green", Color = Color3.fromRGB(0, 255, 0)},
-                        {Name = "Blue", Color = Color3.fromRGB(0, 0, 255)},
-                        {Name = "Yellow", Color = Color3.fromRGB(255, 255, 0)},
-                        {Name = "Purple", Color = Color3.fromRGB(160, 32, 240)},
-                        {Name = "Cyan", Color = Color3.fromRGB(0, 255, 255)},
-                        {Name = "White", Color = Color3.fromRGB(255, 255, 255)},
-                        {Name = "Black", Color = Color3.fromRGB(0, 0, 0)}
-                    }
-
-                    for _, data in ipairs(PaletteColors) do
-                        local btn = Instance.new("TextButton")
-                        btn.Parent = Colorpicker.PaletteFrame
-                        btn.Size = UDim2.new(0, 100, 0, 12)
-                        btn.BackgroundColor3 = data.Color
-                        btn.Text = ""
-                        btn.BorderSizePixel = 0
-                        local bs = Instance.new("UIStroke")
-                        bs.Color = Color3.fromRGB(20, 20, 20)
-                        bs.Parent = btn
-                        btn.MouseButton1Click:Connect(function()
-                            LastPaletteActivity = tick()
-                            Colorpicker.Update(data.Color)
-                        end)
-                    end
-
-                    task.spawn(function()
-                        while true do
-                            task.wait(0.5)
-                            if Colorpicker.PaletteFrame and Colorpicker.PaletteFrame.Visible and tick() - LastPaletteActivity > 3 then
-                                Colorpicker.PaletteFrame.Visible = false
-                            end
-                        end
-                    end)
 
                     Colorpicker.InputBlocker = Instance.new("TextButton")
                     Colorpicker.InputBlocker.Name = "InputBlocker"
@@ -2220,14 +2155,6 @@ function Library:CreateWindow(options)
                         RefreshCanvasSize()
                         task.delay(0.35, RefreshCanvasSize)
                     end
-
-                    Colorpicker.PaletteBtn.MouseButton1Click:Connect(function()
-                        local boxAbsPos = Colorpicker.Box.AbsolutePosition
-                        local boxAbsSize = Colorpicker.Box.AbsoluteSize
-                        Colorpicker.PaletteFrame.Position = UDim2.new(0, boxAbsPos.X + boxAbsSize.X + 5, 0, boxAbsPos.Y)
-                        Colorpicker.PaletteFrame.Visible = not Colorpicker.PaletteFrame.Visible
-                        if Colorpicker.PaletteFrame.Visible then LastPaletteActivity = tick() end
-                    end)
 
                     Colorpicker.ToggleButton.MouseButton1Click:Connect(function() 
                         if UserInputService:GetFocusedTextBox() then return end
