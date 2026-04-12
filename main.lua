@@ -1,5 +1,5 @@
 local Library = {}
--- Color palette fixed v1
+-- Color palette fixed V2
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -2111,14 +2111,6 @@ function Library:CreateWindow(options)
                         UpdateColor()
                     end
 
-                    local function UpdatePosition()
-                        if not (Colorpicker.Box and Colorpicker.PickerFrame and Colorpicker.PickerFrame.Visible) then return end
-                        local boxAbsPos = Colorpicker.Box.AbsolutePosition
-                        local boxAbsSize = Colorpicker.Box.AbsoluteSize
-                        Colorpicker.PickerFrame.Position = UDim2.new(0, boxAbsPos.X + boxAbsSize.X + 5, 0, boxAbsPos.Y)
-                    end
-
-                    local posConn, scrollConn
                     local function SetOpened(opened)
                         if not Colorpicker.Frame then Colorpicker.Opened = opened return end
                         if opened then
@@ -2133,7 +2125,13 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            UpdatePosition()
+                            
+                            local boxAbsPos = Colorpicker.Box.AbsolutePosition
+                            local boxAbsSize = Colorpicker.Box.AbsoluteSize
+                            local pickerX = boxAbsPos.X + boxAbsSize.X + 5
+                            local pickerY = boxAbsPos.Y
+                            
+                            Colorpicker.PickerFrame.Position = UDim2.new(0, pickerX, 0, pickerY)
                             Colorpicker.PickerFrame.Visible = true
                             Colorpicker.PickerFrame.BackgroundTransparency = 1
                             
@@ -2142,13 +2140,7 @@ function Library:CreateWindow(options)
                             Tween(Colorpicker.SatVal, 0.22, {BackgroundTransparency = 0, ImageTransparency = 0})
                             Tween(Colorpicker.Hue, 0.22, {BackgroundTransparency = 0})
                             Tween(Colorpicker.Darkness, 0.22, {BackgroundTransparency = 0})
-
-                            if not posConn then posConn = UI.MainFrame:GetPropertyChangedSignal("Position"):Connect(UpdatePosition) end
-                            if not scrollConn then scrollConn = TabContent:GetPropertyChangedSignal("CanvasPosition"):Connect(UpdatePosition) end
                         else
-                            if posConn then posConn:Disconnect() posConn = nil end
-                            if scrollConn then scrollConn:Disconnect() scrollConn = nil end
-
                             Tween(Colorpicker.SatVal, 0.18, {BackgroundTransparency = 1, ImageTransparency = 1})
                             Tween(Colorpicker.Hue, 0.18, {BackgroundTransparency = 1})
                             Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
@@ -2167,6 +2159,16 @@ function Library:CreateWindow(options)
                     Colorpicker.ToggleButton.MouseButton1Click:Connect(function() 
                         if UserInputService:GetFocusedTextBox() then return end
                         SetOpened(not Colorpicker.Opened) 
+                    end)
+
+                    Colorpicker.Box:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+                        if Colorpicker.Opened and Colorpicker.PickerFrame then
+                            local boxAbsPos = Colorpicker.Box.AbsolutePosition
+                            local boxAbsSize = Colorpicker.Box.AbsoluteSize
+                            local pickerX = boxAbsPos.X + boxAbsSize.X + 5
+                            local pickerY = boxAbsPos.Y
+                            Colorpicker.PickerFrame.Position = UDim2.new(0, pickerX, 0, pickerY)
+                        end
                     end)
 
                     local satvalDragging = false
