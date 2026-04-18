@@ -1,5 +1,5 @@
 local Library = {}
--- loading fixed
+-- loading fixed v2
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -653,7 +653,7 @@ function Library:CreateWindow(options)
     UI.UserName.Position = UDim2.new(0, 35, 0, 0)
     UI.UserName.Size = UDim2.new(1, -35, 1, 0)
     UI.UserName.Font = Enum.Font.SourceSans
-    UI.UserName.Text = " <font color=\"rgb(150, 150, 150)\"> • </font> <i>Thanks for using!</i>"
+    UI.UserName.Text = LocalPlayer.Name:lower()
     UI.UserName.TextColor3 = Color3.fromRGB(180, 180, 180)
     UI.UserName.TextSize = 13
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
@@ -661,21 +661,7 @@ function Library:CreateWindow(options)
     UI.UserName.TextTransparency = 0
     UI.UserName.ClipsDescendants = false
 
-    local function StartUserPanelLoop()
-        local isThanks = true
-        while true do
-            task.wait(10)
-            local nextText = isThanks and (" <font color=\"rgb(150, 150, 150)\"> • </font> " .. LocalPlayer.Name:lower()) or " <font color=\"rgb(150, 150, 150)\"> • </font> <i>Thanks for using!</i>"
-            isThanks = not isThanks
-            Tween(UI.UserName, 0.5, {Position = UDim2.new(0, 35, 0, 15), TextTransparency = 1})
-            task.delay(0.5, function()
-                UI.UserName.Text = nextText
-                UI.UserName.Position = UDim2.new(0, 35, 0, -15)
-                Tween(UI.UserName, 0.5, {Position = UDim2.new(0, 35, 0, 0), TextTransparency = 0})
-            end)
-        end
-    end
-    task.spawn(StartUserPanelLoop)
+
 
     UI.MainContent = Instance.new("Frame")
     UI.MainContent.Name = "MainContent"
@@ -2321,8 +2307,8 @@ function Library:CreateWindow(options)
                     Dropdown.List.BackgroundTransparency = 0
                     Dropdown.List.Position = UDim2.new(0, 0, 1, 5)
                     Dropdown.List.Size = UDim2.new(1, 0, 0, 0)
-                    Dropdown.List.Visible = false
                     Dropdown.List.ClipsDescendants = true
+                    Dropdown.List.Visible = false
                     Dropdown.List.ZIndex = 100
                     Dropdown.List.Active = true
                     Dropdown.List.ScrollBarThickness = 3
