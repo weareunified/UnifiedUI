@@ -1,5 +1,5 @@
 local Library = {}
--- loading fixed v2
+-- loading fixed v3
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1759,6 +1759,31 @@ function Library:CreateWindow(options)
                 Image.Img.Size = UDim2.new(0, 90, 0, 90)
                 Image.Img.Image = id
                 return Image
+            end
+
+            function Section:CreateLabel(text)
+                local Label = {}
+                Label.Frame = Instance.new("Frame")
+                Label.Frame.Name = "Label_" .. text
+                Label.Frame.Parent = Section.Container
+                Label.Frame.BackgroundTransparency = 1
+                Label.Frame.Size = UDim2.new(1, 0, 0, 24)
+                
+                Label.TextLabel = Instance.new("TextLabel")
+                Label.TextLabel.Parent = Label.Frame
+                Label.TextLabel.BackgroundTransparency = 1
+                Label.TextLabel.Size = UDim2.new(1, 0, 1, 0)
+                Label.TextLabel.Font = Enum.Font.SourceSans
+                Label.TextLabel.Text = text
+                Label.TextLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+                Label.TextLabel.TextSize = 14
+                Label.TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+                
+                function Label:Update(newText)
+                    Label.TextLabel.Text = newText
+                end
+                
+                return Label
             end
 
             function Section:CreateColorpicker(text, flag, default, callback)
