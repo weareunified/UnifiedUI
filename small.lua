@@ -1,5 +1,5 @@
 local Library = {}
--- bro fix it alr..
+-- loading fixed
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -104,12 +104,12 @@ function Library:CreateWindow(options)
         ConfigFolder = "Unified/Configs",
         Colors = {
             Accent = accentColor,
-            MainBackground = Color3.fromRGB(9, 8, 9),
-            SidebarBackground = Color3.fromRGB(7, 7, 7),
-            SectionBackground = Color3.fromRGB(7, 7, 7),
-            ElementBackground = Color3.fromRGB(11, 10, 11),
-            MainText = Color3.fromRGB(200, 200, 200),
-            SubText = Color3.fromRGB(150, 150, 150)
+            MainBackground = Color3.fromRGB(18, 16, 20),
+            SidebarBackground = Color3.fromRGB(14, 12, 16),
+            SectionBackground = Color3.fromRGB(22, 19, 26),
+            ElementBackground = Color3.fromRGB(28, 24, 32),
+            MainText = Color3.fromRGB(220, 220, 225),
+            SubText = Color3.fromRGB(150, 150, 155)
         }
     }
     Library._UI = UI
@@ -439,52 +439,21 @@ function Library:CreateWindow(options)
         if not UI.LoadingActive then return end
         UI.LoadingFinishing = true
 
-        local overlay = UI.LoadingOverlay
-        local holder = overlay and overlay:FindFirstChild("Holder")
-        local status = holder and holder:FindFirstChild("Status")
-        if status and status.Parent then
-            pcall(function()
-                Tween(status, 0.15, {TextTransparency = 1})
-            end)
-            task.delay(0.16, function()
-                if not (UI.LoadingFinishing and UI.LoadingActive and UI.LoadingOverlay == overlay and overlay and overlay.Parent) then return end
-                pcall(function()
-                    status.Text = "Done!"
-                    Tween(status, 0.2, {TextTransparency = 0})
-                end)
-            end)
-        end
-
-        task.delay(0.55, function()
-            if UI.LoadingOverlay == overlay then
-                UI:HideLoading()
-            end
-        end)
+        task.wait(0.5)
+        UI:HideLoading()
     end
 
     function UI:ShowLoading(statusText)
-        UI.LoadingStatus = tostring(statusText or UI.LoadingStatus or "")
-        if UI.LoadingActive and UI.LoadingOverlay and UI.LoadingOverlay.Parent then
-            local holder = UI.LoadingOverlay:FindFirstChild("Holder")
-            if holder and holder:FindFirstChild("Status") then
-                holder.Status.Text = UI.LoadingStatus
-            end
-            return
-        end
-
+        if UI.LoadingActive and UI.LoadingOverlay and UI.LoadingOverlay.Parent then return end
         UI.LoadingActive = true
 
-        local overlay = Instance.new("TextButton")
+        local overlay = Instance.new("Frame")
         overlay.Name = "UnifiedLoadingOverlay"
         overlay.Parent = UI.MainFrame
         overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        overlay.BackgroundTransparency = 0.35
+        overlay.BackgroundTransparency = 1
         overlay.BorderSizePixel = 0
         overlay.Size = UDim2.new(1, 0, 1, 0)
-        overlay.Position = UDim2.new(0, 0, 0, 0)
-        overlay.AutoButtonColor = false
-        overlay.Text = ""
-        overlay.Active = true
         overlay.ZIndex = 50000
         UI.LoadingOverlay = overlay
 
@@ -492,151 +461,46 @@ function Library:CreateWindow(options)
         overlayCorner.CornerRadius = UDim.new(0, 6)
         overlayCorner.Parent = overlay
 
-        local blurImg = Instance.new("ImageLabel")
-        blurImg.Name = "Blur"
-        blurImg.Parent = overlay
-        blurImg.BackgroundTransparency = 1
-        blurImg.Size = UDim2.new(1, 0, 1, 0)
-        blurImg.Position = UDim2.new(0, 0, 0, 0)
-        blurImg.Image = "rbxassetid://13353669946"
-        blurImg.ImageTransparency = 0.15
-        blurImg.ScaleType = Enum.ScaleType.Stretch
-        blurImg.ZIndex = overlay.ZIndex
+        Tween(overlay, 0.3, {BackgroundTransparency = 0.4})
 
         local holder = Instance.new("Frame")
         holder.Name = "Holder"
         holder.Parent = overlay
         holder.BackgroundTransparency = 1
         holder.AnchorPoint = Vector2.new(0.5, 0.5)
-        holder.Position = UDim2.new(0.5, 0, 0.5, -10)
-        holder.Size = UDim2.new(0, 360, 0, 140)
+        holder.Position = UDim2.new(0.5, 0, 0.5, 0)
+        holder.Size = UDim2.new(0, 80, 0, 80)
         holder.ZIndex = overlay.ZIndex + 1
 
-        local header = Instance.new("Frame")
-        header.Name = "Header"
-        header.Parent = holder
-        header.BackgroundTransparency = 1
-        header.Position = UDim2.new(0.5, 0, 0, 6)
-        header.AnchorPoint = Vector2.new(0.5, 0)
-        header.Size = UDim2.new(0, 240, 0, 40)
-        header.ZIndex = holder.ZIndex
+        local spinner = Instance.new("ImageLabel")
+        spinner.Name = "Spinner"
+        spinner.Parent = holder
+        spinner.BackgroundTransparency = 1
+        spinner.Size = UDim2.new(1, 0, 1, 0)
+        spinner.Image = "rbxassetid://13460670984"
+        spinner.ImageColor3 = accentColor
+        spinner.ZIndex = holder.ZIndex
 
-        local dots = Instance.new("Frame")
-        dots.Name = "Dots"
-        dots.Parent = header
-        dots.BackgroundTransparency = 1
-        dots.Size = UDim2.new(0, 70, 1, 0)
-        dots.Position = UDim2.new(0, 0, 0, 0)
-        dots.ZIndex = holder.ZIndex
+        local spinnerInner = Instance.new("ImageLabel")
+        spinnerInner.Name = "SpinnerInner"
+        spinnerInner.Parent = holder
+        spinnerInner.BackgroundTransparency = 1
+        spinnerInner.AnchorPoint = Vector2.new(0.5, 0.5)
+        spinnerInner.Position = UDim2.new(0.5, 0, 0.5, 0)
+        spinnerInner.Size = UDim2.new(0.7, 0, 0.7, 0)
+        spinnerInner.Image = "rbxassetid://13460670984"
+        spinnerInner.ImageColor3 = accentColor
+        spinnerInner.ImageTransparency = 0.6
+        spinnerInner.ZIndex = holder.ZIndex
 
-        local title = Instance.new("TextLabel")
-        title.Name = "Title"
-        title.Parent = header
-        title.BackgroundTransparency = 1
-        title.Size = UDim2.new(1, -70, 1, 0)
-        title.Position = UDim2.new(0, 70, 0, 0)
-        title.Font = Enum.Font.SourceSansBold
-        title.Text = "Loading"
-        title.TextColor3 = Color3.fromRGB(235, 235, 235)
-        title.TextSize = 30
-        title.TextXAlignment = Enum.TextXAlignment.Left
-        title.ZIndex = holder.ZIndex
-
-        local function mkDot(i)
-            local d = Instance.new("TextLabel")
-            d.Name = "Dot" .. tostring(i)
-            d.Parent = dots
-            d.BackgroundTransparency = 1
-            d.Size = UDim2.new(0, 18, 1, 0)
-            d.Position = UDim2.new(0, (i - 1) * 22, 0, 0)
-            d.Font = Enum.Font.SourceSansBold
-            d.Text = "."
-            d.TextColor3 = Color3.fromRGB(235, 235, 235)
-            d.TextSize = 28
-            d.ZIndex = dots.ZIndex
-            return d
-        end
-
-        local d1, d2, d3 = mkDot(1), mkDot(2), mkDot(3)
-
-        local status = Instance.new("TextLabel")
-        status.Name = "Status"
-        status.Parent = holder
-        status.BackgroundTransparency = 1
-        status.Size = UDim2.new(1, 0, 0, 28)
-        status.Position = UDim2.new(0, 0, 0, 60)
-        status.Font = Enum.Font.SourceSans
-        status.Text = UI.LoadingStatus ~= "" and UI.LoadingStatus or "Creating tabs"
-        status.TextColor3 = Color3.fromRGB(180, 180, 180)
-        status.TextSize = 16
-        status.TextXAlignment = Enum.TextXAlignment.Center
-        status.TextTransparency = 0
-        status.ZIndex = holder.ZIndex
-
-        task.spawn(function()
-            local messages = {
-                "Creating tabs",
-                "Optimizing interface",
-                "Caching components",
-                "Finalizing"
-            }
-            local idx = 1
-            local shown = {}
-            local lastText = status.Text
-            shown[lastText] = true
-
-            while UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent do
-                if UI.LoadingFinishing then
-                    task.wait(0.05)
-                elseif UI.LoadQueue == 0 then
-                    task.wait(0.2)
-                else
-                    local nextText
-                    local tries = 0
-                    while tries < #messages do
-                        local candidate = messages[idx]
-                        idx = (idx % #messages) + 1
-                        tries = tries + 1
-                        if not shown[candidate] then
-                            nextText = candidate
-                            break
-                        end
-                    end
-
-                    if not nextText then
-                        task.wait(0.25)
-                        continue
-                    end
-
-                    if status and status.Parent then
-                        Tween(status, 0.2, {TextTransparency = 1})
-                        task.wait(0.22)
-                        if status and status.Parent then
-                            status.Text = nextText
-                            lastText = nextText
-                            shown[nextText] = true
-                            Tween(status, 0.25, {TextTransparency = 0})
-                        end
-                    end
-                    task.wait(0.9)
-                end
+        local rotationConn
+        rotationConn = RunService.RenderStepped:Connect(function(dt)
+            if not UI.LoadingActive or not spinner.Parent then
+                rotationConn:Disconnect()
+                return
             end
-        end)
-
-        task.spawn(function()
-            local seq = {d1, d2, d3}
-            while UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent do
-                for i = 1, #seq do
-                    if not (UI.LoadingActive and UI.LoadingOverlay == overlay and overlay.Parent) then break end
-                    for j = 1, #seq do
-                        local target = seq[j]
-                        if target and target.Parent then
-                            Tween(target, 0.18, {TextSize = (j == i) and 36 or 28})
-                        end
-                    end
-                    task.wait(0.2)
-                end
-            end
+            spinner.Rotation = spinner.Rotation + (dt * 180)
+            spinnerInner.Rotation = spinnerInner.Rotation - (dt * 120)
         end)
     end
 
@@ -2111,6 +1975,14 @@ function Library:CreateWindow(options)
                         UpdateColor()
                     end
 
+                    local function UpdatePosition()
+                        if not (Colorpicker.Box and Colorpicker.PickerFrame and Colorpicker.PickerFrame.Visible) then return end
+                        local boxAbsPos = Colorpicker.Box.AbsolutePosition
+                        local boxAbsSize = Colorpicker.Box.AbsoluteSize
+                        Colorpicker.PickerFrame.Position = UDim2.new(0, boxAbsPos.X + boxAbsSize.X + 5, 0, boxAbsPos.Y)
+                    end
+
+                    local posConn, scrollConn
                     local function SetOpened(opened)
                         if not Colorpicker.Frame then Colorpicker.Opened = opened return end
                         if opened then
@@ -2125,13 +1997,7 @@ function Library:CreateWindow(options)
                         Colorpicker.Opened = opened
                         if opened then
                             ResetAllZIndex()
-                            
-                            local boxAbsPos = Colorpicker.Box.AbsolutePosition
-                            local boxAbsSize = Colorpicker.Box.AbsoluteSize
-                            local pickerX = boxAbsPos.X + boxAbsSize.X + 5
-                            local pickerY = boxAbsPos.Y
-                            
-                            Colorpicker.PickerFrame.Position = UDim2.new(0, pickerX, 0, pickerY)
+                            UpdatePosition()
                             Colorpicker.PickerFrame.Visible = true
                             Colorpicker.PickerFrame.BackgroundTransparency = 1
                             
@@ -2140,7 +2006,13 @@ function Library:CreateWindow(options)
                             Tween(Colorpicker.SatVal, 0.22, {BackgroundTransparency = 0, ImageTransparency = 0})
                             Tween(Colorpicker.Hue, 0.22, {BackgroundTransparency = 0})
                             Tween(Colorpicker.Darkness, 0.22, {BackgroundTransparency = 0})
+
+                            if not posConn then posConn = UI.MainFrame:GetPropertyChangedSignal("Position"):Connect(UpdatePosition) end
+                            if not scrollConn then scrollConn = TabContent:GetPropertyChangedSignal("CanvasPosition"):Connect(UpdatePosition) end
                         else
+                            if posConn then posConn:Disconnect() posConn = nil end
+                            if scrollConn then scrollConn:Disconnect() scrollConn = nil end
+
                             Tween(Colorpicker.SatVal, 0.18, {BackgroundTransparency = 1, ImageTransparency = 1})
                             Tween(Colorpicker.Hue, 0.18, {BackgroundTransparency = 1})
                             Tween(Colorpicker.Darkness, 0.18, {BackgroundTransparency = 1})
