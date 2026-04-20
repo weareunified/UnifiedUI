@@ -1,5 +1,5 @@
 local Library = {}
--- fixed toggle
+-- goofy ahh
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1584,6 +1584,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Box.BackgroundColor3 = UI.Colors.ElementBackground
                     ToggleBind.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
+                    ToggleBind.Box.Text = ""
                     local BoxStroke = Instance.new("UIStroke")
                     BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Thickness = 1
@@ -1608,6 +1609,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                     ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                     ToggleBind.Btn.TextSize = 12
+                    ToggleBind.Btn.AutoButtonColor = false
                     local TBPadding = Instance.new("UIPadding")
                     TBPadding.PaddingLeft = UDim.new(0, 8)
                     TBPadding.PaddingRight = UDim.new(0, 8)
@@ -2088,7 +2090,20 @@ function Library:CreateWindow(options)
                         if not (Colorpicker.Box and Colorpicker.PickerFrame and Colorpicker.PickerFrame.Visible) then return end
                         local boxAbsPos = Colorpicker.Box.AbsolutePosition
                         local boxAbsSize = Colorpicker.Box.AbsoluteSize
-                        Colorpicker.PickerFrame.Position = UDim2.new(0, boxAbsPos.X + boxAbsSize.X + 5, 0, boxAbsPos.Y)
+                        local viewportSize = UI.ScreenGui.AbsoluteSize
+                        
+                        local targetX = boxAbsPos.X + boxAbsSize.X + 5
+                        local targetY = boxAbsPos.Y
+                        
+                        -- Keep picker within screen bounds
+                        if targetX + Colorpicker.PickerFrame.AbsoluteSize.X > viewportSize.X then
+                            targetX = boxAbsPos.X - Colorpicker.PickerFrame.AbsoluteSize.X - 5
+                        end
+                        if targetY + Colorpicker.PickerFrame.AbsoluteSize.Y > viewportSize.Y then
+                            targetY = viewportSize.Y - Colorpicker.PickerFrame.AbsoluteSize.Y - 5
+                        end
+                        
+                        Colorpicker.PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
                     end
 
                     local posConn, scrollConn
