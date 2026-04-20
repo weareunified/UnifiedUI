@@ -1,5 +1,5 @@
 local Library = {}
--- loading fixed v3
+-- bind features
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1555,11 +1555,11 @@ function Library:CreateWindow(options)
             end
 
             function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
-                local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Flag = flag or text, Callback = callback or function() end, Waiting = false }
+                local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Mode = "Toggle", Flag = flag or text, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, ToggleBind)
                 
                 -- Ensure SetInitialFlag and GetInputLabel are defined in your script environment
-                SetInitialFlag(ToggleBind.Flag, {ToggleBind.State, ToggleBind.Key.Name}, "togglebind")
+                SetInitialFlag(ToggleBind.Flag, {ToggleBind.State, ToggleBind.Key.Name, ToggleBind.Mode}, "togglebind")
                 
                 local function BuildTB()
                     ToggleBind.Frame = Instance.new("Frame")
@@ -1625,23 +1625,118 @@ function Library:CreateWindow(options)
                                 Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
                                 Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
                             end
-                            UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name}
+                            UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name, ToggleBind.Mode}
                             pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
                         end)
                     end
                     ToggleBind.Update = function(val)
-                        if type(val) == "table" then ToggleBind.State = val[1] if typeof(val[2]) == "string" then ToggleBind.Key = Enum.KeyCode[val[2]] else ToggleBind.Key = val[2] end else ToggleBind.State = val end
+                        if type(val) == "table" then 
+                            ToggleBind.State = val[1] 
+                            if typeof(val[2]) == "string" then ToggleBind.Key = Enum.KeyCode[val[2]] else ToggleBind.Key = val[2] end 
+                            ToggleBind.Mode = val[3] or "Toggle"
+                        else 
+                            ToggleBind.State = val 
+                            ToggleBind.Mode = "Toggle"
+                        end
                         ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) Update(true)
                     end
                     UI.Components[flag or text] = ToggleBind
                     ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State Update() end)
                     ToggleBind.Btn.MouseButton1Click:Connect(function() ToggleBind.Waiting = true ToggleBind.Btn.Text = "..." end)
+                    
+                    ToggleBind.Btn.MouseButton2Click:Connect(function()
+                        if UI.ScreenGui:FindFirstChild("UnifiedContextMenu") then UI.ScreenGui.UnifiedContextMenu:Destroy() end
+                        
+                        local MenuBG = Instance.new("TextButton")
+                        MenuBG.Name = "UnifiedContextMenu"
+                        MenuBG.Parent = UI.ScreenGui
+                        MenuBG.Size = UDim2.new(1, 0, 1, 0)
+                        MenuBG.BackgroundTransparency = 1
+                        MenuBG.Text = ""
+                        MenuBG.ZIndex = 9999
+                        
+                        local MenuFrame = Instance.new("Frame")
+                        MenuFrame.Parent = MenuBG
+                        MenuFrame.BackgroundColor3 = UI.Colors.ElementBackground
+                        MenuFrame.Size = UDim2.new(0, 80, 0, 75)
+                        local absPos = ToggleBind.Btn.AbsolutePosition
+                        MenuFrame.Position = UDim2.new(0, absPos.X, 0, absPos.Y + ToggleBind.Btn.AbsoluteSize.Y + 2)
+                        MenuFrame.ZIndex = 10000
+                        
+                        local UIST = Instance.new("UIStroke")
+                        UIST.Color = Color3.fromRGB(34, 26, 40)
+                        UIST.Parent = MenuFrame
+                        
+                        local UIL = Instance.new("UIListLayout")
+                        UIL.Parent = MenuFrame
+                        
+                        local function AddMode(mName)
+                            local Opt = Instance.new("TextButton")
+                            Opt.Parent = MenuFrame
+                            Opt.Size = UDim2.new(1, 0, 0, 25)
+                            Opt.BackgroundTransparency = ToggleBind.Mode == mName and 0.85 or 1
+                            Opt.BackgroundColor3 = accentColor
+                            Opt.BorderSizePixel = 0
+                            Opt.Font = Enum.Font.SourceSans
+                            Opt.Text = "  " .. mName
+                            if ToggleBind.Mode == mName then
+                                Opt.TextColor3 = accentColor
+                            else
+                                Opt.TextColor3 = Color3.fromRGB(150, 150, 150)
+                            end
+                            Opt.TextSize = 13
+                            Opt.TextXAlignment = Enum.TextXAlignment.Left
+                            Opt.ZIndex = 10001
+                            
+                            Opt.MouseButton1Click:Connect(function()
+                                ToggleBind.Mode = mName
+                                if mName == "Always" then
+                                    ToggleBind.State = true
+                                end
+                                Update()
+                                MenuBG:Destroy()
+                            end)
+                        end
+                        
+                        AddMode("Toggle")
+                        AddMode("Hold")
+                        AddMode("Always")
+                        
+                        MenuBG.MouseButton1Click:Connect(function() MenuBG:Destroy() end)
+                    end)
+                    
                     UserInputService.InputBegan:Connect(function(input)
                         if ToggleBind.Waiting then
-                            if input.UserInputType == Enum.UserInputType.Keyboard then ToggleBind.Key = input.KeyCode ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) ToggleBind.Waiting = false Update()
-                            elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then ToggleBind.Key = input.UserInputType ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) ToggleBind.Waiting = false Update() end
+                            if input.UserInputType == Enum.UserInputType.Keyboard then 
+                                ToggleBind.Key = input.KeyCode 
+                                ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) 
+                                ToggleBind.Waiting = false 
+                                Update()
+                            elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then 
+                                ToggleBind.Key = input.UserInputType 
+                                ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) 
+                                ToggleBind.Waiting = false 
+                                Update() 
+                            end
                         elseif not ToggleBind.Waiting then
-                            if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then ToggleBind.State = not ToggleBind.State Update() end
+                            if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then 
+                                if ToggleBind.Mode == "Toggle" then
+                                    ToggleBind.State = not ToggleBind.State 
+                                    Update()
+                                elseif ToggleBind.Mode == "Hold" then
+                                    ToggleBind.State = true
+                                    Update()
+                                end
+                            end
+                        end
+                    end)
+                    
+                    UserInputService.InputEnded:Connect(function(input)
+                        if not ToggleBind.Waiting and ToggleBind.Mode == "Hold" then
+                            if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then
+                                ToggleBind.State = false
+                                Update()
+                            end
                         end
                     end)
                 end
