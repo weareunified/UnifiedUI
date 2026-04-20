@@ -1,5 +1,5 @@
 local Library = {}
--- bind features V1
+-- fixed toggle
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1604,6 +1604,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Btn.Size = UDim2.new(0, 50, 0, 20)
                     ToggleBind.Btn.AutomaticSize = Enum.AutomaticSize.X
                     ToggleBind.Btn.Font = Enum.Font.SourceSans
+                    ToggleBind.Btn.Text = ""
                     ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                     ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                     ToggleBind.Btn.TextSize = 12
