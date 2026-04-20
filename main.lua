@@ -1,5 +1,5 @@
 local Library = {}
--- bind features
+-- bind features V1
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1644,65 +1644,67 @@ function Library:CreateWindow(options)
                     ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State Update() end)
                     ToggleBind.Btn.MouseButton1Click:Connect(function() ToggleBind.Waiting = true ToggleBind.Btn.Text = "..." end)
                     
-                    ToggleBind.Btn.MouseButton2Click:Connect(function()
-                        if UI.ScreenGui:FindFirstChild("UnifiedContextMenu") then UI.ScreenGui.UnifiedContextMenu:Destroy() end
-                        
-                        local MenuBG = Instance.new("TextButton")
-                        MenuBG.Name = "UnifiedContextMenu"
-                        MenuBG.Parent = UI.ScreenGui
-                        MenuBG.Size = UDim2.new(1, 0, 1, 0)
-                        MenuBG.BackgroundTransparency = 1
-                        MenuBG.Text = ""
-                        MenuBG.ZIndex = 9999
-                        
-                        local MenuFrame = Instance.new("Frame")
-                        MenuFrame.Parent = MenuBG
-                        MenuFrame.BackgroundColor3 = UI.Colors.ElementBackground
-                        MenuFrame.Size = UDim2.new(0, 80, 0, 75)
-                        local absPos = ToggleBind.Btn.AbsolutePosition
-                        MenuFrame.Position = UDim2.new(0, absPos.X, 0, absPos.Y + ToggleBind.Btn.AbsoluteSize.Y + 2)
-                        MenuFrame.ZIndex = 10000
-                        
-                        local UIST = Instance.new("UIStroke")
-                        UIST.Color = Color3.fromRGB(34, 26, 40)
-                        UIST.Parent = MenuFrame
-                        
-                        local UIL = Instance.new("UIListLayout")
-                        UIL.Parent = MenuFrame
-                        
-                        local function AddMode(mName)
-                            local Opt = Instance.new("TextButton")
-                            Opt.Parent = MenuFrame
-                            Opt.Size = UDim2.new(1, 0, 0, 25)
-                            Opt.BackgroundTransparency = ToggleBind.Mode == mName and 0.85 or 1
-                            Opt.BackgroundColor3 = accentColor
-                            Opt.BorderSizePixel = 0
-                            Opt.Font = Enum.Font.SourceSans
-                            Opt.Text = "  " .. mName
-                            if ToggleBind.Mode == mName then
-                                Opt.TextColor3 = accentColor
-                            else
-                                Opt.TextColor3 = Color3.fromRGB(150, 150, 150)
-                            end
-                            Opt.TextSize = 13
-                            Opt.TextXAlignment = Enum.TextXAlignment.Left
-                            Opt.ZIndex = 10001
+                    ToggleBind.Btn.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton2 and not ToggleBind.Waiting then
+                            if UI.ScreenGui:FindFirstChild("UnifiedContextMenu") then UI.ScreenGui.UnifiedContextMenu:Destroy() end
                             
-                            Opt.MouseButton1Click:Connect(function()
-                                ToggleBind.Mode = mName
-                                if mName == "Always" then
-                                    ToggleBind.State = true
+                            local MenuBG = Instance.new("TextButton")
+                            MenuBG.Name = "UnifiedContextMenu"
+                            MenuBG.Parent = UI.ScreenGui
+                            MenuBG.Size = UDim2.new(1, 0, 1, 0)
+                            MenuBG.BackgroundTransparency = 1
+                            MenuBG.Text = ""
+                            MenuBG.ZIndex = 9999
+                            
+                            local MenuFrame = Instance.new("Frame")
+                            MenuFrame.Parent = MenuBG
+                            MenuFrame.BackgroundColor3 = UI.Colors.ElementBackground
+                            MenuFrame.Size = UDim2.new(0, 80, 0, 75)
+                            local absPos = ToggleBind.Btn.AbsolutePosition
+                            MenuFrame.Position = UDim2.new(0, absPos.X, 0, absPos.Y + ToggleBind.Btn.AbsoluteSize.Y + 2)
+                            MenuFrame.ZIndex = 10000
+                            
+                            local UIST = Instance.new("UIStroke")
+                            UIST.Color = Color3.fromRGB(34, 26, 40)
+                            UIST.Parent = MenuFrame
+                            
+                            local UIL = Instance.new("UIListLayout")
+                            UIL.Parent = MenuFrame
+                            
+                            local function AddMode(mName)
+                                local Opt = Instance.new("TextButton")
+                                Opt.Parent = MenuFrame
+                                Opt.Size = UDim2.new(1, 0, 0, 25)
+                                Opt.BackgroundTransparency = ToggleBind.Mode == mName and 0.85 or 1
+                                Opt.BackgroundColor3 = accentColor
+                                Opt.BorderSizePixel = 0
+                                Opt.Font = Enum.Font.SourceSans
+                                Opt.Text = "  " .. mName
+                                if ToggleBind.Mode == mName then
+                                    Opt.TextColor3 = accentColor
+                                else
+                                    Opt.TextColor3 = Color3.fromRGB(150, 150, 150)
                                 end
-                                Update()
-                                MenuBG:Destroy()
-                            end)
+                                Opt.TextSize = 13
+                                Opt.TextXAlignment = Enum.TextXAlignment.Left
+                                Opt.ZIndex = 10001
+                                
+                                Opt.MouseButton1Click:Connect(function()
+                                    ToggleBind.Mode = mName
+                                    if mName == "Always" then
+                                        ToggleBind.State = true
+                                    end
+                                    Update()
+                                    MenuBG:Destroy()
+                                end)
+                            end
+                            
+                            AddMode("Toggle")
+                            AddMode("Hold")
+                            AddMode("Always")
+                            
+                            MenuBG.MouseButton1Click:Connect(function() MenuBG:Destroy() end)
                         end
-                        
-                        AddMode("Toggle")
-                        AddMode("Hold")
-                        AddMode("Always")
-                        
-                        MenuBG.MouseButton1Click:Connect(function() MenuBG:Destroy() end)
                     end)
                     
                     UserInputService.InputBegan:Connect(function(input)
