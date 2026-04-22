@@ -1,5 +1,5 @@
 local Library = {}
--- goofy ahh V1
+-- goofy ahh
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1014,7 +1014,7 @@ function Library:CreateWindow(options)
         
         TabBtn.Visible = false
         UI.LoadQueue = UI.LoadQueue + 1
-        task.delay(UI.LoadQueue * 1, function()
+        task.delay(UI.LoadQueue * 0.05, function()
             TabBtn.Visible = true
             TabBtn.TextTransparency = 1
             Tween(TabBtn, 0.5, {TextTransparency = 0})
@@ -1079,25 +1079,35 @@ function Library:CreateWindow(options)
         Tab.Content = TabContent
 
         local function RefreshCanvasSize()
-            pcall(function()
-                local targetHeight = 20
+            if Tab._refreshing then return end
+            Tab._refreshing = true
+            
+            task.spawn(function()
+                task.wait()
+                Tab._refreshing = false
+                
+                pcall(function()
+                    local targetHeight = 20
 
-                for _, section in pairs(Tab.Sections) do
-                    local sectionBottom = (section.Frame.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + section.Frame.AbsoluteSize.Y
-                    targetHeight = math.max(targetHeight, sectionBottom + 20)
+                    for _, section in pairs(Tab.Sections) do
+                        if section.Frame then
+                            local sectionBottom = (section.Frame.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + section.Frame.AbsoluteSize.Y
+                            targetHeight = math.max(targetHeight, sectionBottom + 20)
 
-                    for _, element in pairs(section.Elements) do
-                        if element.Opened and element.Frame then
-                            local popup = element.List or element.PickerFrame
-                            if popup and popup.Visible then
-                                local popupBottom = (popup.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + popup.AbsoluteSize.Y
-                                targetHeight = math.max(targetHeight, popupBottom + 20)
+                            for _, element in pairs(section.Elements) do
+                                if element.Opened and element.Frame then
+                                    local popup = element.List or element.PickerFrame
+                                    if popup and popup.Visible then
+                                        local popupBottom = (popup.AbsolutePosition.Y - TabContent.AbsolutePosition.Y) + TabContent.CanvasPosition.Y + popup.AbsoluteSize.Y
+                                        targetHeight = math.max(targetHeight, popupBottom + 20)
+                                    end
+                                end
                             end
                         end
                     end
-                end
 
-                TabContent.CanvasSize = UDim2.new(0, 0, 0, targetHeight)
+                    TabContent.CanvasSize = UDim2.new(0, 0, 0, targetHeight)
+                end)
             end)
         end
 
@@ -1125,9 +1135,18 @@ function Library:CreateWindow(options)
         local function Render()
             if Tab.Rendered then return end
             Tab.Rendered = true
-            for _, renderFunc in pairs(Tab.RenderQueue) do
-                SafeExecute(renderFunc)
-            end
+            
+            task.spawn(function()
+                local count = 0
+                for _, renderFunc in pairs(Tab.RenderQueue) do
+                    SafeExecute(renderFunc)
+                    count = count + 1
+                    if count % 8 == 0 then
+                        task.wait()
+                    end
+                end
+                table.clear(Tab.RenderQueue)
+            end)
         end
 
         TabBtn.MouseButton1Click:Connect(function()
