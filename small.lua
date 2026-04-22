@@ -1,5 +1,5 @@
 local Library = {}
--- fixing lag
+-- fixing freezes
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -9,31 +9,48 @@ local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 
 local function SafeExecute(f, ...)
-    local s, e = pcall(f, ...)
-    if not s then warn("[Unified UI Error]: " .. tostring(e)) end
-    return s, e
+    local args = {...}
+    local success, result = xpcall(function() return f(unpack(args)) end, function(err)
+        warn("[Unified UI Crash Handler]: " .. tostring(err))
+        return nil
+    end)
+    return success, result
 end
 
 local function ThrottledLoop(interval, f)
+    local id = HttpService:GenerateGUID(false)
+    getgenv().UnifiedActiveLoops = getgenv().UnifiedActiveLoops or {}
+    getgenv().UnifiedActiveLoops[id] = true
+    
     task.spawn(function()
-        while true do
+        while getgenv().UnifiedActiveLoops[id] do
             local start = tick()
-            SafeExecute(f)
+            local success = SafeExecute(f)
             local elapsed = tick() - start
+            
+            if elapsed > 2 then
+                warn("[Unified UI Freeze Handler]: Loop took too long (" .. math.round(elapsed*100)/100 .. "s), yielding.")
+                task.wait(1)
+            end
+            
             task.wait(math.max(interval - elapsed, 0.01))
-            if elapsed > 0.1 then task.wait(0.1) end
+            if elapsed > 0.2 then task.wait(0.1) end
         end
     end)
+    return id
 end
 
-local function Tween(obj, info, goal)
-    if not obj or not obj.Parent then return end
-    return SafeExecute(function()
-        local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
-        tween:Play()
-        return tween
-    end)
-end
+local FrameWatchdog = { LastTick = tick(), Frozen = false }
+RunService.Heartbeat:Connect(function()
+    local now = tick()
+    local delta = now - FrameWatchdog.LastTick
+    FrameWatchdog.LastTick = now
+    if delta > 0.5 then
+        FrameWatchdog.Frozen = true
+    else
+        FrameWatchdog.Frozen = false
+    end
+end)
 
 ThrottledLoop(30, function()
     if gcinfo then gcinfo() end
