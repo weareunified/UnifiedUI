@@ -1,5 +1,5 @@
 local Library = {}
--- goofy ahh
+-- slider fix
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -9,31 +9,48 @@ local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 
 local function SafeExecute(f, ...)
-    local s, e = pcall(f, ...)
-    if not s then warn("[Unified UI Error]: " .. tostring(e)) end
-    return s, e
+    local args = {...}
+    local success, result = xpcall(function() return f(unpack(args)) end, function(err)
+        warn("[Unified UI Crash Handler]: " .. tostring(err))
+        return nil
+    end)
+    return success, result
 end
 
 local function ThrottledLoop(interval, f)
+    local id = HttpService:GenerateGUID(false)
+    getgenv().UnifiedActiveLoops = getgenv().UnifiedActiveLoops or {}
+    getgenv().UnifiedActiveLoops[id] = true
+    
     task.spawn(function()
-        while true do
+        while getgenv().UnifiedActiveLoops[id] do
             local start = tick()
-            SafeExecute(f)
+            local success = SafeExecute(f)
             local elapsed = tick() - start
+            
+            if elapsed > 2 then
+                warn("[Unified UI Freeze Handler]: Loop took too long (" .. math.round(elapsed*100)/100 .. "s), yielding.")
+                task.wait(1)
+            end
+            
             task.wait(math.max(interval - elapsed, 0.01))
-            if elapsed > 0.1 then task.wait(0.1) end
+            if elapsed > 0.2 then task.wait(0.1) end
         end
     end)
+    return id
 end
 
-local function Tween(obj, info, goal)
-    if not obj or not obj.Parent then return end
-    return SafeExecute(function()
-        local tween = TweenService:Create(obj, TweenInfo.new(info, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
-        tween:Play()
-        return tween
-    end)
-end
+local FrameWatchdog = { LastTick = tick(), Frozen = false }
+RunService.Heartbeat:Connect(function()
+    local now = tick()
+    local delta = now - FrameWatchdog.LastTick
+    FrameWatchdog.LastTick = now
+    if delta > 0.5 then
+        FrameWatchdog.Frozen = true
+    else
+        FrameWatchdog.Frozen = false
+    end
+end)
 
 ThrottledLoop(30, function()
     if gcinfo then gcinfo() end
@@ -713,6 +730,17 @@ function Library:CreateWindow(options)
 
     local activeNotifications = {}
 
+    function UI:Toggle()
+        if not UI.MainFrame then return end
+        
+        -- Close any open colorpickers when toggling UI visibility
+        if UI.OpenedElement and UI.OpenedElement.SetOpened then
+            UI.OpenedElement.SetOpened(false)
+        end
+        
+        UI.MainFrame.Visible = not UI.MainFrame.Visible
+    end
+
     function UI:Notify(title, text)
         local NotifyFrame = Instance.new("Frame")
         NotifyFrame.Name = "Notification"
@@ -920,7 +948,13 @@ function Library:CreateWindow(options)
         ClLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
         ClLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            ClContent.CanvasSize = UDim2.new(0, 0, 0, ClLayout.AbsoluteContentSize.Y)
+            if UI._clrefreshing then return end
+            UI._clrefreshing = true
+            task.spawn(function()
+                task.wait()
+                UI._clrefreshing = false
+                pcall(function() ClContent.CanvasSize = UDim2.new(0, 0, 0, ClLayout.AbsoluteContentSize.Y) end)
+            end)
         end)
 
         for _, log in pairs(logs) do
@@ -1172,6 +1206,11 @@ function Library:CreateWindow(options)
             Tween(TabBtn, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
             if Tab.Indicator then Tween(Tab.Indicator, 0.3, {BackgroundTransparency = 0}) end
             if Tab.Icon then Tween(Tab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(255, 255, 255)}) end
+            
+            -- Close any open colorpickers when switching tabs
+            if UI.OpenedElement and UI.OpenedElement.SetOpened then
+                UI.OpenedElement.SetOpened(false)
+            end
         end)
 
         if #UI.Tabs == 1 then
@@ -1238,8 +1277,16 @@ function Library:CreateWindow(options)
                 ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 
                 ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                    Section.Container.Size = UDim2.new(1, -24, 0, ContainerLayout.AbsoluteContentSize.Y + 10)
-                    Section.Frame.Size = UDim2.new(1, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 45)
+                    if Section._refreshing then return end
+                    Section._refreshing = true
+                    task.spawn(function()
+                        task.wait()
+                        Section._refreshing = false
+                        pcall(function()
+                            Section.Container.Size = UDim2.new(1, -24, 0, ContainerLayout.AbsoluteContentSize.Y + 10)
+                            Section.Frame.Size = UDim2.new(1, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 45)
+                        end)
+                    end)
                 end)
             end
 
@@ -1313,7 +1360,13 @@ function Library:CreateWindow(options)
                     ToggleLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
                     ToggleLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                        Toggle.Frame.Size = UDim2.new(1, 0, 0, ToggleLayout.AbsoluteContentSize.Y)
+                        if Toggle._refreshing then return end
+                        Toggle._refreshing = true
+                        task.spawn(function()
+                            task.wait()
+                            Toggle._refreshing = false
+                            pcall(function() Toggle.Frame.Size = UDim2.new(1, 0, 0, ToggleLayout.AbsoluteContentSize.Y) end)
+                        end)
                     end)
 
                     Toggle.ButtonFrame = Instance.new("TextButton")
@@ -2121,6 +2174,10 @@ function Library:CreateWindow(options)
                         if targetY + Colorpicker.PickerFrame.AbsoluteSize.Y > viewportSize.Y then
                             targetY = viewportSize.Y - Colorpicker.PickerFrame.AbsoluteSize.Y - 5
                         end
+                        
+                        -- Ensure picker stays visible when UI is hidden or tabs are switched
+                        if targetX < 0 then targetX = 5 end
+                        if targetY < 0 then targetY = 5 end
                         
                         Colorpicker.PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
                     end
