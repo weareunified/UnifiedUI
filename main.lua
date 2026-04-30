@@ -1,5 +1,5 @@
 local Library = {}
--- slider fix v1.1
+-- slider fix v1.3
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -19,15 +19,17 @@ if type(math.round) ~= "function" then
 end
 
 debug = debug or {}
-if type(debug.profilebegin) ~= "function" then
-    debug.profilebegin = function() end
-end
-if type(debug.profileend) ~= "function" then
-    debug.profileend = function() end
-end
-if type(debug.traceback) ~= "function" then
-    debug.traceback = function() return "" end
-end
+if type(debug.profilebegin) ~= "function" then debug.profilebegin = function() end end
+if type(debug.profileend) ~= "function" then debug.profileend = function() end end
+if type(debug.traceback) ~= "function" then debug.traceback = function() return "" end end
+if type(debug.info) ~= "function" then debug.info = function() return {} end end
+
+getfenv = getfenv or function(level) return _G end
+setfenv = setfenv or function(level, env) end
+getrawmetatable = getrawmetatable or function(t) return getmetatable(t) end
+setrawmetatable = setrawmetatable or setmetatable
+getnamecallmethod = getnamecallmethod or function() return nil end
+setnamecallmethod = setnamecallmethod or function() end
 
 local function SafeExecute(f, ...)
     local args = {...}
