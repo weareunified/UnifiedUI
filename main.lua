@@ -1,5 +1,5 @@
 local Library = {}
--- slider fix
+-- slider fix v1
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -7,6 +7,16 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
+
+if type(math.round) ~= "function" then
+    function math.round(x)
+        if type(x) ~= "number" then return 0 end
+        if x >= 0 then
+            return math.floor(x + 0.5)
+        end
+        return math.ceil(x - 0.5)
+    end
+end
 
 local function SafeExecute(f, ...)
     local args = {...}
@@ -53,7 +63,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 ThrottledLoop(30, function()
-    if gcinfo then gcinfo() end
+    if type(gcinfo) == "function" then gcinfo() end
 end)
 
 local function RandomString(length)
