@@ -1,5 +1,5 @@
 local Library = {}
--- fix
+-- fixing freezes
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -550,12 +550,6 @@ function Library:CreateWindow(options)
     UI.MainFrame.ClipsDescendants = false
     UI.MainFrame.BackgroundTransparency = 0
     UI.MainFrame.Active = true
-
-    UI.MainFrame:GetPropertyChangedSignal("Visible"):Connect(function()
-        if not UI.MainFrame.Visible and UI.OpenedElement and UI.OpenedElement.SetOpened then
-            UI.OpenedElement.SetOpened(false)
-        end
-    end)
 
     UI:ShowLoading("Creating tabs")
 
@@ -1201,10 +1195,6 @@ function Library:CreateWindow(options)
             Tween(TabBtn, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.92})
             if Tab.Indicator then Tween(Tab.Indicator, 0.3, {BackgroundTransparency = 0}) end
             if Tab.Icon then Tween(Tab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(255, 255, 255)}) end
-            
-            if UI.OpenedElement and UI.OpenedElement.SetOpened then
-                UI.OpenedElement.SetOpened(false)
-            end
         end)
 
         if #UI.Tabs == 1 then
@@ -2153,9 +2143,7 @@ function Library:CreateWindow(options)
                     end
 
                     local function UpdatePosition()
-                        if not (Colorpicker.Box and Colorpicker.PickerFrame) then return end
-                        task.wait()
-                        if not (Colorpicker.Box and Colorpicker.PickerFrame) then return end
+                        if not (Colorpicker.Box and Colorpicker.PickerFrame and Colorpicker.PickerFrame.Visible) then return end
                         local boxAbsPos = Colorpicker.Box.AbsolutePosition
                         local boxAbsSize = Colorpicker.Box.AbsoluteSize
                         local viewportSize = UI.ScreenGui.AbsoluteSize
@@ -2164,11 +2152,11 @@ function Library:CreateWindow(options)
                         local targetY = boxAbsPos.Y
                         
                         -- Keep picker within screen bounds
-                        if targetX + 200 > viewportSize.X then
-                            targetX = boxAbsPos.X - 205
+                        if targetX + Colorpicker.PickerFrame.AbsoluteSize.X > viewportSize.X then
+                            targetX = boxAbsPos.X - Colorpicker.PickerFrame.AbsoluteSize.X - 5
                         end
-                        if targetY + 175 > viewportSize.Y then
-                            targetY = viewportSize.Y - 180
+                        if targetY + Colorpicker.PickerFrame.AbsoluteSize.Y > viewportSize.Y then
+                            targetY = viewportSize.Y - Colorpicker.PickerFrame.AbsoluteSize.Y - 5
                         end
                         
                         Colorpicker.PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
