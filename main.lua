@@ -1,5 +1,5 @@
 local Library = {}
--- slider fix v1.3
+-- fix
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -7,29 +7,6 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
-
-if type(math.round) ~= "function" then
-    function math.round(x)
-        if type(x) ~= "number" then return 0 end
-        if x >= 0 then
-            return math.floor(x + 0.5)
-        end
-        return math.ceil(x - 0.5)
-    end
-end
-
-debug = debug or {}
-if type(debug.profilebegin) ~= "function" then debug.profilebegin = function() end end
-if type(debug.profileend) ~= "function" then debug.profileend = function() end end
-if type(debug.traceback) ~= "function" then debug.traceback = function() return "" end end
-if type(debug.info) ~= "function" then debug.info = function() return {} end end
-
-getfenv = getfenv or function(level) return _G end
-setfenv = setfenv or function(level, env) end
-getrawmetatable = getrawmetatable or function(t) return getmetatable(t) end
-setrawmetatable = setrawmetatable or setmetatable
-getnamecallmethod = getnamecallmethod or function() return nil end
-setnamecallmethod = setnamecallmethod or function() end
 
 local function SafeExecute(f, ...)
     local args = {...}
@@ -76,7 +53,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 ThrottledLoop(30, function()
-    if type(gcinfo) == "function" then gcinfo() end
+    if gcinfo then gcinfo() end
 end)
 
 local function RandomString(length)
@@ -574,6 +551,12 @@ function Library:CreateWindow(options)
     UI.MainFrame.BackgroundTransparency = 0
     UI.MainFrame.Active = true
 
+    UI.MainFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+        if not UI.MainFrame.Visible and UI.OpenedElement and UI.OpenedElement.SetOpened then
+            UI.OpenedElement.SetOpened(false)
+        end
+    end)
+
     UI:ShowLoading("Creating tabs")
 
     task.delay(8, function()
@@ -752,17 +735,6 @@ function Library:CreateWindow(options)
     UI.SidePickerTitle.ZIndex = 5001
 
     local activeNotifications = {}
-
-    function UI:Toggle()
-        if not UI.MainFrame then return end
-        
-        -- Close any open colorpickers when toggling UI visibility
-        if UI.OpenedElement and UI.OpenedElement.SetOpened then
-            UI.OpenedElement.SetOpened(false)
-        end
-        
-        UI.MainFrame.Visible = not UI.MainFrame.Visible
-    end
 
     function UI:Notify(title, text)
         local NotifyFrame = Instance.new("Frame")
@@ -1230,7 +1202,6 @@ function Library:CreateWindow(options)
             if Tab.Indicator then Tween(Tab.Indicator, 0.3, {BackgroundTransparency = 0}) end
             if Tab.Icon then Tween(Tab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(255, 255, 255)}) end
             
-            -- Close any open colorpickers when switching tabs
             if UI.OpenedElement and UI.OpenedElement.SetOpened then
                 UI.OpenedElement.SetOpened(false)
             end
@@ -2182,7 +2153,9 @@ function Library:CreateWindow(options)
                     end
 
                     local function UpdatePosition()
-                        if not (Colorpicker.Box and Colorpicker.PickerFrame and Colorpicker.PickerFrame.Visible) then return end
+                        if not (Colorpicker.Box and Colorpicker.PickerFrame) then return end
+                        task.wait()
+                        if not (Colorpicker.Box and Colorpicker.PickerFrame) then return end
                         local boxAbsPos = Colorpicker.Box.AbsolutePosition
                         local boxAbsSize = Colorpicker.Box.AbsoluteSize
                         local viewportSize = UI.ScreenGui.AbsoluteSize
@@ -2191,16 +2164,12 @@ function Library:CreateWindow(options)
                         local targetY = boxAbsPos.Y
                         
                         -- Keep picker within screen bounds
-                        if targetX + Colorpicker.PickerFrame.AbsoluteSize.X > viewportSize.X then
-                            targetX = boxAbsPos.X - Colorpicker.PickerFrame.AbsoluteSize.X - 5
+                        if targetX + 200 > viewportSize.X then
+                            targetX = boxAbsPos.X - 205
                         end
-                        if targetY + Colorpicker.PickerFrame.AbsoluteSize.Y > viewportSize.Y then
-                            targetY = viewportSize.Y - Colorpicker.PickerFrame.AbsoluteSize.Y - 5
+                        if targetY + 175 > viewportSize.Y then
+                            targetY = viewportSize.Y - 180
                         end
-                        
-                        -- Ensure picker stays visible when UI is hidden or tabs are switched
-                        if targetX < 0 then targetX = 5 end
-                        if targetY < 0 then targetY = 5 end
                         
                         Colorpicker.PickerFrame.Position = UDim2.new(0, targetX, 0, targetY)
                     end
