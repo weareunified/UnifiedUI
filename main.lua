@@ -1,5 +1,5 @@
 local Library = {}
--- slider fix v1
+-- slider fix v1.1
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -16,6 +16,17 @@ if type(math.round) ~= "function" then
         end
         return math.ceil(x - 0.5)
     end
+end
+
+debug = debug or {}
+if type(debug.profilebegin) ~= "function" then
+    debug.profilebegin = function() end
+end
+if type(debug.profileend) ~= "function" then
+    debug.profileend = function() end
+end
+if type(debug.traceback) ~= "function" then
+    debug.traceback = function() return "" end
 end
 
 local function SafeExecute(f, ...)
