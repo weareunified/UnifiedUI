@@ -1,5 +1,5 @@
 local Library = {}
--- fixing freezes
+-- fixed
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -15,6 +15,15 @@ local function SafeExecute(f, ...)
         return nil
     end)
     return success, result
+end
+
+local function Tween(obj, time, props, style, direction)
+    style = style or Enum.EasingStyle.Quart
+    direction = direction or Enum.EasingDirection.Out
+    local info = TweenInfo.new(time, style, direction)
+    local tween = TweenService:Create(obj, info, props)
+    tween:Play()
+    return tween
 end
 
 local function ThrottledLoop(interval, f)
@@ -104,7 +113,7 @@ function Library:CreateWindow(options)
     
     options = options or {}
     local windowTitle = options.Name or "UNIFIED"
-    local accentColor = options.AccentColor or Color3.fromRGB(207, 165, 255)
+    local accentColor = options.AccentColor or Color3.fromRGB(255, 255, 255)
     
     local UI = {
         CurrentTab = nil,
@@ -121,12 +130,12 @@ function Library:CreateWindow(options)
         ConfigFolder = "Unified/Configs",
         Colors = {
             Accent = accentColor,
-            MainBackground = Color3.fromRGB(18, 16, 20),
-            SidebarBackground = Color3.fromRGB(14, 12, 16),
-            SectionBackground = Color3.fromRGB(22, 19, 26),
-            ElementBackground = Color3.fromRGB(28, 24, 32),
-            MainText = Color3.fromRGB(220, 220, 225),
-            SubText = Color3.fromRGB(150, 150, 155)
+            MainBackground = Color3.fromRGB(10, 10, 10),
+            SidebarBackground = Color3.fromRGB(8, 8, 8),
+            SectionBackground = Color3.fromRGB(15, 15, 15),
+            ElementBackground = Color3.fromRGB(25, 25, 25),
+            MainText = Color3.fromRGB(255, 255, 255),
+            SubText = Color3.fromRGB(150, 150, 150)
         }
     }
     Library._UI = UI
@@ -573,12 +582,12 @@ function Library:CreateWindow(options)
     AccentCorner.Parent = UI.AccentBar
 
     local AccentStroke = Instance.new("UIStroke")
-    AccentStroke.Color = Color3.fromRGB(34, 26, 40)
+    AccentStroke.Color = Color3.fromRGB(40, 40, 40)
     AccentStroke.Thickness = 1
     AccentStroke.Parent = UI.AccentBar
 
     local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = Color3.fromRGB(34, 26, 40)
+    MainStroke.Color = Color3.fromRGB(40, 40, 40)
     MainStroke.Thickness = 1.5
     MainStroke.Transparency = 0
     MainStroke.Parent = UI.MainFrame
@@ -593,7 +602,7 @@ function Library:CreateWindow(options)
     UI.LeftPanel.Active = true
 
     local LeftStroke = Instance.new("UIStroke")
-    LeftStroke.Color = Color3.fromRGB(34, 26, 40)
+    LeftStroke.Color = Color3.fromRGB(40, 40, 40)
     LeftStroke.Thickness = 1.5
     LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     LeftStroke.Transparency = 0
@@ -636,13 +645,13 @@ function Library:CreateWindow(options)
     UI.UserPanel = Instance.new("Frame")
     UI.UserPanel.Name = "UserPanel"
     UI.UserPanel.Parent = UI.LeftPanel
-    UI.UserPanel.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+    UI.UserPanel.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
     UI.UserPanel.Position = UDim2.new(0, 10, 1, -50)
     UI.UserPanel.Size = UDim2.new(1, -20, 0, 40)
     UI.UserPanel.BackgroundTransparency = 0
 
     local UserStroke = Instance.new("UIStroke")
-    UserStroke.Color = Color3.fromRGB(34, 26, 40)
+    UserStroke.Color = Color3.fromRGB(40, 40, 40)
     UserStroke.Thickness = 1
     UserStroke.Transparency = 0
     UserStroke.Parent = UI.UserPanel
@@ -650,7 +659,7 @@ function Library:CreateWindow(options)
     UI.UserImage = Instance.new("ImageLabel")
     UI.UserImage.Name = "UserImage"
     UI.UserImage.Parent = UI.UserPanel
-    UI.UserImage.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    UI.UserImage.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     UI.UserImage.Position = UDim2.new(0, 5, 0.5, -12)
     UI.UserImage.Size = UDim2.new(0, 24, 0, 24)
     pcall(function()
@@ -708,7 +717,7 @@ function Library:CreateWindow(options)
     UI.SidePicker.ZIndex = 5000
     
     local SideStroke = Instance.new("UIStroke")
-    SideStroke.Color = Color3.fromRGB(34, 26, 40)
+    SideStroke.Color = Color3.fromRGB(40, 40, 40)
     SideStroke.Thickness = 1.2
     SideStroke.Parent = UI.SidePicker
     
@@ -734,7 +743,7 @@ function Library:CreateWindow(options)
         local NotifyFrame = Instance.new("Frame")
         NotifyFrame.Name = "Notification"
         NotifyFrame.Parent = UI.ScreenGui
-        NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
+        NotifyFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
         NotifyFrame.BorderSizePixel = 0
         NotifyFrame.Position = UDim2.new(1, 40, 1, -100)
         NotifyFrame.Size = UDim2.new(0, 280, 0, 85)
@@ -742,7 +751,7 @@ function Library:CreateWindow(options)
         NotifyFrame.ClipsDescendants = true
         
         local NotifyStroke = Instance.new("UIStroke")
-        NotifyStroke.Color = Color3.fromRGB(34, 26, 40)
+        NotifyStroke.Color = Color3.fromRGB(40, 40, 40)
         NotifyStroke.Thickness = 1.2
         NotifyStroke.Parent = NotifyFrame
         
@@ -892,7 +901,7 @@ function Library:CreateWindow(options)
         local ChangelogFrame = Instance.new("Frame")
         ChangelogFrame.Name = "Changelog"
         ChangelogFrame.Parent = UI.MainFrame.Parent
-        ChangelogFrame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
+        ChangelogFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
         ChangelogFrame.BorderSizePixel = 0
         ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
         ChangelogFrame.Size = UDim2.new(0, 200, 0, 0)
@@ -904,7 +913,7 @@ function Library:CreateWindow(options)
         ClCorner.Parent = ChangelogFrame
         
         local ClStroke = Instance.new("UIStroke")
-        ClStroke.Color = Color3.fromRGB(34, 26, 40)
+        ClStroke.Color = Color3.fromRGB(40, 40, 40)
         ClStroke.Thickness = 1.2
         ClStroke.Transparency = 1
         ClStroke.Parent = ChangelogFrame
@@ -1229,12 +1238,12 @@ function Library:CreateWindow(options)
 
 
                 local SectionStroke = Instance.new("UIStroke")
-                SectionStroke.Color = Color3.fromRGB(34, 26, 40)
+                SectionStroke.Color = Color3.fromRGB(40, 40, 40)
                 SectionStroke.Thickness = 1.2
                 SectionStroke.Transparency = 0.5
                 SectionStroke.Parent = Section.Frame
                 Section.Frame.MouseEnter:Connect(function() Tween(SectionStroke, 0.3, {Color = accentColor, Transparency = 0.2}) end)
-                Section.Frame.MouseLeave:Connect(function() Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(34, 26, 40), Transparency = 0.5}) end)
+                Section.Frame.MouseLeave:Connect(function() Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(40, 40, 40), Transparency = 0.5}) end)
                 Section.TitleLabel = Instance.new("TextLabel")
                 Section.TitleLabel.Name = "Title"
                 Section.TitleLabel.Parent = Section.Frame
@@ -1296,16 +1305,16 @@ function Library:CreateWindow(options)
                     Button.Frame.TextSize = 14
                     Button.Frame.AutoButtonColor = false
                     local BtnStroke = Instance.new("UIStroke")
-                    BtnStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BtnStroke.Color = Color3.fromRGB(40, 40, 40)
                     BtnStroke.Thickness = 1
                     BtnStroke.Parent = Button.Frame
                     Button.Frame.MouseEnter:Connect(function() 
                         Tween(Button.Frame, 0.2, {BackgroundColor3 = GetHoverColor(UI.Colors.ElementBackground)}) 
-                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(50, 40, 60)}) 
+                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(60, 60, 60)}) 
                     end)
                     Button.Frame.MouseLeave:Connect(function() 
                         Tween(Button.Frame, 0.2, {BackgroundColor3 = UI.Colors.ElementBackground}) 
-                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) 
+                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(40, 40, 40)}) 
                     end)
                     Button.Frame.MouseButton1Click:Connect(function()
                         if UserInputService:GetFocusedTextBox() then return end
@@ -1375,7 +1384,7 @@ function Library:CreateWindow(options)
                     Toggle.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     Toggle.Box.Size = UDim2.new(0, 30, 0, 16)
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = Toggle.Box
                     Toggle.Indicator = Instance.new("Frame")
@@ -1394,7 +1403,7 @@ function Library:CreateWindow(options)
                             Tween(BoxStroke, 0.2, {Color = accentColor})
                         else
                             Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
-                            Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
+                            Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(40, 40, 40)})
                         end
                         pcall(Toggle.Callback, Toggle.State)
                     end
@@ -1490,7 +1499,7 @@ function Library:CreateWindow(options)
                     Slider.Bar.Size = UDim2.new(1, 0, 0, 6)
                     Slider.Bar.Active = true
                     local BarStroke = Instance.new("UIStroke")
-                    BarStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BarStroke.Color = Color3.fromRGB(40, 40, 40)
                     BarStroke.Parent = Slider.Bar
                     Slider.Fill = Instance.new("Frame")
                     Slider.Fill.Parent = Slider.Bar
@@ -1520,7 +1529,7 @@ function Library:CreateWindow(options)
                     Textbox.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Textbox.Frame.Size = UDim2.new(1, 0, 0, 30)
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
                     BoxStroke.Parent = Textbox.Frame
                     Textbox.Input = Instance.new("TextBox")
                     Textbox.Input.Parent = Textbox.Frame
@@ -1579,7 +1588,7 @@ function Library:CreateWindow(options)
                     BtnPadding.PaddingRight = UDim.new(0, 8)
                     BtnPadding.Parent = Bind.Btn
                     local BtnStroke = Instance.new("UIStroke")
-                    BtnStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BtnStroke.Color = Color3.fromRGB(40, 40, 40)
                     BtnStroke.Parent = Bind.Btn
                     Bind.Update = function(val)
                         if typeof(val) == "string" then Bind.Key = Enum.KeyCode[val] else Bind.Key = val end
@@ -1642,7 +1651,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
                     ToggleBind.Box.Text = ""
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = ToggleBind.Box
                     ToggleBind.Indicator = Instance.new("Frame")
@@ -1672,7 +1681,7 @@ function Library:CreateWindow(options)
                     TBPadding.Parent = ToggleBind.Btn
                     
                     local BtnStroke = Instance.new("UIStroke")
-                    BtnStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BtnStroke.Color = Color3.fromRGB(40, 40, 40)
                     BtnStroke.Parent = ToggleBind.Btn
                     
                     local function Update(manually)
@@ -1682,7 +1691,7 @@ function Library:CreateWindow(options)
                                 Tween(BoxStroke, 0.2, {Color = accentColor})
                             else
                                 Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
-                                Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)})
+                                Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(40, 40, 40)})
                             end
                             UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name, ToggleBind.Mode}
                             pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
@@ -1724,7 +1733,7 @@ function Library:CreateWindow(options)
                             MenuFrame.ZIndex = 10000
                             
                             local UIST = Instance.new("UIStroke")
-                            UIST.Color = Color3.fromRGB(34, 26, 40)
+                            UIST.Color = Color3.fromRGB(40, 40, 40)
                             UIST.Parent = MenuFrame
                             
                             local UIL = Instance.new("UIListLayout")
@@ -1975,7 +1984,7 @@ function Library:CreateWindow(options)
                     Colorpicker.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     Colorpicker.Box.Size = UDim2.new(0, 30, 0, 16)
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
+                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = Colorpicker.Box
 
@@ -2000,7 +2009,7 @@ function Library:CreateWindow(options)
                     Colorpicker.PickerFrame.ZIndex = 5000
                     
                     local PickerStroke = Instance.new("UIStroke")
-                    PickerStroke.Color = Color3.fromRGB(34, 26, 40)
+                    PickerStroke.Color = Color3.fromRGB(40, 40, 40)
                     PickerStroke.Transparency = 1
                     PickerStroke.Parent = Colorpicker.PickerFrame
 
@@ -2356,7 +2365,7 @@ function Library:CreateWindow(options)
                     Dropdown.Frame.ZIndex = 5
                     
                     local DropStroke = Instance.new("UIStroke")
-                    DropStroke.Color = Color3.fromRGB(34, 26, 40)
+                    DropStroke.Color = Color3.fromRGB(40, 40, 40)
                     DropStroke.Parent = Dropdown.Frame
                     Dropdown.DropStroke = DropStroke
                     Dropdown.Label = Instance.new("TextLabel")
@@ -2398,7 +2407,7 @@ function Library:CreateWindow(options)
                     Dropdown.List.BottomImage = ""
                     Dropdown.List.MidImage = "rbxassetid://7445543667"
                     local ListStroke = Instance.new("UIStroke")
-                    ListStroke.Color = Color3.fromRGB(34, 26, 40)
+                    ListStroke.Color = Color3.fromRGB(40, 40, 40)
                     ListStroke.Parent = Dropdown.List
                     Dropdown.ListStroke = ListStroke
                     local ListLayout = Instance.new("UIListLayout")
@@ -2473,7 +2482,7 @@ function Library:CreateWindow(options)
                     Dropdown.Frame.ZIndex = 5
                     
                     local DropStroke = Instance.new("UIStroke")
-                    DropStroke.Color = Color3.fromRGB(34, 26, 40)
+                    DropStroke.Color = Color3.fromRGB(40, 40, 40)
                     DropStroke.Parent = Dropdown.Frame
                     Dropdown.DropStroke = DropStroke
                     Dropdown.Label = Instance.new("TextLabel")
@@ -2515,7 +2524,7 @@ function Library:CreateWindow(options)
                     Dropdown.List.BottomImage = ""
                     Dropdown.List.MidImage = "rbxassetid://7445543667"
                     local ListStroke = Instance.new("UIStroke")
-                    ListStroke.Color = Color3.fromRGB(34, 26, 40)
+                    ListStroke.Color = Color3.fromRGB(40, 40, 40)
                     ListStroke.Parent = Dropdown.List
                     Dropdown.ListStroke = ListStroke
                     local ListLayout = Instance.new("UIListLayout")
