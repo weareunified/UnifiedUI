@@ -1,5 +1,5 @@
 local Library = {}
--- fixing keybinding 
+-- mnoo
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -113,7 +113,7 @@ function Library:CreateWindow(options)
     
     options = options or {}
     local windowTitle = options.Name or "UNIFIED"
-    local accentColor = options.AccentColor or Color3.fromRGB(207, 165, 255)
+    local accentColor = options.AccentColor or Color3.fromRGB(255, 255, 255)
     
     local UI = {
         CurrentTab = nil,
