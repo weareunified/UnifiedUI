@@ -1,5 +1,5 @@
 local Library = {}
--- fixed
+-- fixing keybinding 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -113,7 +113,7 @@ function Library:CreateWindow(options)
     
     options = options or {}
     local windowTitle = options.Name or "UNIFIED"
-    local accentColor = options.AccentColor or Color3.fromRGB(255, 255, 255)
+    local accentColor = options.AccentColor or Color3.fromRGB(207, 165, 255)
     
     local UI = {
         CurrentTab = nil,
@@ -130,12 +130,12 @@ function Library:CreateWindow(options)
         ConfigFolder = "Unified/Configs",
         Colors = {
             Accent = accentColor,
-            MainBackground = Color3.fromRGB(10, 10, 10),
-            SidebarBackground = Color3.fromRGB(8, 8, 8),
-            SectionBackground = Color3.fromRGB(15, 15, 15),
-            ElementBackground = Color3.fromRGB(25, 25, 25),
-            MainText = Color3.fromRGB(255, 255, 255),
-            SubText = Color3.fromRGB(150, 150, 150)
+            MainBackground = Color3.fromRGB(18, 16, 20),
+            SidebarBackground = Color3.fromRGB(14, 12, 16),
+            SectionBackground = Color3.fromRGB(22, 19, 26),
+            ElementBackground = Color3.fromRGB(28, 24, 32),
+            MainText = Color3.fromRGB(220, 220, 225),
+            SubText = Color3.fromRGB(150, 150, 155)
         }
     }
     Library._UI = UI
@@ -162,7 +162,9 @@ function Library:CreateWindow(options)
     end
 
     local function SetInitialFlag(flagName, value, flagType)
-        UI.Flags[flagName] = CloneValue(value)
+        if UI.Flags[flagName] == nil then
+            UI.Flags[flagName] = CloneValue(value)
+        end
         if flagType then
             UI.FlagTypes[flagName] = flagType
         end
@@ -582,12 +584,12 @@ function Library:CreateWindow(options)
     AccentCorner.Parent = UI.AccentBar
 
     local AccentStroke = Instance.new("UIStroke")
-    AccentStroke.Color = Color3.fromRGB(40, 40, 40)
+    AccentStroke.Color = Color3.fromRGB(34, 26, 40)
     AccentStroke.Thickness = 1
     AccentStroke.Parent = UI.AccentBar
 
     local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = Color3.fromRGB(40, 40, 40)
+    MainStroke.Color = Color3.fromRGB(34, 26, 40)
     MainStroke.Thickness = 1.5
     MainStroke.Transparency = 0
     MainStroke.Parent = UI.MainFrame
@@ -602,7 +604,7 @@ function Library:CreateWindow(options)
     UI.LeftPanel.Active = true
 
     local LeftStroke = Instance.new("UIStroke")
-    LeftStroke.Color = Color3.fromRGB(40, 40, 40)
+    LeftStroke.Color = Color3.fromRGB(34, 26, 40)
     LeftStroke.Thickness = 1.5
     LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     LeftStroke.Transparency = 0
@@ -645,13 +647,13 @@ function Library:CreateWindow(options)
     UI.UserPanel = Instance.new("Frame")
     UI.UserPanel.Name = "UserPanel"
     UI.UserPanel.Parent = UI.LeftPanel
-    UI.UserPanel.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+    UI.UserPanel.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
     UI.UserPanel.Position = UDim2.new(0, 10, 1, -50)
     UI.UserPanel.Size = UDim2.new(1, -20, 0, 40)
     UI.UserPanel.BackgroundTransparency = 0
 
     local UserStroke = Instance.new("UIStroke")
-    UserStroke.Color = Color3.fromRGB(40, 40, 40)
+    UserStroke.Color = Color3.fromRGB(34, 26, 40)
     UserStroke.Thickness = 1
     UserStroke.Transparency = 0
     UserStroke.Parent = UI.UserPanel
@@ -659,7 +661,7 @@ function Library:CreateWindow(options)
     UI.UserImage = Instance.new("ImageLabel")
     UI.UserImage.Name = "UserImage"
     UI.UserImage.Parent = UI.UserPanel
-    UI.UserImage.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    UI.UserImage.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     UI.UserImage.Position = UDim2.new(0, 5, 0.5, -12)
     UI.UserImage.Size = UDim2.new(0, 24, 0, 24)
     pcall(function()
@@ -717,7 +719,7 @@ function Library:CreateWindow(options)
     UI.SidePicker.ZIndex = 5000
     
     local SideStroke = Instance.new("UIStroke")
-    SideStroke.Color = Color3.fromRGB(40, 40, 40)
+    SideStroke.Color = Color3.fromRGB(34, 26, 40)
     SideStroke.Thickness = 1.2
     SideStroke.Parent = UI.SidePicker
     
@@ -743,7 +745,7 @@ function Library:CreateWindow(options)
         local NotifyFrame = Instance.new("Frame")
         NotifyFrame.Name = "Notification"
         NotifyFrame.Parent = UI.ScreenGui
-        NotifyFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+        NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
         NotifyFrame.BorderSizePixel = 0
         NotifyFrame.Position = UDim2.new(1, 40, 1, -100)
         NotifyFrame.Size = UDim2.new(0, 280, 0, 85)
@@ -751,7 +753,7 @@ function Library:CreateWindow(options)
         NotifyFrame.ClipsDescendants = true
         
         local NotifyStroke = Instance.new("UIStroke")
-        NotifyStroke.Color = Color3.fromRGB(40, 40, 40)
+        NotifyStroke.Color = Color3.fromRGB(34, 26, 40)
         NotifyStroke.Thickness = 1.2
         NotifyStroke.Parent = NotifyFrame
         
@@ -901,7 +903,7 @@ function Library:CreateWindow(options)
         local ChangelogFrame = Instance.new("Frame")
         ChangelogFrame.Name = "Changelog"
         ChangelogFrame.Parent = UI.MainFrame.Parent
-        ChangelogFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        ChangelogFrame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
         ChangelogFrame.BorderSizePixel = 0
         ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
         ChangelogFrame.Size = UDim2.new(0, 200, 0, 0)
@@ -913,7 +915,7 @@ function Library:CreateWindow(options)
         ClCorner.Parent = ChangelogFrame
         
         local ClStroke = Instance.new("UIStroke")
-        ClStroke.Color = Color3.fromRGB(40, 40, 40)
+        ClStroke.Color = Color3.fromRGB(34, 26, 40)
         ClStroke.Thickness = 1.2
         ClStroke.Transparency = 1
         ClStroke.Parent = ChangelogFrame
@@ -1238,12 +1240,12 @@ function Library:CreateWindow(options)
 
 
                 local SectionStroke = Instance.new("UIStroke")
-                SectionStroke.Color = Color3.fromRGB(40, 40, 40)
+                SectionStroke.Color = Color3.fromRGB(34, 26, 40)
                 SectionStroke.Thickness = 1.2
                 SectionStroke.Transparency = 0.5
                 SectionStroke.Parent = Section.Frame
                 Section.Frame.MouseEnter:Connect(function() Tween(SectionStroke, 0.3, {Color = accentColor, Transparency = 0.2}) end)
-                Section.Frame.MouseLeave:Connect(function() Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(40, 40, 40), Transparency = 0.5}) end)
+                Section.Frame.MouseLeave:Connect(function() Tween(SectionStroke, 0.3, {Color = Color3.fromRGB(34, 26, 40), Transparency = 0.5}) end)
                 Section.TitleLabel = Instance.new("TextLabel")
                 Section.TitleLabel.Name = "Title"
                 Section.TitleLabel.Parent = Section.Frame
@@ -1305,16 +1307,16 @@ function Library:CreateWindow(options)
                     Button.Frame.TextSize = 14
                     Button.Frame.AutoButtonColor = false
                     local BtnStroke = Instance.new("UIStroke")
-                    BtnStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                     BtnStroke.Thickness = 1
                     BtnStroke.Parent = Button.Frame
                     Button.Frame.MouseEnter:Connect(function() 
                         Tween(Button.Frame, 0.2, {BackgroundColor3 = GetHoverColor(UI.Colors.ElementBackground)}) 
-                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(60, 60, 60)}) 
+                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(50, 40, 60)}) 
                     end)
                     Button.Frame.MouseLeave:Connect(function() 
                         Tween(Button.Frame, 0.2, {BackgroundColor3 = UI.Colors.ElementBackground}) 
-                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(40, 40, 40)}) 
+                        Tween(BtnStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) 
                     end)
                     Button.Frame.MouseButton1Click:Connect(function()
                         if UserInputService:GetFocusedTextBox() then return end
@@ -1340,6 +1342,22 @@ function Library:CreateWindow(options)
                 table.insert(Section.Elements, Toggle)
                 SetInitialFlag(flag or text, Toggle.State, "toggle")
                 
+                Toggle.Update = function(val)
+                    Toggle.State = val
+                    UI.Flags[flag or text] = Toggle.State
+                    if Toggle.Indicator then
+                        if Toggle.State then
+                            Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
+                            if Toggle.BoxStroke then Tween(Toggle.BoxStroke, 0.2, {Color = accentColor}) end
+                        else
+                            Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
+                            if Toggle.BoxStroke then Tween(Toggle.BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) end
+                        end
+                    end
+                    pcall(Toggle.Callback, Toggle.State)
+                end
+                UI.Components[flag or text] = Toggle
+
                 local function BuildTog()
                     Toggle.Frame = Instance.new("Frame")
                     Toggle.Frame.Name = text .. "ToggleContainer"
@@ -1384,9 +1402,10 @@ function Library:CreateWindow(options)
                     Toggle.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     Toggle.Box.Size = UDim2.new(0, 30, 0, 16)
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = Toggle.Box
+                    Toggle.BoxStroke = BoxStroke
                     Toggle.Indicator = Instance.new("Frame")
                     Toggle.Indicator.Name = "Indicator"
                     Toggle.Indicator.Parent = Toggle.Box
@@ -1395,24 +1414,13 @@ function Library:CreateWindow(options)
                     Toggle.Indicator.Size = UDim2.new(0, 12, 0, 12)
                     Toggle.Indicator.BackgroundTransparency = Toggle.State and 0 or 1
                     
-                    local function Update(manually)
-                        if not manually then Toggle.State = not Toggle.State end
-                        UI.Flags[flag or text] = Toggle.State
-                        if Toggle.State then
-                            Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
-                            Tween(BoxStroke, 0.2, {Color = accentColor})
-                        else
-                            Tween(Toggle.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
-                            Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(40, 40, 40)})
-                        end
-                        pcall(Toggle.Callback, Toggle.State)
-                    end
-                    Toggle.Update = function(val) Toggle.State = val Update(true) end
-                    UI.Components[flag or text] = Toggle
                     Toggle.ButtonFrame.MouseButton1Click:Connect(function() 
                         if UserInputService:GetFocusedTextBox() then return end
-                        Update() 
+                        Toggle.Update(not Toggle.State) 
                     end)
+                    
+                    -- Sync
+                    Toggle.Update(UI.Flags[flag or text])
                 end
                 if Tab.Rendered then BuildTog() else table.insert(Tab.RenderQueue, BuildTog) end
 
@@ -1445,6 +1453,18 @@ function Library:CreateWindow(options)
                 table.insert(Section.Elements, Slider)
                 SetInitialFlag(flag or text, Slider.Value, "slider")
                 
+                Slider.Update = function(val)
+                    Slider.Value = math.clamp(val, min, max)
+                    UI.Flags[flag or text] = Slider.Value
+                    if Slider.Bar then
+                        local pos = math.clamp((Slider.Value - min) / (max - min), 0, 1)
+                        Slider.Fill.Size = UDim2.new(pos, 0, 1, 0)
+                        Slider.ValueLabel.Text = tostring(Slider.Value)
+                    end
+                    pcall(Slider.Callback, Slider.Value)
+                end
+                UI.Components[flag or text] = Slider
+
                 local function BuildSlider()
                     Slider.Frame = Instance.new("Frame")
                     Slider.Frame.Name = text .. "Slider"
@@ -1468,29 +1488,25 @@ function Library:CreateWindow(options)
                     Slider.ValueLabel.Size = UDim2.new(0, 50, 0, 20)
                     Slider.ValueLabel.Font = Enum.Font.SourceSans
                     Slider.ValueLabel.Text = tostring(Slider.Value)
-                    Slider.ValueLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    Slider.ValueLabel.TextColor3 = Color3.fromRGB(150, 150, 155)
                     Slider.ValueLabel.TextSize = 13
                     Slider.ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
                     Slider.ValueLabel.ClearTextOnFocus = false
                     
-                    local function Update(input, manually)
+                    local function InternalUpdate(input, manually)
                         local pos
                         if manually then
                             pos = math.clamp((input - min) / (max - min), 0, 1)
-                            Slider.Value = input
                         else
                             pos = math.clamp((input.Position.X - Slider.Bar.AbsolutePosition.X) / Slider.Bar.AbsoluteSize.X, 0, 1)
-                            Slider.Value = math.floor(min + (max - min) * pos)
                         end
-                        UI.Flags[flag or text] = Slider.Value
-                        Slider.Fill.Size = UDim2.new(pos, 0, 1, 0)
-                        Slider.ValueLabel.Text = tostring(Slider.Value)
-                        pcall(Slider.Callback, Slider.Value)
+                        local val = math.floor(min + (max - min) * pos)
+                        Slider.Update(val)
                     end
 
                     Slider.ValueLabel.FocusLost:Connect(function()
                         local val = tonumber(Slider.ValueLabel.Text)
-                        if val then val = math.clamp(math.floor(val), min, max) Update(val, true) else Slider.ValueLabel.Text = tostring(Slider.Value) end
+                        if val then InternalUpdate(val, true) else Slider.ValueLabel.Text = tostring(Slider.Value) end
                     end)
                     Slider.Bar = Instance.new("Frame")
                     Slider.Bar.Parent = Slider.Frame
@@ -1499,19 +1515,21 @@ function Library:CreateWindow(options)
                     Slider.Bar.Size = UDim2.new(1, 0, 0, 6)
                     Slider.Bar.Active = true
                     local BarStroke = Instance.new("UIStroke")
-                    BarStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BarStroke.Color = Color3.fromRGB(34, 26, 40)
                     BarStroke.Parent = Slider.Bar
                     Slider.Fill = Instance.new("Frame")
                     Slider.Fill.Parent = Slider.Bar
                     Slider.Fill.BackgroundColor3 = accentColor
                     Slider.Fill.BorderSizePixel = 0
                     Slider.Fill.Size = UDim2.new((Slider.Value - min) / (max - min), 0, 1, 0)
-                    Slider.Update = function(val) Update(val, true) end
-                    UI.Components[flag or text] = Slider
+                    
                     local sliding = false
-                    Slider.Bar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then if UserInputService:GetFocusedTextBox() then return end sliding = true Update(input) end end)
-                    UserInputService.InputChanged:Connect(function(input) if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then Update(input) end end)
+                    Slider.Bar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then if UserInputService:GetFocusedTextBox() then return end sliding = true InternalUpdate(input) end end)
+                    UserInputService.InputChanged:Connect(function(input) if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then InternalUpdate(input) end end)
                     UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliding = false end end)
+                    
+                    -- Sync
+                    Slider.Update(UI.Flags[flag or text])
                 end
                 if Tab.Rendered then BuildSlider() else table.insert(Tab.RenderQueue, BuildSlider) end
                 return Slider
@@ -1522,6 +1540,13 @@ function Library:CreateWindow(options)
                 table.insert(Section.Elements, Textbox)
                 SetInitialFlag(flag or text, "", "textbox")
                 
+                Textbox.Update = function(val)
+                    UI.Flags[flag or text] = val
+                    if Textbox.Input then Textbox.Input.Text = val end
+                    pcall(Textbox.Callback, val)
+                end
+                UI.Components[flag or text] = Textbox
+
                 local function BuildTxt()
                     Textbox.Frame = Instance.new("Frame")
                     Textbox.Frame.Name = text .. "Textbox"
@@ -1529,7 +1554,7 @@ function Library:CreateWindow(options)
                     Textbox.Frame.BackgroundColor3 = UI.Colors.ElementBackground
                     Textbox.Frame.Size = UDim2.new(1, 0, 0, 30)
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Parent = Textbox.Frame
                     Textbox.Input = Instance.new("TextBox")
                     Textbox.Input.Parent = Textbox.Frame
@@ -1543,9 +1568,11 @@ function Library:CreateWindow(options)
                     Textbox.Input.TextColor3 = Color3.fromRGB(200, 200, 200)
                     Textbox.Input.TextSize = 14
                     Textbox.Input.TextXAlignment = Enum.TextXAlignment.Left
-                    Textbox.Update = function(val) Textbox.Input.Text = val UI.Flags[flag or text] = val pcall(Textbox.Callback, val) end
-                    UI.Components[flag or text] = Textbox
-                    Textbox.Input.FocusLost:Connect(function() UI.Flags[flag or text] = Textbox.Input.Text pcall(Textbox.Callback, Textbox.Input.Text) end)
+                    
+                    Textbox.Input.FocusLost:Connect(function() Textbox.Update(Textbox.Input.Text) end)
+                    
+                    -- Sync
+                    Textbox.Update(UI.Flags[flag or text])
                 end
                 if Tab.Rendered then BuildTxt() else table.insert(Tab.RenderQueue, BuildTxt) end
                 return Textbox
@@ -1556,6 +1583,37 @@ function Library:CreateWindow(options)
                 table.insert(Section.Elements, Bind)
                 SetInitialFlag(flag or text, Bind.Key.Name, "bind")
                 
+                Bind.Update = function(val)
+                    if typeof(val) == "string" then 
+                        Bind.Key = Enum.KeyCode[val] 
+                    else 
+                        Bind.Key = val 
+                    end
+                    if Bind.Btn then 
+                        Bind.Btn.Text = GetInputLabel(Bind.Key) 
+                    end
+                    UI.Flags[flag or text] = Bind.Key.Name
+                end
+                UI.Components[flag or text] = Bind
+
+                UserInputService.InputBegan:Connect(function(input)
+                    if Bind.Waiting then
+                        if input.UserInputType == Enum.UserInputType.Keyboard then
+                            Bind.Key = input.KeyCode
+                            if Bind.Btn then Bind.Btn.Text = GetInputLabel(Bind.Key) end
+                            Bind.Waiting = false
+                            UI.Flags[flag or text] = Bind.Key.Name
+                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
+                            Bind.Key = input.UserInputType
+                            if Bind.Btn then Bind.Btn.Text = GetInputLabel(Bind.Key) end
+                            Bind.Waiting = false
+                            UI.Flags[flag or text] = Bind.Key.Name
+                        end
+                    elseif not Bind.Waiting then
+                        if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Bind.Key) or (input.UserInputType == Bind.Key) then pcall(Bind.Callback) end
+                    end
+                end)
+
                 local function BuildBind()
                     Bind.Frame = Instance.new("Frame")
                     Bind.Frame.Name = text .. "Bind"
@@ -1588,32 +1646,13 @@ function Library:CreateWindow(options)
                     BtnPadding.PaddingRight = UDim.new(0, 8)
                     BtnPadding.Parent = Bind.Btn
                     local BtnStroke = Instance.new("UIStroke")
-                    BtnStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                     BtnStroke.Parent = Bind.Btn
-                    Bind.Update = function(val)
-                        if typeof(val) == "string" then Bind.Key = Enum.KeyCode[val] else Bind.Key = val end
-                        Bind.Btn.Text = GetInputLabel(Bind.Key)
-                        UI.Flags[flag or text] = Bind.Key.Name
-                    end
-                    UI.Components[flag or text] = Bind
+                    
                     Bind.Btn.MouseButton1Click:Connect(function() Bind.Waiting = true Bind.Btn.Text = "..." end)
-                    UserInputService.InputBegan:Connect(function(input)
-                        if Bind.Waiting then
-                            if input.UserInputType == Enum.UserInputType.Keyboard then
-                                Bind.Key = input.KeyCode
-                                Bind.Btn.Text = GetInputLabel(Bind.Key)
-                                Bind.Waiting = false
-                                UI.Flags[flag or text] = Bind.Key.Name
-                            elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
-                                Bind.Key = input.UserInputType
-                                Bind.Btn.Text = GetInputLabel(Bind.Key)
-                                Bind.Waiting = false
-                                UI.Flags[flag or text] = Bind.Key.Name
-                            end
-                        elseif not Bind.Waiting then
-                            if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Bind.Key) or (input.UserInputType == Bind.Key) then pcall(Bind.Callback) end
-                        end
-                    end)
+                    
+                    -- Sync with current flag (in case it was loaded from config)
+                    Bind.Update(UI.Flags[flag or text])
                 end
                 if Tab.Rendered then BuildBind() else table.insert(Tab.RenderQueue, BuildBind) end
                 return Bind
@@ -1622,9 +1661,69 @@ function Library:CreateWindow(options)
             function Section:CreateToggleBind(text, flag, defaultState, defaultKey, callback)
                 local ToggleBind = { State = defaultState or false, Key = defaultKey or Enum.KeyCode.F, Mode = "Toggle", Flag = flag or text, Callback = callback or function() end, Waiting = false }
                 table.insert(Section.Elements, ToggleBind)
-                
-                -- Ensure SetInitialFlag and GetInputLabel are defined in your script environment
                 SetInitialFlag(ToggleBind.Flag, {ToggleBind.State, ToggleBind.Key.Name, ToggleBind.Mode}, "togglebind")
+
+                ToggleBind.Update = function(val)
+                    if type(val) == "table" then 
+                        ToggleBind.State = val[1] 
+                        if typeof(val[2]) == "string" then ToggleBind.Key = Enum.KeyCode[val[2]] else ToggleBind.Key = val[2] end 
+                        ToggleBind.Mode = val[3] or "Toggle"
+                    else 
+                        ToggleBind.State = val 
+                        ToggleBind.Mode = "Toggle"
+                    end
+                    
+                    if ToggleBind.Btn then ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) end
+                    
+                    if ToggleBind.Indicator then
+                        if ToggleBind.State then
+                            Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
+                            if ToggleBind.BoxStroke then Tween(ToggleBind.BoxStroke, 0.2, {Color = accentColor}) end
+                        else
+                            Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
+                            if ToggleBind.BoxStroke then Tween(ToggleBind.BoxStroke, 0.2, {Color = Color3.fromRGB(34, 26, 40)}) end
+                        end
+                    end
+                    
+                    UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name, ToggleBind.Mode}
+                    pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
+                end
+                UI.Components[flag or text] = ToggleBind
+
+                UserInputService.InputBegan:Connect(function(input)
+                    if ToggleBind.Waiting then
+                        if input.UserInputType == Enum.UserInputType.Keyboard then 
+                            ToggleBind.Key = input.KeyCode 
+                            if ToggleBind.Btn then ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) end
+                            ToggleBind.Waiting = false 
+                            ToggleBind.Update(UI.Flags[flag or text])
+                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then 
+                            ToggleBind.Key = input.UserInputType 
+                            if ToggleBind.Btn then ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) end
+                            ToggleBind.Waiting = false 
+                            ToggleBind.Update(UI.Flags[flag or text])
+                        end
+                    elseif not ToggleBind.Waiting then
+                        if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then 
+                            if ToggleBind.Mode == "Toggle" then
+                                ToggleBind.State = not ToggleBind.State 
+                                ToggleBind.Update(ToggleBind.State)
+                            elseif ToggleBind.Mode == "Hold" then
+                                ToggleBind.State = true
+                                ToggleBind.Update(ToggleBind.State)
+                            end
+                        end
+                    end
+                end)
+                
+                UserInputService.InputEnded:Connect(function(input)
+                    if not ToggleBind.Waiting and ToggleBind.Mode == "Hold" then
+                        if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then
+                            ToggleBind.State = false
+                            ToggleBind.Update(ToggleBind.State)
+                        end
+                    end
+                end)
                 
                 local function BuildTB()
                     ToggleBind.Frame = Instance.new("Frame")
@@ -1651,9 +1750,10 @@ function Library:CreateWindow(options)
                     ToggleBind.Box.Size = UDim2.new(0, 30, 0, 16)
                     ToggleBind.Box.Text = ""
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = ToggleBind.Box
+                    ToggleBind.BoxStroke = BoxStroke
                     ToggleBind.Indicator = Instance.new("Frame")
                     ToggleBind.Indicator.Name = "Indicator"
                     ToggleBind.Indicator.Parent = ToggleBind.Box
@@ -1670,7 +1770,6 @@ function Library:CreateWindow(options)
                     ToggleBind.Btn.Size = UDim2.new(0, 50, 0, 20)
                     ToggleBind.Btn.AutomaticSize = Enum.AutomaticSize.X
                     ToggleBind.Btn.Font = Enum.Font.SourceSans
-                    ToggleBind.Btn.Text = ""
                     ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
                     ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
                     ToggleBind.Btn.TextSize = 12
@@ -1681,35 +1780,10 @@ function Library:CreateWindow(options)
                     TBPadding.Parent = ToggleBind.Btn
                     
                     local BtnStroke = Instance.new("UIStroke")
-                    BtnStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BtnStroke.Color = Color3.fromRGB(34, 26, 40)
                     BtnStroke.Parent = ToggleBind.Btn
                     
-                    local function Update(manually)
-                        pcall(function()
-                            if ToggleBind.State then
-                                Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(1, -14, 0.5, -6), BackgroundTransparency = 0})
-                                Tween(BoxStroke, 0.2, {Color = accentColor})
-                            else
-                                Tween(ToggleBind.Indicator, 0.2, {Position = UDim2.new(0, 2, 0.5, -6), BackgroundTransparency = 1})
-                                Tween(BoxStroke, 0.2, {Color = Color3.fromRGB(40, 40, 40)})
-                            end
-                            UI.Flags[flag or text] = {ToggleBind.State, ToggleBind.Key.Name, ToggleBind.Mode}
-                            pcall(ToggleBind.Callback, ToggleBind.State, ToggleBind.Key)
-                        end)
-                    end
-                    ToggleBind.Update = function(val)
-                        if type(val) == "table" then 
-                            ToggleBind.State = val[1] 
-                            if typeof(val[2]) == "string" then ToggleBind.Key = Enum.KeyCode[val[2]] else ToggleBind.Key = val[2] end 
-                            ToggleBind.Mode = val[3] or "Toggle"
-                        else 
-                            ToggleBind.State = val 
-                            ToggleBind.Mode = "Toggle"
-                        end
-                        ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) Update(true)
-                    end
-                    UI.Components[flag or text] = ToggleBind
-                    ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State Update() end)
+                    ToggleBind.Box.MouseButton1Click:Connect(function() ToggleBind.State = not ToggleBind.State ToggleBind.Update(ToggleBind.State) end)
                     ToggleBind.Btn.MouseButton1Click:Connect(function() ToggleBind.Waiting = true ToggleBind.Btn.Text = "..." end)
                     
                     ToggleBind.Btn.InputBegan:Connect(function(input)
@@ -1733,7 +1807,7 @@ function Library:CreateWindow(options)
                             MenuFrame.ZIndex = 10000
                             
                             local UIST = Instance.new("UIStroke")
-                            UIST.Color = Color3.fromRGB(40, 40, 40)
+                            UIST.Color = Color3.fromRGB(34, 26, 40)
                             UIST.Parent = MenuFrame
                             
                             local UIL = Instance.new("UIListLayout")
@@ -1762,7 +1836,7 @@ function Library:CreateWindow(options)
                                     if mName == "Always" then
                                         ToggleBind.State = true
                                     end
-                                    Update()
+                                    ToggleBind.Update(ToggleBind.State)
                                     MenuBG:Destroy()
                                 end)
                             end
@@ -1775,40 +1849,8 @@ function Library:CreateWindow(options)
                         end
                     end)
                     
-                    UserInputService.InputBegan:Connect(function(input)
-                        if ToggleBind.Waiting then
-                            if input.UserInputType == Enum.UserInputType.Keyboard then 
-                                ToggleBind.Key = input.KeyCode 
-                                ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) 
-                                ToggleBind.Waiting = false 
-                                Update()
-                            elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then 
-                                ToggleBind.Key = input.UserInputType 
-                                ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key) 
-                                ToggleBind.Waiting = false 
-                                Update() 
-                            end
-                        elseif not ToggleBind.Waiting then
-                            if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then 
-                                if ToggleBind.Mode == "Toggle" then
-                                    ToggleBind.State = not ToggleBind.State 
-                                    Update()
-                                elseif ToggleBind.Mode == "Hold" then
-                                    ToggleBind.State = true
-                                    Update()
-                                end
-                            end
-                        end
-                    end)
-                    
-                    UserInputService.InputEnded:Connect(function(input)
-                        if not ToggleBind.Waiting and ToggleBind.Mode == "Hold" then
-                            if (input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleBind.Key) or (input.UserInputType == ToggleBind.Key) then
-                                ToggleBind.State = false
-                                Update()
-                            end
-                        end
-                    end)
+                    -- Sync with current flag
+                    ToggleBind.Update(UI.Flags[flag or text])
                 end
                 if Tab.Rendered then BuildTB() else table.insert(Tab.RenderQueue, BuildTB) end
                 return ToggleBind
@@ -1959,6 +2001,34 @@ function Library:CreateWindow(options)
                 local h, s, v = Color3.toHSV(Colorpicker.Color)
                 Colorpicker.H, Colorpicker.S, Colorpicker.V = h, s, v
 
+                Colorpicker.Update = function(val)
+                    if typeof(val) == "table" then
+                        Colorpicker.Color = Color3.new(unpack(val))
+                    else
+                        Colorpicker.Color = val
+                    end
+                    local nh, ns, nv = Color3.toHSV(Colorpicker.Color)
+                    Colorpicker.H, Colorpicker.S, Colorpicker.V = nh, ns, nv
+                    
+                    UI.Flags[flag or text] = Colorpicker.Color
+                    
+                    if Colorpicker.Box then
+                        Colorpicker.Box.BackgroundColor3 = Colorpicker.Color
+                        if Colorpicker.SatVal then
+                            Colorpicker.SatVal.BackgroundColor3 = Color3.fromHSV(Colorpicker.H, 1, 1)
+                            Colorpicker.SatValCursor.Position = UDim2.new(ns, -2, 1 - nv, -2)
+                        end
+                        if Colorpicker.Hue then
+                            Colorpicker.HueCursor.Position = UDim2.new(0, -2, nh, -1)
+                        end
+                        if Colorpicker.Darkness then
+                            Colorpicker.DarknessCursor.Position = UDim2.new(1 - nv, -1, 0, -2)
+                        end
+                    end
+                    pcall(Colorpicker.Callback, Colorpicker.Color)
+                end
+                UI.Components[flag or text] = Colorpicker
+
                 local function BuildCP()
                     Colorpicker.Frame = Instance.new("TextButton")
                     Colorpicker.Frame.Name = text .. "Colorpicker"
@@ -1984,7 +2054,7 @@ function Library:CreateWindow(options)
                     Colorpicker.Box.Position = UDim2.new(1, -30, 0.5, -8)
                     Colorpicker.Box.Size = UDim2.new(0, 30, 0, 16)
                     local BoxStroke = Instance.new("UIStroke")
-                    BoxStroke.Color = Color3.fromRGB(40, 40, 40)
+                    BoxStroke.Color = Color3.fromRGB(34, 26, 40)
                     BoxStroke.Thickness = 1
                     BoxStroke.Parent = Colorpicker.Box
 
@@ -2009,7 +2079,7 @@ function Library:CreateWindow(options)
                     Colorpicker.PickerFrame.ZIndex = 5000
                     
                     local PickerStroke = Instance.new("UIStroke")
-                    PickerStroke.Color = Color3.fromRGB(40, 40, 40)
+                    PickerStroke.Color = Color3.fromRGB(34, 26, 40)
                     PickerStroke.Transparency = 1
                     PickerStroke.Parent = Colorpicker.PickerFrame
 
@@ -2111,10 +2181,7 @@ function Library:CreateWindow(options)
                     DarknessCursorStroke.Color = Color3.fromRGB(0, 0, 0)
                     DarknessCursorStroke.Parent = Colorpicker.DarknessCursor
 
-                    Colorpicker.InputBlocker.MouseButton1Click:Connect(function()
-                    end)
-
-                    local function UpdateColor()
+                    local function InternalUpdateColor()
                         Colorpicker.Color = Color3.fromHSV(Colorpicker.H, Colorpicker.S, Colorpicker.V)
                         Colorpicker.Box.BackgroundColor3 = Colorpicker.Color
                         Colorpicker.SatVal.BackgroundColor3 = Color3.fromHSV(Colorpicker.H, 1, 1)
@@ -2126,29 +2193,29 @@ function Library:CreateWindow(options)
                         pcall(Colorpicker.Callback, Colorpicker.Color)
                     end
 
-                    local function UpdateSatVal(input)
+                    local function InternalUpdateSatVal(input)
                         local pos = math.clamp((input.Position.X - Colorpicker.SatVal.AbsolutePosition.X) / Colorpicker.SatVal.AbsoluteSize.X, 0, 1)
                         local pos2 = 1 - math.clamp((input.Position.Y - Colorpicker.SatVal.AbsolutePosition.Y) / Colorpicker.SatVal.AbsoluteSize.Y, 0, 1)
                         Colorpicker.S = pos
                         Colorpicker.V = pos2
                         Colorpicker.SatValCursor.Position = UDim2.new(pos, -2, 1 - pos2, -2)
                         Colorpicker.DarknessCursor.Position = UDim2.new(1 - pos2, -1, 0, -2)
-                        UpdateColor()
+                        InternalUpdateColor()
                     end
 
-                    local function UpdateHue(input)
+                    local function InternalUpdateHue(input)
                         local pos = math.clamp((input.Position.Y - Colorpicker.Hue.AbsolutePosition.Y) / Colorpicker.Hue.AbsoluteSize.Y, 0, 1)
                         Colorpicker.H = pos
                         Colorpicker.HueCursor.Position = UDim2.new(0, -2, pos, -1)
-                        UpdateColor()
+                        InternalUpdateColor()
                     end
 
-                    local function UpdateDarkness(input)
+                    local function InternalUpdateDarkness(input)
                         local pos = math.clamp((input.Position.X - Colorpicker.Darkness.AbsolutePosition.X) / Colorpicker.Darkness.AbsoluteSize.X, 0, 1)
                         Colorpicker.V = 1 - pos
                         Colorpicker.DarknessCursor.Position = UDim2.new(pos, -1, 0, -2)
                         Colorpicker.SatValCursor.Position = UDim2.new(Colorpicker.S, -2, pos, -2)
-                        UpdateColor()
+                        InternalUpdateColor()
                     end
 
                     local function UpdatePosition()
@@ -2160,7 +2227,6 @@ function Library:CreateWindow(options)
                         local targetX = boxAbsPos.X + boxAbsSize.X + 5
                         local targetY = boxAbsPos.Y
                         
-                        -- Keep picker within screen bounds
                         if targetX + Colorpicker.PickerFrame.AbsoluteSize.X > viewportSize.X then
                             targetX = boxAbsPos.X - Colorpicker.PickerFrame.AbsoluteSize.X - 5
                         end
@@ -2223,35 +2289,24 @@ function Library:CreateWindow(options)
                     end)
 
                     local satvalDragging = false
-                    Colorpicker.SatVal.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then satvalDragging = true UpdateSatVal(input) end end)
-                    UserInputService.InputChanged:Connect(function(input) if satvalDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateSatVal(input) end end)
+                    Colorpicker.SatVal.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then satvalDragging = true InternalUpdateSatVal(input) end end)
+                    UserInputService.InputChanged:Connect(function(input) if satvalDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then InternalUpdateSatVal(input) end end)
                     UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then satvalDragging = false end end)
 
                     local hueDragging = false
-                    Colorpicker.Hue.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then hueDragging = true UpdateHue(input) end end)
-                    UserInputService.InputChanged:Connect(function(input) if hueDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateHue(input) end end)
+                    Colorpicker.Hue.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then hueDragging = true InternalUpdateHue(input) end end)
+                    UserInputService.InputChanged:Connect(function(input) if hueDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then InternalUpdateHue(input) end end)
                     UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then hueDragging = false end end)
 
                     local darknessDragging = false
-                    Colorpicker.Darkness.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then darknessDragging = true UpdateDarkness(input) end end)
-                    UserInputService.InputChanged:Connect(function(input) if darknessDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then UpdateDarkness(input) end end)
+                    Colorpicker.Darkness.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then darknessDragging = true InternalUpdateDarkness(input) end end)
+                    UserInputService.InputChanged:Connect(function(input) if darknessDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then InternalUpdateDarkness(input) end end)
                     UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then darknessDragging = false end end)
 
-                    Colorpicker.Update = function(val)
-                        if typeof(val) == "table" then
-                            Colorpicker.Color = Color3.new(unpack(val))
-                        else
-                            Colorpicker.Color = val
-                        end
-                        local h, s, v = Color3.toHSV(Colorpicker.Color)
-                        Colorpicker.H, Colorpicker.S, Colorpicker.V = h, s, v
-                        Colorpicker.SatValCursor.Position = UDim2.new(s, -2, 1 - v, -2)
-                        Colorpicker.HueCursor.Position = UDim2.new(0, -2, h, -1)
-                        Colorpicker.DarknessCursor.Position = UDim2.new(1 - v, -1, 0, -2)
-                        UpdateColor()
-                    end
                     Colorpicker.SetOpened = SetOpened
-                    UI.Components[flag or text] = Colorpicker
+                    
+                    -- Sync
+                    Colorpicker.Update(UI.Flags[flag or text])
                 end
                 if Tab.Rendered then BuildCP() else table.insert(Tab.RenderQueue, BuildCP) end
                 return Colorpicker
@@ -2262,6 +2317,45 @@ function Library:CreateWindow(options)
                 table.insert(Section.Elements, Dropdown)
                 SetInitialFlag(flag or text, Dropdown.Selected, "dropdown")
                 
+                Dropdown.Update = function(val, isOptions)
+                    if val == Dropdown then
+                        val = isOptions
+                        isOptions = true
+                    end
+
+                    if isOptions and type(val) == "table" then
+                        Dropdown.Options = val
+                        if Dropdown.CreateOptions then Dropdown.CreateOptions() end
+
+                        local exists = false
+                        for _, opt in ipairs(Dropdown.Options) do
+                            if opt == Dropdown.Selected then exists = true break end
+                        end
+                        if not exists then 
+                            Dropdown.Selected = nil
+                            if Dropdown.Label then Dropdown.Label.Text = text .. ": None" end
+                        end
+
+                        if Dropdown.Opened and Dropdown.List then
+                            local rawSize = math.max(#Dropdown.Options, 1) * 25
+                            local targetSize = math.min(rawSize, 150)
+                            Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
+                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                        end
+                        RefreshCanvasSize()
+                        return
+                    end
+
+                    if val ~= nil and not isOptions then
+                        Dropdown.Selected = val
+                    end
+                    
+                    UI.Flags[flag or text] = Dropdown.Selected
+                    if Dropdown.Label then Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None") end
+                    pcall(Dropdown.Callback, Dropdown.Selected)
+                end
+                UI.Components[flag or text] = Dropdown
+
                 local function CreateOptions()
                     if not Dropdown.List then return end
                     for _, child in pairs(Dropdown.List:GetChildren()) do
@@ -2295,6 +2389,7 @@ function Library:CreateWindow(options)
                         end)
                     end
                 end
+                Dropdown.CreateOptions = CreateOptions
 
                 local MAX_DROPDOWN_HEIGHT = 150
 
@@ -2325,7 +2420,6 @@ function Library:CreateWindow(options)
                         Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
                         Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                         Dropdown.Icon.Text = "-"
-                        -- Auto-scroll TabContent to show the dropdown
                         task.delay(0.32, function()
                             pcall(function()
                                 local listBottom = Dropdown.List.AbsolutePosition.Y + Dropdown.List.AbsoluteSize.Y
@@ -2365,7 +2459,7 @@ function Library:CreateWindow(options)
                     Dropdown.Frame.ZIndex = 5
                     
                     local DropStroke = Instance.new("UIStroke")
-                    DropStroke.Color = Color3.fromRGB(40, 40, 40)
+                    DropStroke.Color = Color3.fromRGB(34, 26, 40)
                     DropStroke.Parent = Dropdown.Frame
                     Dropdown.DropStroke = DropStroke
                     Dropdown.Label = Instance.new("TextLabel")
@@ -2407,63 +2501,26 @@ function Library:CreateWindow(options)
                     Dropdown.List.BottomImage = ""
                     Dropdown.List.MidImage = "rbxassetid://7445543667"
                     local ListStroke = Instance.new("UIStroke")
-                    ListStroke.Color = Color3.fromRGB(40, 40, 40)
+                    ListStroke.Color = Color3.fromRGB(34, 26, 40)
                     ListStroke.Parent = Dropdown.List
                     Dropdown.ListStroke = ListStroke
                     local ListLayout = Instance.new("UIListLayout")
                     ListLayout.Parent = Dropdown.List
                     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-                    CreateOptions()
+                    Dropdown.CreateOptions()
                     Dropdown.Frame.InputBegan:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 then
                             if UserInputService:GetFocusedTextBox() then return end
                             SetOpened(not Dropdown.Opened)
                         end
                     end)
-                end
-
-                Dropdown.Update = function(val, isOptions)
-                    if val == Dropdown then
-                        val = isOptions
-                        isOptions = true
-                    end
-
-                    if isOptions and type(val) == "table" then
-                        Dropdown.Options = val
-                        CreateOptions()
-
-                        local exists = false
-                        for _, opt in ipairs(Dropdown.Options) do
-                            if opt == Dropdown.Selected then exists = true break end
-                        end
-                        if not exists then 
-                            Dropdown.Selected = nil
-                            if Dropdown.Label then Dropdown.Label.Text = text .. ": None" end
-                        end
-
-                        if Dropdown.Opened and Dropdown.List then
-                            local rawSize = math.max(#Dropdown.Options, 1) * 25
-                            local targetSize = math.min(rawSize, MAX_DROPDOWN_HEIGHT)
-                            Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
-                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                        end
-                        RefreshCanvasSize()
-                        return
-                    end
-
-                    if val ~= nil and not isOptions then
-                        Dropdown.Selected = val
-                    end
                     
-                    UI.Flags[flag or text] = Dropdown.Selected
-                    if Dropdown.Label then Dropdown.Label.Text = text .. ": " .. (Dropdown.Selected or "None") end
-                    pcall(Dropdown.Callback, Dropdown.Selected)
+                    -- Sync
+                    Dropdown.Update(UI.Flags[flag or text])
                 end
 
                 Dropdown.SetOpened = SetOpened
-                UI.Components[flag or text] = Dropdown
-
                 if Tab.Rendered then BuildDrop() else table.insert(Tab.RenderQueue, BuildDrop) end
                 return Dropdown
             end
@@ -2473,6 +2530,51 @@ function Library:CreateWindow(options)
                 table.insert(Section.Elements, Dropdown)
                 SetInitialFlag(flag or text, Dropdown.Selected, "multidropdown")
                 
+                Dropdown.Update = function(val, isOptions)
+                    if val == Dropdown then
+                        val = isOptions
+                        isOptions = true
+                    end
+
+                    if isOptions and type(val) == "table" then
+                        Dropdown.Options = val
+                        if Dropdown.CreateOptions then Dropdown.CreateOptions() end
+                        if Dropdown.Opened and Dropdown.List then
+                            local rawSize = #Dropdown.Options * 25
+                            local targetSize = math.min(rawSize, 150)
+                            Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
+                            Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
+                            RefreshCanvasSize()
+                            task.delay(0.35, RefreshCanvasSize)
+                        end
+                        return
+                    end
+
+                    if type(val) == "table" and not isOptions then
+                        Dropdown.Selected = val
+                    end
+                    
+                    if Dropdown.List then
+                        for _, btn in pairs(Dropdown.List:GetChildren()) do
+                            if btn:IsA("TextButton") then
+                                Tween(btn, 0.2, {TextColor3 = table.find(Dropdown.Selected, btn.Name) and accentColor or Color3.fromRGB(150, 150, 150)})
+                            end
+                        end
+                    end
+                    
+                    UI.Flags[flag or text] = Dropdown.Selected
+                    if Dropdown.Label then
+                        local selectedCount = #Dropdown.Selected
+                        if selectedCount == 0 then
+                            Dropdown.Label.Text = text .. ": ..."
+                        else
+                            Dropdown.Label.Text = text .. ": (" .. selectedCount .. ") selected"
+                        end
+                    end
+                    pcall(Dropdown.Callback, Dropdown.Selected)
+                end
+                UI.Components[flag or text] = Dropdown
+
                 local function BuildMulti()
                     Dropdown.Frame = Instance.new("Frame")
                     Dropdown.Frame.Name = text .. "MultiDropdown"
@@ -2482,7 +2584,7 @@ function Library:CreateWindow(options)
                     Dropdown.Frame.ZIndex = 5
                     
                     local DropStroke = Instance.new("UIStroke")
-                    DropStroke.Color = Color3.fromRGB(40, 40, 40)
+                    DropStroke.Color = Color3.fromRGB(34, 26, 40)
                     DropStroke.Parent = Dropdown.Frame
                     Dropdown.DropStroke = DropStroke
                     Dropdown.Label = Instance.new("TextLabel")
@@ -2524,7 +2626,7 @@ function Library:CreateWindow(options)
                     Dropdown.List.BottomImage = ""
                     Dropdown.List.MidImage = "rbxassetid://7445543667"
                     local ListStroke = Instance.new("UIStroke")
-                    ListStroke.Color = Color3.fromRGB(40, 40, 40)
+                    ListStroke.Color = Color3.fromRGB(34, 26, 40)
                     ListStroke.Parent = Dropdown.List
                     Dropdown.ListStroke = ListStroke
                     local ListLayout = Instance.new("UIListLayout")
@@ -2559,7 +2661,6 @@ function Library:CreateWindow(options)
                             Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
                             Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
                             Dropdown.Icon.Text = "-"
-                            -- Auto-scroll TabContent to show the dropdown
                             task.delay(0.32, function()
                                 pcall(function()
                                     local listBottom = Dropdown.List.AbsolutePosition.Y + Dropdown.List.AbsoluteSize.Y
@@ -2583,6 +2684,7 @@ function Library:CreateWindow(options)
                         RefreshCanvasSize()
                         task.delay(0.35, RefreshCanvasSize)
                     end
+                    Dropdown.SetOpened = SetOpened
 
                     local function CreateOptions()
                         for _, child in pairs(Dropdown.List:GetChildren()) do
@@ -2613,65 +2715,25 @@ function Library:CreateWindow(options)
                             OptBtn.MouseButton1Click:Connect(function()
                                 local index = table.find(Dropdown.Selected, option)
                                 if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
-                                Dropdown.Update()
+                                Dropdown.Update(Dropdown.Selected)
                             end)
                         end
                     end
-
-                    local function Update(val, isOptions)
-                        if val == Dropdown then
-                            val = isOptions
-                            isOptions = true
+                    Dropdown.CreateOptions = CreateOptions
+                    
+                    CreateOptions()
+                    Dropdown.Frame.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            SetOpened(not Dropdown.Opened)
                         end
-
-                        if isOptions and type(val) == "table" then
-                            Dropdown.Options = val
-                            CreateOptions()
-                            if Dropdown.Opened then
-                                local rawSize = #Dropdown.Options * 25
-                                local targetSize = math.min(rawSize, 150)
-                                Dropdown.List.CanvasSize = UDim2.new(0, 0, 0, rawSize)
-                                Tween(Dropdown.List, 0.3, {Size = UDim2.new(1, 0, 0, targetSize)})
-                                RefreshCanvasSize()
-                                task.delay(0.35, RefreshCanvasSize)
-                            end
-                            return
-                        end
-
-                        if type(val) == "table" and not isOptions then
-                            Dropdown.Selected = val
-                            for _, btn in pairs(Dropdown.List:GetChildren()) do
-                                if btn:IsA("TextButton") then
-                                    Tween(btn, 0.2, {TextColor3 = table.find(Dropdown.Selected, btn.Name) and accentColor or Color3.fromRGB(150, 150, 150)})
-                                end
-                            end
-                        end
-                        
-                    UI.Flags[flag or text] = Dropdown.Selected
-                    local selectedCount = #Dropdown.Selected
-                    if selectedCount == 0 then
-                        Dropdown.Label.Text = text .. ": ..."
-                    else
-                        Dropdown.Label.Text = text .. ": (" .. selectedCount .. ") selected"
-                    end
-                    pcall(Dropdown.Callback, Dropdown.Selected)
+                    end)
+                    
+                    -- Sync
+                    Dropdown.Update(UI.Flags[flag or text])
                 end
-
-                Update()
-                Dropdown.Update = Update
-                Dropdown.SetOpened = SetOpened
-                UI.Components[flag or text] = Dropdown
-
-                CreateOptions()
-                Dropdown.Frame.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        SetOpened(not Dropdown.Opened)
-                    end
-                end)
-            end -- Closes CreateOptions or the Dropdown constructor
-            if Tab.Rendered then BuildMulti() else table.insert(Tab.RenderQueue, BuildMulti) end
-            return Dropdown
-        end
+                if Tab.Rendered then BuildMulti() else table.insert(Tab.RenderQueue, BuildMulti) end
+                return Dropdown
+            end
 
         return Section
     end
