@@ -1,5 +1,5 @@
 local Library = {}
--- mnoho fixes UGH
+-- mn
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -584,12 +584,12 @@ function Library:CreateWindow(options)
     AccentCorner.Parent = UI.AccentBar
 
     local AccentStroke = Instance.new("UIStroke")
-    AccentStroke.Color = Color3.fromRGB(255, 255, 255)
+    AccentStroke.Transparency = 1
     AccentStroke.Thickness = 1
     AccentStroke.Parent = UI.AccentBar
 
     local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = Color3.fromRGB(255, 255, 255)
+    MainStroke.Transparency = 1
     MainStroke.Thickness = 1.5
     MainStroke.Transparency = 0
     MainStroke.Parent = UI.MainFrame
@@ -604,7 +604,7 @@ function Library:CreateWindow(options)
     UI.LeftPanel.Active = true
 
     local LeftStroke = Instance.new("UIStroke")
-    LeftStroke.Color = Color3.fromRGB(255, 255, 255)
+    LeftStroke.Transparency = 1
     LeftStroke.Thickness = 1.5
     LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     LeftStroke.Transparency = 0
@@ -653,7 +653,7 @@ function Library:CreateWindow(options)
     UI.UserPanel.BackgroundTransparency = 0
 
     local UserStroke = Instance.new("UIStroke")
-    UserStroke.Color = Color3.fromRGB(255, 255, 255)
+    UserStroke.Transparency = 1
     UserStroke.Thickness = 1
     UserStroke.Transparency = 0
     UserStroke.Parent = UI.UserPanel
@@ -719,7 +719,7 @@ function Library:CreateWindow(options)
     UI.SidePicker.ZIndex = 5000
     
     local SideStroke = Instance.new("UIStroke")
-    SideStroke.Color = Color3.fromRGB(255, 255, 255)
+    SideStroke.Transparency = 1
     SideStroke.Thickness = 1.2
     SideStroke.Parent = UI.SidePicker
     
@@ -753,7 +753,7 @@ function Library:CreateWindow(options)
         NotifyFrame.ClipsDescendants = true
         
         local NotifyStroke = Instance.new("UIStroke")
-        NotifyStroke.Color = Color3.fromRGB(255, 255, 255)
+        NotifyStroke.Transparency = 1
         NotifyStroke.Thickness = 1.2
         NotifyStroke.Parent = NotifyFrame
         
@@ -915,7 +915,7 @@ function Library:CreateWindow(options)
         ClCorner.Parent = ChangelogFrame
         
         local ClStroke = Instance.new("UIStroke")
-        ClStroke.Color = Color3.fromRGB(255, 255, 255)
+        ClStroke.Transparency = 1
         ClStroke.Thickness = 1.2
         ClStroke.Transparency = 1
         ClStroke.Parent = ChangelogFrame
