@@ -1,5 +1,5 @@
 local Library = {}
--- mnoo
+-- mnoho fixes
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -130,12 +130,12 @@ function Library:CreateWindow(options)
         ConfigFolder = "Unified/Configs",
         Colors = {
             Accent = accentColor,
-            MainBackground = Color3.fromRGB(18, 16, 20),
-            SidebarBackground = Color3.fromRGB(14, 12, 16),
-            SectionBackground = Color3.fromRGB(22, 19, 26),
-            ElementBackground = Color3.fromRGB(28, 24, 32),
-            MainText = Color3.fromRGB(220, 220, 225),
-            SubText = Color3.fromRGB(150, 150, 155)
+            MainBackground = Color3.fromRGB(0, 0, 0),
+            SidebarBackground = Color3.fromRGB(10, 10, 10),
+            SectionBackground = Color3.fromRGB(15, 15, 15),
+            ElementBackground = Color3.fromRGB(20, 20, 20),
+            MainText = Color3.fromRGB(255, 255, 255),
+            SubText = Color3.fromRGB(200, 200, 200)
         }
     }
     Library._UI = UI
@@ -1021,6 +1021,16 @@ function Library:CreateWindow(options)
             RenderQueue = {}
         }
         table.insert(UI.Tabs, Tab)
+        
+        -- Check if we need to enable scrolling (more than 7 tabs)
+        if #UI.Tabs > 7 then
+            UI.TabContainer.ScrollBarThickness = 2
+            UI.TabContainer.ScrollBarImageColor3 = accentColor
+            UI.TabContainer.CanvasSize = UDim2.new(0, 0, 0, (#UI.Tabs * 40) + 10)
+        else
+            UI.TabContainer.ScrollBarThickness = 0
+            UI.TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        end
 
         local function ResetAllZIndex()
             for _, s in pairs(Tab.Sections) do
