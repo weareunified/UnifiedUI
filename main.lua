@@ -13,7 +13,7 @@ local function SafeExecute(f, ...)
     local success, result = xpcall(function() return f(unpack(args)) end, function(err)
         warn("[Unified UI Crash Handler]: " .. tostring(err))
         return nil
-    end)в
+    end)
     return success, result
 end
 
