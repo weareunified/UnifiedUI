@@ -1,5 +1,5 @@
 local Library = {}
--- mnoo
+-- m
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -13,7 +13,7 @@ local function SafeExecute(f, ...)
     local success, result = xpcall(function() return f(unpack(args)) end, function(err)
         warn("[Unified UI Crash Handler]: " .. tostring(err))
         return nil
-    end)
+    end)в
     return success, result
 end
 
@@ -1021,7 +1021,17 @@ function Library:CreateWindow(options)
             RenderQueue = {}
         }
         table.insert(UI.Tabs, Tab)
-
+        
+        -- Check if we need to enable scrolling (more than 7 tabs)
+        if #UI.Tabs > 7 then
+            UI.TabContainer.ScrollBarThickness = 2
+            UI.TabContainer.ScrollBarImageColor3 = accentColor
+            UI.TabContainer.CanvasSize = UDim2.new(0, 0, 0, (#UI.Tabs * 40) + 10)
+        else
+            UI.TabContainer.ScrollBarThickness = 0
+            UI.TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        end
+        
         local function ResetAllZIndex()
             for _, s in pairs(Tab.Sections) do
                 s.Frame.ZIndex = 1
