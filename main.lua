@@ -1,5 +1,5 @@
 local Library = {}
--- coloors
+-- colors
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -2751,7 +2751,14 @@ function Library:CreateWindow(options)
     return Tab
 end
 
-        return UI
+        -- Apply all colors automatically on load
+    UI:UpdateColor("Accent", UI.Colors.Accent)
+    UI:UpdateColor("MainBackground", UI.Colors.MainBackground)
+    UI:UpdateColor("SidebarBackground", UI.Colors.SidebarBackground)
+    UI:UpdateColor("SectionBackground", UI.Colors.SectionBackground)
+    UI:UpdateColor("ElementBackground", UI.Colors.ElementBackground)
+    
+    return UI
     end
 
 function Library:SetWatermark(text)
