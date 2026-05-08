@@ -1,5 +1,5 @@
 local Library = {}
--- m
+-- coloors
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -130,12 +130,12 @@ function Library:CreateWindow(options)
         ConfigFolder = "Unified/Configs",
         Colors = {
             Accent = accentColor,
-            MainBackground = Color3.fromRGB(18, 16, 20),
-            SidebarBackground = Color3.fromRGB(14, 12, 16),
-            SectionBackground = Color3.fromRGB(22, 19, 26),
-            ElementBackground = Color3.fromRGB(28, 24, 32),
-            MainText = Color3.fromRGB(220, 220, 225),
-            SubText = Color3.fromRGB(150, 150, 155)
+            MainBackground = Color3.fromRGB(0, 0, 0),
+            SidebarBackground = Color3.fromRGB(10, 10, 10),
+            SectionBackground = Color3.fromRGB(15, 15, 15),
+            ElementBackground = Color3.fromRGB(20, 20, 20),
+            MainText = Color3.fromRGB(255, 255, 255),
+            SubText = Color3.fromRGB(200, 200, 200)
         }
     }
     Library._UI = UI
