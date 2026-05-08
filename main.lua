@@ -1,5 +1,5 @@
 local Library = {}
--- colors
+-- bruh when..
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -1051,7 +1051,7 @@ function Library:CreateWindow(options)
         TabBtn.Size = UDim2.new(1, 0, 0, 34)
         TabBtn.Font = Enum.Font.SourceSans
         TabBtn.Text = iconId and "      " .. tostring(name) or tostring(name)
-        TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
         TabBtn.TextSize = 15
         TabBtn.AutoButtonColor = false
         Tab.Button = TabBtn
@@ -1094,7 +1094,7 @@ function Library:CreateWindow(options)
             TabIcon.Position = UDim2.new(0, 8, 0.5, -8)
             TabIcon.Size = UDim2.new(0, 16, 0, 16)
             TabIcon.Image = iconId
-            TabIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
+            TabIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
             Tab.Icon = TabIcon
         end
 
@@ -1172,7 +1172,7 @@ function Library:CreateWindow(options)
 
         TabBtn.MouseLeave:Connect(function()
             if UI.CurrentTab ~= Tab then
-                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
+                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 1})
             end
         end)
 
@@ -1204,9 +1204,9 @@ function Library:CreateWindow(options)
             
             if UI.CurrentTab then
                 local oldTab = UI.CurrentTab
-                Tween(oldTab.Button, 0.3, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
+                Tween(oldTab.Button, 0.3, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 1})
                 if oldTab.Indicator then Tween(oldTab.Indicator, 0.3, {BackgroundTransparency = 1}) end
-                if oldTab.Icon then Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(150, 150, 150)}) end
+                if oldTab.Icon then Tween(oldTab.Icon, 0.3, {ImageColor3 = Color3.fromRGB(255, 255, 255)}) end
                 oldTab.Page.Visible = false 
             end
             
@@ -1649,7 +1649,7 @@ function Library:CreateWindow(options)
                     Bind.Btn.AutomaticSize = Enum.AutomaticSize.X
                     Bind.Btn.Font = Enum.Font.SourceSans
                     Bind.Btn.Text = GetInputLabel(Bind.Key)
-                    Bind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    Bind.Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
                     Bind.Btn.TextSize = 12
                     local BtnPadding = Instance.new("UIPadding")
                     BtnPadding.PaddingLeft = UDim.new(0, 8)
@@ -1781,7 +1781,7 @@ function Library:CreateWindow(options)
                     ToggleBind.Btn.AutomaticSize = Enum.AutomaticSize.X
                     ToggleBind.Btn.Font = Enum.Font.SourceSans
                     ToggleBind.Btn.Text = GetInputLabel(ToggleBind.Key)
-                    ToggleBind.Btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    ToggleBind.Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
                     ToggleBind.Btn.TextSize = 12
                     ToggleBind.Btn.AutoButtonColor = false
                     local TBPadding = Instance.new("UIPadding")
@@ -1835,7 +1835,7 @@ function Library:CreateWindow(options)
                                 if ToggleBind.Mode == mName then
                                     Opt.TextColor3 = accentColor
                                 else
-                                    Opt.TextColor3 = Color3.fromRGB(150, 150, 150)
+                                    Opt.TextColor3 = Color3.fromRGB(255, 255, 255)
                                 end
                                 Opt.TextSize = 13
                                 Opt.TextXAlignment = Enum.TextXAlignment.Left
@@ -1919,7 +1919,7 @@ function Library:CreateWindow(options)
                     TitleLabel.Size = UDim2.new(1, -70, 0, 20)
                     TitleLabel.Font = Enum.Font.SourceSansBold
                     TitleLabel.Text = text
-                    TitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
                     TitleLabel.TextSize = 13
                     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -1967,7 +1967,7 @@ function Library:CreateWindow(options)
                 Image.Label.Size = UDim2.new(1, 0, 0, 20)
                 Image.Label.Font = Enum.Font.SourceSans
                 Image.Label.Text = text
-                Image.Label.TextColor3 = Color3.fromRGB(150, 150, 150)
+                Image.Label.TextColor3 = Color3.fromRGB(255, 255, 255)
                 Image.Label.TextSize = 12
                 Image.Img = Instance.new("ImageLabel")
                 Image.Img.Parent = Image.Frame
@@ -2380,7 +2380,7 @@ function Library:CreateWindow(options)
                         OptBtn.Size = UDim2.new(1, 0, 0, 25)
                         OptBtn.Font = Enum.Font.SourceSans
                         OptBtn.Text = "  " .. tostring(option)
-                        OptBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                        OptBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
                         OptBtn.TextSize = 14
                         OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                         OptBtn.ZIndex = (Dropdown.List.ZIndex or 1) + 1
@@ -2567,7 +2567,7 @@ function Library:CreateWindow(options)
                     if Dropdown.List then
                         for _, btn in pairs(Dropdown.List:GetChildren()) do
                             if btn:IsA("TextButton") then
-                                Tween(btn, 0.2, {TextColor3 = table.find(Dropdown.Selected, btn.Name) and accentColor or Color3.fromRGB(150, 150, 150)})
+                                Tween(btn, 0.2, {TextColor3 = table.find(Dropdown.Selected, btn.Name) and accentColor or Color3.fromRGB(255, 255, 255)})
                             end
                         end
                     end
@@ -2709,7 +2709,7 @@ function Library:CreateWindow(options)
                             OptBtn.Size = UDim2.new(1, 0, 0, 25)
                             OptBtn.Font = Enum.Font.SourceSans
                             OptBtn.Text = "  " .. option
-                            OptBtn.TextColor3 = table.find(Dropdown.Selected, option) and accentColor or Color3.fromRGB(150, 150, 150)
+                            OptBtn.TextColor3 = table.find(Dropdown.Selected, option) and accentColor or Color3.fromRGB(255, 255, 255)
                             OptBtn.TextSize = 14
                             OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                             OptBtn.ZIndex = (Dropdown.List.ZIndex or 1) + 1
@@ -2724,7 +2724,7 @@ function Library:CreateWindow(options)
 
                             OptBtn.MouseButton1Click:Connect(function()
                                 local index = table.find(Dropdown.Selected, option)
-                                if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
+                                if index then table.remove(Dropdown.Selected, index) Tween(OptBtn, 0.2, {TextColor3 = Color3.fromRGB(255, 255, 255)}) else table.insert(Dropdown.Selected, option) Tween(OptBtn, 0.2, {TextColor3 = accentColor}) end
                                 Dropdown.Update(Dropdown.Selected)
                             end)
                         end
