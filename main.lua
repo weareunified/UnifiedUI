@@ -1,5 +1,5 @@
 local Library = {}
--- mn
+-- mnoo
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -130,12 +130,12 @@ function Library:CreateWindow(options)
         ConfigFolder = "Unified/Configs",
         Colors = {
             Accent = accentColor,
-            MainBackground = Color3.fromRGB(0, 0, 0),
-            SidebarBackground = Color3.fromRGB(10, 10, 10),
-            SectionBackground = Color3.fromRGB(15, 15, 15),
-            ElementBackground = Color3.fromRGB(20, 20, 20),
-            MainText = Color3.fromRGB(255, 255, 255),
-            SubText = Color3.fromRGB(200, 200, 200)
+            MainBackground = Color3.fromRGB(18, 16, 20),
+            SidebarBackground = Color3.fromRGB(14, 12, 16),
+            SectionBackground = Color3.fromRGB(22, 19, 26),
+            ElementBackground = Color3.fromRGB(28, 24, 32),
+            MainText = Color3.fromRGB(220, 220, 225),
+            SubText = Color3.fromRGB(150, 150, 155)
         }
     }
     Library._UI = UI
@@ -584,12 +584,12 @@ function Library:CreateWindow(options)
     AccentCorner.Parent = UI.AccentBar
 
     local AccentStroke = Instance.new("UIStroke")
-    AccentStroke.Transparency = 1
+    AccentStroke.Color = Color3.fromRGB(34, 26, 40)
     AccentStroke.Thickness = 1
     AccentStroke.Parent = UI.AccentBar
 
     local MainStroke = Instance.new("UIStroke")
-    MainStroke.Transparency = 1
+    MainStroke.Color = Color3.fromRGB(34, 26, 40)
     MainStroke.Thickness = 1.5
     MainStroke.Transparency = 0
     MainStroke.Parent = UI.MainFrame
@@ -604,7 +604,7 @@ function Library:CreateWindow(options)
     UI.LeftPanel.Active = true
 
     local LeftStroke = Instance.new("UIStroke")
-    LeftStroke.Transparency = 1
+    LeftStroke.Color = Color3.fromRGB(34, 26, 40)
     LeftStroke.Thickness = 1.5
     LeftStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     LeftStroke.Transparency = 0
@@ -647,13 +647,13 @@ function Library:CreateWindow(options)
     UI.UserPanel = Instance.new("Frame")
     UI.UserPanel.Name = "UserPanel"
     UI.UserPanel.Parent = UI.LeftPanel
-    UI.UserPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    UI.UserPanel.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
     UI.UserPanel.Position = UDim2.new(0, 10, 1, -50)
     UI.UserPanel.Size = UDim2.new(1, -20, 0, 40)
     UI.UserPanel.BackgroundTransparency = 0
 
     local UserStroke = Instance.new("UIStroke")
-    UserStroke.Transparency = 1
+    UserStroke.Color = Color3.fromRGB(34, 26, 40)
     UserStroke.Thickness = 1
     UserStroke.Transparency = 0
     UserStroke.Parent = UI.UserPanel
@@ -661,7 +661,7 @@ function Library:CreateWindow(options)
     UI.UserImage = Instance.new("ImageLabel")
     UI.UserImage.Name = "UserImage"
     UI.UserImage.Parent = UI.UserPanel
-    UI.UserImage.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    UI.UserImage.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     UI.UserImage.Position = UDim2.new(0, 5, 0.5, -12)
     UI.UserImage.Size = UDim2.new(0, 24, 0, 24)
     pcall(function()
@@ -682,7 +682,7 @@ function Library:CreateWindow(options)
     UI.UserName.Size = UDim2.new(1, -35, 1, 0)
     UI.UserName.Font = Enum.Font.SourceSans
     UI.UserName.Text = LocalPlayer.Name:lower()
-    UI.UserName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UI.UserName.TextColor3 = Color3.fromRGB(180, 180, 180)
     UI.UserName.TextSize = 13
     UI.UserName.TextXAlignment = Enum.TextXAlignment.Left
     UI.UserName.RichText = true
@@ -719,7 +719,7 @@ function Library:CreateWindow(options)
     UI.SidePicker.ZIndex = 5000
     
     local SideStroke = Instance.new("UIStroke")
-    SideStroke.Transparency = 1
+    SideStroke.Color = Color3.fromRGB(34, 26, 40)
     SideStroke.Thickness = 1.2
     SideStroke.Parent = UI.SidePicker
     
@@ -734,7 +734,7 @@ function Library:CreateWindow(options)
     UI.SidePickerTitle.Size = UDim2.new(1, -20, 0, 20)
     UI.SidePickerTitle.Font = Enum.Font.SourceSansBold
     UI.SidePickerTitle.Text = "Color Picker"
-    UI.SidePickerTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UI.SidePickerTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
     UI.SidePickerTitle.TextSize = 14
     UI.SidePickerTitle.TextXAlignment = Enum.TextXAlignment.Left
     UI.SidePickerTitle.ZIndex = 5001
@@ -745,7 +745,7 @@ function Library:CreateWindow(options)
         local NotifyFrame = Instance.new("Frame")
         NotifyFrame.Name = "Notification"
         NotifyFrame.Parent = UI.ScreenGui
-        NotifyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        NotifyFrame.BackgroundColor3 = Color3.fromRGB(11, 10, 11)
         NotifyFrame.BorderSizePixel = 0
         NotifyFrame.Position = UDim2.new(1, 40, 1, -100)
         NotifyFrame.Size = UDim2.new(0, 280, 0, 85)
@@ -753,7 +753,7 @@ function Library:CreateWindow(options)
         NotifyFrame.ClipsDescendants = true
         
         local NotifyStroke = Instance.new("UIStroke")
-        NotifyStroke.Transparency = 1
+        NotifyStroke.Color = Color3.fromRGB(34, 26, 40)
         NotifyStroke.Thickness = 1.2
         NotifyStroke.Parent = NotifyFrame
         
@@ -782,7 +782,7 @@ function Library:CreateWindow(options)
         NotifyText.Size = UDim2.new(1, -30, 0, 40)
         NotifyText.Font = Enum.Font.SourceSans
         NotifyText.Text = text
-        NotifyText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        NotifyText.TextColor3 = Color3.fromRGB(200, 200, 200)
         NotifyText.TextSize = 15
         NotifyText.TextXAlignment = Enum.TextXAlignment.Left
         NotifyText.TextWrapped = true
@@ -791,7 +791,7 @@ function Library:CreateWindow(options)
         local TimerBarContainer = Instance.new("Frame")
         TimerBarContainer.Name = "TimerBarContainer"
         TimerBarContainer.Parent = NotifyFrame
-        TimerBarContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        TimerBarContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         TimerBarContainer.BorderSizePixel = 0
         TimerBarContainer.Position = UDim2.new(0, 0, 1, -3)
         TimerBarContainer.Size = UDim2.new(1, 0, 0, 3)
@@ -903,7 +903,7 @@ function Library:CreateWindow(options)
         local ChangelogFrame = Instance.new("Frame")
         ChangelogFrame.Name = "Changelog"
         ChangelogFrame.Parent = UI.MainFrame.Parent
-        ChangelogFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+        ChangelogFrame.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
         ChangelogFrame.BorderSizePixel = 0
         ChangelogFrame.Position = UDim2.new(UI.MainFrame.Position.X.Scale, UI.MainFrame.Position.X.Offset + 640, UI.MainFrame.Position.Y.Scale, UI.MainFrame.Position.Y.Offset)
         ChangelogFrame.Size = UDim2.new(0, 200, 0, 0)
@@ -915,7 +915,7 @@ function Library:CreateWindow(options)
         ClCorner.Parent = ChangelogFrame
         
         local ClStroke = Instance.new("UIStroke")
-        ClStroke.Transparency = 1
+        ClStroke.Color = Color3.fromRGB(34, 26, 40)
         ClStroke.Thickness = 1.2
         ClStroke.Transparency = 1
         ClStroke.Parent = ChangelogFrame
@@ -927,7 +927,7 @@ function Library:CreateWindow(options)
         ClTitle.Size = UDim2.new(1, -24, 0, 20)
         ClTitle.Font = Enum.Font.SourceSansBold
         ClTitle.Text = "Changelog"
-        ClTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ClTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
         ClTitle.TextSize = 16
         ClTitle.TextXAlignment = Enum.TextXAlignment.Left
         ClTitle.TextTransparency = 1
@@ -964,7 +964,7 @@ function Library:CreateWindow(options)
             LogLabel.Size = UDim2.new(1, 0, 0, 0)
             LogLabel.Font = Enum.Font.SourceSans
             LogLabel.Text = log
-            LogLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            LogLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
             LogLabel.TextSize = 14
             LogLabel.TextXAlignment = Enum.TextXAlignment.Left
             LogLabel.TextWrapped = true
@@ -1021,16 +1021,6 @@ function Library:CreateWindow(options)
             RenderQueue = {}
         }
         table.insert(UI.Tabs, Tab)
-        
-        -- Check if we need to enable scrolling (more than 7 tabs)
-        if #UI.Tabs > 7 then
-            UI.TabContainer.ScrollBarThickness = 2
-            UI.TabContainer.ScrollBarImageColor3 = accentColor
-            UI.TabContainer.CanvasSize = UDim2.new(0, 0, 0, (#UI.Tabs * 40) + 10)
-        else
-            UI.TabContainer.ScrollBarThickness = 0
-            UI.TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-        end
 
         local function ResetAllZIndex()
             for _, s in pairs(Tab.Sections) do
@@ -1051,7 +1041,7 @@ function Library:CreateWindow(options)
         TabBtn.Size = UDim2.new(1, 0, 0, 34)
         TabBtn.Font = Enum.Font.SourceSans
         TabBtn.Text = iconId and "      " .. tostring(name) or tostring(name)
-        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
         TabBtn.TextSize = 15
         TabBtn.AutoButtonColor = false
         Tab.Button = TabBtn
@@ -1094,7 +1084,7 @@ function Library:CreateWindow(options)
             TabIcon.Position = UDim2.new(0, 8, 0.5, -8)
             TabIcon.Size = UDim2.new(0, 16, 0, 16)
             TabIcon.Image = iconId
-            TabIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            TabIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
             Tab.Icon = TabIcon
         end
 
@@ -1166,13 +1156,13 @@ function Library:CreateWindow(options)
 
         TabBtn.MouseEnter:Connect(function()
             if UI.CurrentTab ~= Tab then
-                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 0.96})
+                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(200, 200, 200), BackgroundTransparency = 0.96})
             end
         end)
 
         TabBtn.MouseLeave:Connect(function()
             if UI.CurrentTab ~= Tab then
-                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(255, 255, 255), BackgroundTransparency = 1})
+                Tween(TabBtn, 0.2, {TextColor3 = Color3.fromRGB(150, 150, 150), BackgroundTransparency = 1})
             end
         end)
 
